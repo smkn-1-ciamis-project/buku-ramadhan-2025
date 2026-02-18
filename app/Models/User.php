@@ -19,8 +19,24 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->role_user->name, 'Super Admin') && $this->hasVerifiedEmail();
+        // Get role name
+        $roleName = $this->role_user?->name;
+        
+        if (!$roleName) {
+            return false;
+        }
+
+        // Panel access based on role
+        return match ($panel->getId()) {
+            'siswa' => str_contains(strtolower($roleName), 'siswa'),
+            'guru' => str_contains(strtolower($roleName), 'guru'),
+            'superadmin' => str_contains(strtolower($roleName), 'super admin') || str_contains(strtolower($roleName), 'superadmin'),
+            'kesiswaan' => str_contains(strtolower($roleName), 'kesiswaan') || str_contains(strtolower($roleName), 'kepala sekolah'),
+            'admin' => str_contains(strtolower($roleName), 'admin'),
+            default => false,
+        };
     }
+    
     /**
      * The attributes that are mass assignable.
      *

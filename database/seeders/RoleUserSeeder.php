@@ -15,24 +15,35 @@ class RoleUserSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! DB::table('role_users')->where('name', '=', 'Super Admin')->exists()) {
-            DB::table('role_users')->insert([
-                'id'    => uniqid(),
+        $roles = [
+            [
                 'name' => 'Super Admin',
                 'need_approval' => false,
-                'author_id' => null,
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            ]);
-        }
+            ],
+            [
+                'name' => 'Guru',
+                'need_approval' => false,
+            ],
+            [
+                'name' => 'Kesiswaan',
+                'need_approval' => false,
+            ],
+            [
+                'name' => 'Siswa',
+                'need_approval' => false,
+            ],
+        ];
 
-        if (! DB::table('role_users')->where('name', '=', 'Customer')->exists()) {
-            DB::table('role_users')->insert([
-                'id'    => uniqid(),
-                'name' => 'Customer',
-                'need_approval' => true,
-                'author_id' => null,
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            ]);
+        foreach ($roles as $role) {
+            if (! DB::table('role_users')->where('name', '=', $role['name'])->exists()) {
+                DB::table('role_users')->insert([
+                    'id'    => uniqid(),
+                    'name' => $role['name'],
+                    'need_approval' => $role['need_approval'],
+                    'author_id' => null,
+                    'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 }
