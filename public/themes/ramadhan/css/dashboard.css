@@ -1,0 +1,307 @@
+/* =============================================================
+   Buku Ramadhan — Dashboard Styles
+   File : public/themes/ramadhan/css/dashboard.css
+   ============================================================= */
+
+/* ===== LAYOUT ===== */
+.ramadhan-app {
+    width: 100%;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+.ramadhan-body {
+    display: block;
+}
+.ramadhan-content {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: calc(100vh - 280px);
+}
+
+/* ===== HERO HEADER ===== */
+.hero-header {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 35%, #2563eb 100%);
+    min-height: 50vh;
+    border-radius: 0 0 2rem 2rem;
+}
+.hero-inner {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    min-height: 50vh;
+    padding: 20px 20px 0;
+}
+@media (min-width: 1024px) {
+    .hero-inner {
+        padding: 28px 40px 0;
+    }
+}
+
+/* ===== PRAYER ROW (inside hero, bottom section) ===== */
+.prayer-row-section {
+    margin-top: auto;
+    padding: 0 0 20px;
+}
+@media (min-width: 1024px) {
+    .prayer-row-section {
+        padding: 0 0 28px;
+    }
+}
+.prayer-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1.25rem;
+    padding: 8px;
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.prayer-slot {
+    text-align: center;
+    border-radius: 0.875rem;
+    padding: 12px 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    border: none;
+    background: transparent;
+}
+.prayer-slot.active {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+    backdrop-filter: blur(8px);
+}
+.prayer-slot-name {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.7);
+}
+.prayer-slot.active .prayer-slot-name {
+    color: #3b82f6;
+}
+.prayer-slot-time {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.95);
+}
+.prayer-slot.active .prayer-slot-time {
+    color: #1e3a8a;
+}
+
+/* ===== CENTER MENU ===== */
+.center-menu-wrap {
+    padding: 20px 16px 4px;
+}
+@media (min-width: 1024px) {
+    .center-menu-wrap {
+        padding: 24px 24px 8px;
+    }
+}
+.center-menu {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+@media (min-width: 1024px) {
+    .center-menu {
+        gap: 16px;
+    }
+}
+.center-menu-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    transition: all 0.2s ease;
+    background: #fff;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    min-width: 72px;
+}
+@media (min-width: 1024px) {
+    .center-menu-btn {
+        padding: 14px 24px;
+        min-width: 100px;
+    }
+}
+.center-menu-btn.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+    transform: translateY(-2px);
+}
+.center-menu-btn:not(.active):hover {
+    border-color: #bfdbfe;
+    color: #2563eb;
+    background: #f0f7ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.center-menu-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.center-menu-btn.active .center-menu-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+.center-menu-btn:not(.active) .center-menu-icon {
+    background: #f1f5f9;
+}
+.center-menu-label {
+    font-size: 11px;
+    font-weight: 700;
+}
+@media (min-width: 1024px) {
+    .center-menu-label {
+        font-size: 12px;
+    }
+}
+
+/* ===== CONTENT AREA ===== */
+.content-area {
+    padding: 12px 16px 32px;
+}
+.content-area > * + * {
+    margin-top: 16px;
+}
+@media (min-width: 1024px) {
+    .content-area {
+        padding: 16px 24px 40px;
+    }
+}
+
+/* ===== CARDS ===== */
+.card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.02);
+    border: 1px solid #f1f5f9;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+}
+
+/* ===== CALENDAR ===== */
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.calendar-day-today {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    font-weight: 800;
+}
+.calendar-day-completed {
+    background: #ecfdf5;
+    color: #059669;
+}
+.calendar-day-future {
+    color: #374151;
+}
+.calendar-day-future:hover {
+    background: #f1f5f9;
+}
+.calendar-day-empty {
+    pointer-events: none;
+}
+
+/* ===== HIGHLIGHT CARDS (Imsak/Berbuka) ===== */
+.card-highlight {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    padding: 20px;
+    color: #fff;
+}
+.card-highlight-imsak {
+    background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+}
+.card-highlight-berbuka {
+    background: linear-gradient(135deg, #9a3412 0%, #ea580c 100%);
+}
+
+/* ===== ARABIC FONT ===== */
+.font-arabic {
+    font-family: "Traditional Arabic", "Scheherazade New", "Amiri", serif;
+}
+
+/* ===== FILAMENT OVERRIDES ===== */
+
+/* Hide any residual nav/topbar/sidebar elements */
+.fi-page-header,
+.fi-topbar,
+.fi-sidebar-close-overlay,
+.fi-sidebar,
+.fi-main-sidebar {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Nuke every single wrapper layer — hero must touch top edge */
+html.fi,
+html.fi body,
+.fi-body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f1f5f9 !important;
+}
+html.fi .fi-layout,
+html.fi .fi-layout > *,
+html.fi .fi-main-ctn,
+html.fi .fi-main,
+html.fi .fi-page,
+html.fi .fi-page > *,
+html.fi .fi-page > section,
+html.fi section.py-8,
+html.fi section.gap-y-8,
+html.fi .fi-page > section > * {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    max-width: 100% !important;
+}
+.fi-layout {
+    min-height: 100vh;
+}
+.ramadhan-app {
+    margin: 0 !important;
+    padding: 0 !important;
+}

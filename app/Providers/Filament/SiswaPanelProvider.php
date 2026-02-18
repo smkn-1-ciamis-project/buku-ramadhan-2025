@@ -32,7 +32,9 @@ class SiswaPanelProvider extends PanelProvider
             ->brandName('Buku Ramadhan - SMKN 1 Ciamis')
             ->brandLogo(asset('img/logo_smk.png'))
             ->brandLogoHeight('3rem')
-            ->topNavigation()
+            ->topNavigation(false)
+            ->navigation(false)
+            ->topbar(false)
             ->colors([
                 'primary' => Color::Blue,
             ])
