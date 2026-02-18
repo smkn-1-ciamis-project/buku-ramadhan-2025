@@ -8,16 +8,157 @@
     width: 100%;
     margin: 0 auto;
     min-height: 100vh;
-    background: #f8fafc;
+    background: #f1f5f9;
 }
 .ramadhan-body {
     display: block;
 }
 .ramadhan-content {
     width: 100%;
-    max-width: 800px;
+    max-width: 520px;
     margin: 0 auto;
     min-height: calc(100vh - 280px);
+    padding: 0 8px;
+}
+@media (min-width: 640px) {
+    .ramadhan-content {
+        max-width: 600px;
+        padding: 0 16px;
+    }
+}
+@media (min-width: 768px) {
+    .ramadhan-content {
+        max-width: 720px;
+        padding: 0 20px;
+    }
+}
+@media (min-width: 1024px) {
+    .ramadhan-content {
+        max-width: 900px;
+        padding: 0 24px;
+    }
+}
+@media (min-width: 1280px) {
+    .ramadhan-content {
+        max-width: 1024px;
+        padding: 0 32px;
+    }
+}
+
+/* ===== ISLAMIC ANIMATED DECORATIONS ===== */
+@keyframes islamicFloat {
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-10px) rotate(3deg);
+    }
+    66% {
+        transform: translateY(-6px) rotate(-2deg);
+    }
+}
+@keyframes islamicMoonFloat {
+    0%,
+    100% {
+        transform: translateY(0px) rotate(-5deg) scale(1);
+    }
+    50% {
+        transform: translateY(-14px) rotate(5deg) scale(1.05);
+    }
+}
+@keyframes islamicSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+@keyframes islamicTwinkle {
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.5);
+    }
+}
+@keyframes islamicPulse {
+    0%,
+    100% {
+        opacity: 0.08;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.18;
+        transform: scale(1.06);
+    }
+}
+@keyframes islamicMosque {
+    0%,
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+    50% {
+        opacity: 0.85;
+        transform: translateY(-4px);
+    }
+}
+@keyframes islamicLantern {
+    0%,
+    100% {
+        transform: rotate(-6deg) translateY(0);
+    }
+    33% {
+        transform: rotate(6deg) translateY(-8px);
+    }
+    66% {
+        transform: rotate(-3deg) translateY(-4px);
+    }
+}
+
+.islamic-deco {
+    position: absolute;
+    pointer-events: none;
+}
+.islamic-deco-moon {
+    animation: islamicMoonFloat 6s ease-in-out infinite;
+}
+.islamic-deco-star1 {
+    animation: islamicFloat 4s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+.islamic-deco-star2 {
+    animation: islamicFloat 5.5s ease-in-out infinite;
+    animation-delay: 1.2s;
+}
+.islamic-deco-star3 {
+    animation: islamicFloat 7s ease-in-out infinite;
+    animation-delay: 2s;
+}
+.islamic-deco-mosque {
+    animation: islamicMosque 8s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+.islamic-deco-mosque2 {
+    animation: islamicMosque 9s ease-in-out infinite;
+    animation-delay: 1.5s;
+    transform-origin: bottom center;
+}
+.islamic-deco-geo {
+    animation: islamicSpin 40s linear infinite;
+    transform-origin: 60px 60px;
+}
+.islamic-deco-lantern {
+    animation: islamicLantern 4.5s ease-in-out infinite;
+    transform-origin: top center;
+}
+.islamic-deco-twinkle {
+    animation: islamicTwinkle 2.5s ease-in-out infinite;
 }
 
 /* ===== HERO HEADER ===== */
@@ -25,20 +166,54 @@
     position: relative;
     overflow: hidden;
     background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 35%, #2563eb 100%);
-    min-height: 50vh;
+    min-height: 52vh;
     border-radius: 0 0 2rem 2rem;
+}
+@media (min-width: 768px) {
+    .hero-header {
+        min-height: 44vh;
+        border-radius: 0 0 2.5rem 2.5rem;
+    }
+}
+@media (min-width: 1024px) {
+    .hero-header {
+        min-height: 38vh;
+        border-radius: 0 0 2.5rem 2.5rem;
+    }
 }
 .hero-inner {
     position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
-    min-height: 50vh;
+    min-height: 52vh;
     padding: 20px 20px 0;
+    max-width: 900px;
+    margin: 0 auto;
+}
+@media (min-width: 640px) {
+    .hero-inner {
+        padding: 24px 28px 0;
+    }
+}
+@media (min-width: 768px) {
+    .hero-inner {
+        min-height: 44vh;
+        padding: 28px 32px 0;
+        max-width: 720px;
+    }
 }
 @media (min-width: 1024px) {
     .hero-inner {
-        padding: 28px 40px 0;
+        min-height: 38vh;
+        padding: 28px 24px 0;
+        max-width: 900px;
+    }
+}
+@media (min-width: 1280px) {
+    .hero-inner {
+        padding: 32px 32px 0;
+        max-width: 1024px;
     }
 }
 
@@ -46,6 +221,11 @@
 .prayer-row-section {
     margin-top: auto;
     padding: 0 0 20px;
+}
+@media (min-width: 768px) {
+    .prayer-row-section {
+        padding: 0 0 24px;
+    }
 }
 @media (min-width: 1024px) {
     .prayer-row-section {
@@ -66,6 +246,13 @@
         0 4px 24px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
+@media (min-width: 768px) {
+    .prayer-row {
+        gap: 8px;
+        padding: 10px;
+        border-radius: 1.5rem;
+    }
+}
 .prayer-slot {
     text-align: center;
     border-radius: 0.875rem;
@@ -74,6 +261,12 @@
     cursor: default;
     border: none;
     background: transparent;
+}
+@media (min-width: 768px) {
+    .prayer-slot {
+        padding: 14px 8px;
+        border-radius: 1rem;
+    }
 }
 .prayer-slot.active {
     background: rgba(255, 255, 255, 0.95);
@@ -89,6 +282,12 @@
     margin-bottom: 4px;
     color: rgba(255, 255, 255, 0.7);
 }
+@media (min-width: 768px) {
+    .prayer-slot-name {
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+}
 .prayer-slot.active .prayer-slot-name {
     color: #3b82f6;
 }
@@ -99,23 +298,38 @@
     font-variant-numeric: tabular-nums;
     color: rgba(255, 255, 255, 0.95);
 }
+@media (min-width: 768px) {
+    .prayer-slot-time {
+        font-size: 17px;
+    }
+}
+@media (min-width: 1024px) {
+    .prayer-slot-time {
+        font-size: 18px;
+    }
+}
 .prayer-slot.active .prayer-slot-time {
     color: #1e3a8a;
 }
 
 /* ===== CENTER MENU ===== */
 .center-menu-wrap {
-    padding: 20px 16px 4px;
+    padding: 20px 0 4px;
 }
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
     .center-menu-wrap {
-        padding: 24px 24px 8px;
+        padding: 24px 0 8px;
     }
 }
 .center-menu {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
+}
+@media (min-width: 640px) {
+    .center-menu {
+        gap: 14px;
+    }
 }
 @media (min-width: 1024px) {
     .center-menu {
@@ -127,19 +341,26 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    padding: 12px 16px;
+    padding: 12px 18px;
     border-radius: 16px;
     transition: all 0.2s ease;
     background: #fff;
     color: #6b7280;
     border: 1px solid #e5e7eb;
     cursor: pointer;
-    min-width: 72px;
+    min-width: 76px;
+}
+@media (min-width: 640px) {
+    .center-menu-btn {
+        padding: 13px 22px;
+        min-width: 90px;
+    }
 }
 @media (min-width: 1024px) {
     .center-menu-btn {
-        padding: 14px 24px;
-        min-width: 100px;
+        padding: 14px 28px;
+        min-width: 110px;
+        border-radius: 18px;
     }
 }
 .center-menu-btn.active {
@@ -164,6 +385,13 @@
     align-items: center;
     justify-content: center;
 }
+@media (min-width: 1024px) {
+    .center-menu-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+    }
+}
 .center-menu-btn.active .center-menu-icon {
     background: rgba(255, 255, 255, 0.2);
 }
@@ -174,22 +402,38 @@
     font-size: 11px;
     font-weight: 700;
 }
-@media (min-width: 1024px) {
+@media (min-width: 640px) {
     .center-menu-label {
         font-size: 12px;
+    }
+}
+@media (min-width: 1024px) {
+    .center-menu-label {
+        font-size: 13px;
     }
 }
 
 /* ===== CONTENT AREA ===== */
 .content-area {
-    padding: 12px 16px 32px;
+    padding: 12px 0 40px;
 }
 .content-area > * + * {
-    margin-top: 16px;
+    margin-top: 14px;
+}
+@media (min-width: 768px) {
+    .content-area {
+        padding: 16px 0 48px;
+    }
+    .content-area > * + * {
+        margin-top: 16px;
+    }
 }
 @media (min-width: 1024px) {
     .content-area {
-        padding: 16px 24px 40px;
+        padding: 20px 0 56px;
+    }
+    .content-area > * + * {
+        margin-top: 20px;
     }
 }
 
@@ -203,12 +447,22 @@
         0 1px 2px rgba(0, 0, 0, 0.02);
     border: 1px solid #f1f5f9;
 }
+@media (min-width: 1024px) {
+    .card {
+        border-radius: 20px;
+    }
+}
 .card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
     background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+}
+@media (min-width: 1024px) {
+    .card-header {
+        padding: 18px 24px;
+    }
 }
 
 /* ===== CALENDAR ===== */
@@ -221,6 +475,12 @@
     font-size: 13px;
     font-weight: 600;
     transition: all 0.2s ease;
+}
+@media (min-width: 768px) {
+    .calendar-day {
+        font-size: 14px;
+        border-radius: 12px;
+    }
 }
 .calendar-day-today {
     background: #2563eb;
@@ -250,6 +510,12 @@
     padding: 20px;
     color: #fff;
 }
+@media (min-width: 1024px) {
+    .card-highlight {
+        padding: 24px;
+        border-radius: 20px;
+    }
+}
 .card-highlight-imsak {
     background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
 }
@@ -264,7 +530,43 @@
 
 /* ===== FILAMENT OVERRIDES ===== */
 
-/* ===== STANDALONE RESETS ===== */
+/* Hide any residual nav/topbar/sidebar elements */
+.fi-page-header,
+.fi-topbar,
+.fi-sidebar-close-overlay,
+.fi-sidebar,
+.fi-main-sidebar {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Nuke every single wrapper layer */
+html.fi,
+html.fi body,
+.fi-body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f1f5f9 !important;
+}
+html.fi .fi-layout,
+html.fi .fi-layout > *,
+html.fi .fi-main-ctn,
+html.fi .fi-main,
+html.fi .fi-page,
+html.fi .fi-page > *,
+html.fi .fi-page > section,
+html.fi section.py-8,
+html.fi section.gap-y-8,
+html.fi .fi-page > section > * {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    max-width: 100% !important;
+}
+.fi-layout {
+    min-height: 100vh;
+}
 .ramadhan-app {
     margin: 0 !important;
     padding: 0 !important;

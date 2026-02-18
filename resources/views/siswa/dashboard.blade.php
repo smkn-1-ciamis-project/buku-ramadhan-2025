@@ -1,15 +1,131 @@
-<x-siswa-layout>
+<x-filament-panels::page>
+    {{-- Kill ALL Filament wrapper spacing --}}
+    <style>
+        html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
+        html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
+        html.fi .fi-page > section,
+        html.fi section.py-8,
+        html.fi section.gap-y-8 { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+        html.fi .fi-page > section > div,
+        html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+        .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
+        *, *::before, *::after { box-sizing: border-box; }
+        .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
     <div x-data="ramadhanDashboard()" x-init="init()" class="ramadhan-app">
 
         {{-- ===== HERO HEADER ===== --}}
         <div class="hero-header">
-            {{-- Background decoration --}}
+            {{-- Islamic animated decorations --}}
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute -top-20 -right-20 w-80 h-80 bg-white/[0.03] rounded-full"></div>
-                <div class="absolute bottom-20 -left-16 w-52 h-52 bg-white/[0.02] rounded-full"></div>
-                <div class="absolute top-12 right-16 w-2 h-2 bg-white/20 rounded-full"></div>
-                <div class="absolute top-24 right-32 w-1.5 h-1.5 bg-white/10 rounded-full"></div>
-                <div class="absolute bottom-32 left-1/4 w-1 h-1 bg-white/15 rounded-full"></div>
+
+                {{-- Crescent moon kanan atas --}}
+                <div class="islamic-deco islamic-deco-moon" style="top:8%; right:5%;">
+                    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M52 36C52 45.94 43.94 54 34 54C27.2 54 21.26 50.2 18 44.6C20.1 45.5 22.4 46 24.8 46C33.64 46 40.8 38.84 40.8 30C40.8 24.04 37.6 18.82 32.8 16C34.52 16 36.28 16.22 37.96 16.68C46.06 18.98 52 26.82 52 36Z" fill="white" opacity="0.15"/>
+                        <path d="M52 36C52 45.94 43.94 54 34 54C27.2 54 21.26 50.2 18 44.6C20.1 45.5 22.4 46 24.8 46C33.64 46 40.8 38.84 40.8 30C40.8 24.04 37.6 18.82 32.8 16C34.52 16 36.28 16.22 37.96 16.68C46.06 18.98 52 26.82 52 36Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+                    </svg>
+                </div>
+
+                {{-- Star bintang-bintang kecil --}}
+                <div class="islamic-deco islamic-deco-star1" style="top:12%; right:18%;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white" opacity="0.4">
+                        <polygon points="12,2 14.9,9.2 22.6,9.2 16.3,13.8 18.6,21 12,16.7 5.4,21 7.7,13.8 1.4,9.2 9.1,9.2"/>
+                    </svg>
+                </div>
+                <div class="islamic-deco islamic-deco-star2" style="top:28%; right:12%;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white" opacity="0.3">
+                        <polygon points="12,2 14.9,9.2 22.6,9.2 16.3,13.8 18.6,21 12,16.7 5.4,21 7.7,13.8 1.4,9.2 9.1,9.2"/>
+                    </svg>
+                </div>
+                <div class="islamic-deco islamic-deco-star3" style="top:18%; left:8%;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="white" opacity="0.2">
+                        <polygon points="12,2 14.9,9.2 22.6,9.2 16.3,13.8 18.6,21 12,16.7 5.4,21 7.7,13.8 1.4,9.2 9.1,9.2"/>
+                    </svg>
+                </div>
+
+                {{-- Masjid silhouette kiri bawah --}}
+                <div class="islamic-deco islamic-deco-mosque" style="bottom:0; left:0;">
+                    <svg width="180" height="100" viewBox="0 0 240 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Menara kiri -->
+                        <rect x="10" y="40" width="18" height="90" fill="white" opacity="0.07"/>
+                        <path d="M10 40 Q19 28 28 40Z" fill="white" opacity="0.07"/>
+                        <rect x="7" y="36" width="24" height="5" fill="white" opacity="0.07"/>
+                        <rect x="12" y="30" width="14" height="8" fill="white" opacity="0.07"/>
+                        <path d="M14 30 Q19 20 24 30Z" fill="white" opacity="0.09"/>
+                        <!-- Menara kanan -->
+                        <rect x="212" y="40" width="18" height="90" fill="white" opacity="0.07"/>
+                        <path d="M212 40 Q221 28 230 40Z" fill="white" opacity="0.07"/>
+                        <rect x="209" y="36" width="24" height="5" fill="white" opacity="0.07"/>
+                        <rect x="214" y="30" width="14" height="8" fill="white" opacity="0.07"/>
+                        <path d="M216 30 Q221 20 226 30Z" fill="white" opacity="0.09"/>
+                        <!-- Badan masjid -->
+                        <rect x="30" y="60" width="180" height="70" fill="white" opacity="0.07"/>
+                        <!-- Kubah utama -->
+                        <path d="M80 60 Q120 10 160 60Z" fill="white" opacity="0.09"/>
+                        <!-- Kubah kecil kiri -->
+                        <path d="M38 60 Q58 38 78 60Z" fill="white" opacity="0.07"/>
+                        <!-- Kubah kecil kanan -->
+                        <path d="M162 60 Q182 38 202 60Z" fill="white" opacity="0.07"/>
+                        <!-- Pintu -->
+                        <path d="M108 130 L108 95 Q120 85 132 95 L132 130Z" fill="white" opacity="0.09"/>
+                        <!-- Jendela -->
+                        <path d="M60 80 Q70 70 80 80 L80 100 L60 100Z" fill="white" opacity="0.06"/>
+                        <path d="M160 80 Q170 70 180 80 L180 100 L160 100Z" fill="white" opacity="0.06"/>
+                    </svg>
+                </div>
+
+                {{-- Masjid silhouette kanan bawah --}}
+                <div class="islamic-deco islamic-deco-mosque2" style="bottom:0; right:0;">
+                    <svg width="160" height="90" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Menara -->
+                        <rect x="170" y="35" width="16" height="75" fill="white" opacity="0.07"/>
+                        <path d="M170 35 Q178 24 186 35Z" fill="white" opacity="0.07"/>
+                        <rect x="167" y="31" width="22" height="5" fill="white" opacity="0.07"/>
+                        <path d="M172 28 Q178 18 184 28Z" fill="white" opacity="0.09"/>
+                        <!-- Badan masjid -->
+                        <rect x="0" y="55" width="170" height="55" fill="white" opacity="0.06"/>
+                        <!-- Kubah -->
+                        <path d="M45 55 Q85 15 125 55Z" fill="white" opacity="0.08"/>
+                        <!-- Kubah kecil -->
+                        <path d="M10 55 Q30 38 50 55Z" fill="white" opacity="0.06"/>
+                        <path d="M125 55 Q145 38 165 55Z" fill="white" opacity="0.06"/>
+                        <!-- Pintu -->
+                        <path d="M75 110 L75 82 Q85 74 95 82 L95 110Z" fill="white" opacity="0.08"/>
+                    </svg>
+                </div>
+
+                {{-- Geometric pattern (bintang 8) kiri atas --}}
+                <div class="islamic-deco islamic-deco-geo" style="top:-20px; left:-20px;">
+                    <svg width="120" height="120" viewBox="0 0 100 100" fill="none" opacity="0.06">
+                        <path d="M50 10 L57 35 L82 25 L67 47 L90 58 L65 62 L72 88 L50 72 L28 88 L35 62 L10 58 L33 47 L18 25 L43 35 Z" fill="white" stroke="white" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="18" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M50 32 L50 68 M32 50 L68 50 M36 36 L64 64 M64 36 L36 64" stroke="white" stroke-width="0.8" opacity="0.6"/>
+                    </svg>
+                </div>
+
+                {{-- Lentera (fanoos) melayang --}}
+                <div class="islamic-deco islamic-deco-lantern" style="top:10%; left:22%;">
+                    <svg width="28" height="42" viewBox="0 0 28 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="14" y1="0" x2="14" y2="5" stroke="white" stroke-width="1.5" opacity="0.4"/>
+                        <rect x="2" y="4" width="24" height="2" rx="1" fill="white" opacity="0.3"/>
+                        <path d="M5 6 L3 32 Q14 38 25 32 L23 6Z" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.25"/>
+                        <path d="M5 6 L7 18 L14 14 L21 18 L23 6Z" fill="white" opacity="0.05"/>
+                        <ellipse cx="14" cy="32" rx="11" ry="4" fill="white" opacity="0.1"/>
+                        <rect x="10" y="32" width="8" height="6" rx="1" fill="white" opacity="0.15"/>
+                        <line x1="8" y1="12" x2="8" y2="28" stroke="white" stroke-width="0.5" opacity="0.2"/>
+                        <line x1="20" y1="12" x2="20" y2="28" stroke="white" stroke-width="0.5" opacity="0.2"/>
+                        <line x1="5" y1="18" x2="23" y2="18" stroke="white" stroke-width="0.5" opacity="0.2"/>
+                    </svg>
+                </div>
+
+                {{-- Titik-titik dekoratif --}}
+                <div class="absolute top-12 right-16 w-2 h-2 bg-white/20 rounded-full islamic-deco-twinkle" style="animation-delay:0.3s"></div>
+                <div class="absolute top-24 right-32 w-1.5 h-1.5 bg-white/15 rounded-full islamic-deco-twinkle" style="animation-delay:1.1s"></div>
+                <div class="absolute bottom-32 left-1/4 w-1 h-1 bg-white/20 rounded-full islamic-deco-twinkle" style="animation-delay:0.7s"></div>
+                <div class="absolute top-1/3 left-1/3 w-1.5 h-1.5 bg-white/10 rounded-full islamic-deco-twinkle" style="animation-delay:1.8s"></div>
+                <div class="absolute top-1/2 right-1/4 w-1 h-1 bg-white/15 rounded-full islamic-deco-twinkle" style="animation-delay:2.2s"></div>
             </div>
 
             <div class="hero-inner">
@@ -354,4 +470,12 @@
         </div>
 
     </div>
-</x-siswa-layout>
+</x-filament-panels::page>
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ time() }}">
+@endpush
+
+@push('scripts')
+    <script src="{{ asset('themes/ramadhan/js/dashboard.js') }}?v={{ time() }}"></script>
+@endpush
