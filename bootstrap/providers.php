@@ -7,5 +7,4 @@ return [
   App\Providers\Filament\KesiswaanPanelProvider::class,
   App\Providers\Filament\SiswaPanelProvider::class,
   App\Providers\Filament\SuperadminPanelProvider::class,
-  App\Providers\RepositoryServiceProvider::class,
 ];

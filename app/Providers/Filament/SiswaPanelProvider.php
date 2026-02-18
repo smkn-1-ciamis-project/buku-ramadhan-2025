@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Siswa\Pages\Auth\Login;
+use App\Filament\Siswa\Pages\Dashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,20 +29,19 @@ class SiswaPanelProvider extends PanelProvider
             ->id('siswa')
             ->path('siswa')
             ->login(Login::class)
-            ->brandName('Login Siswa - Buku Ramadhan')
+            ->brandName('Buku Ramadhan - SMKN 1 Ciamis')
+            ->brandLogo(asset('img/logo_smk.png'))
+            ->brandLogoHeight('3rem')
+            ->topNavigation()
             ->colors([
                 'primary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Siswa/Resources'), for: 'App\\Filament\\Siswa\\Resources')
             ->discoverPages(in: app_path('Filament/Siswa/Pages'), for: 'App\\Filament\\Siswa\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Siswa/Widgets'), for: 'App\\Filament\\Siswa\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
