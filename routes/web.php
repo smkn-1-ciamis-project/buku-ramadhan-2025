@@ -17,3 +17,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/siswa/login');
 })->name('index');
+
+// Siswa Dashboard — standalone (no Filament template)
+Route::get('/siswa', function () {
+    if (!auth()->check()) {
+        return redirect('/siswa/login');
+    }
+    return view('siswa.dashboard');
+})->name('siswa.dashboard');

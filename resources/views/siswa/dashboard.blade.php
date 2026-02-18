@@ -1,21 +1,4 @@
-﻿<x-filament-panels::page>
-    {{-- Kill ALL Filament wrapper spacing with maximum specificity --}}
-    <style>
-        /* Zero out all Filament wrappers */
-        html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-        html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page > section,
-        html.fi section.py-8,
-        html.fi section.gap-y-8,
-        html.fi section[class*="py-"] { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        html.fi .fi-page > section > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
-        .fi-body { background: #f1f5f9 !important; }
-        /* Ensure hero flush to top */
-        .ramadhan-app, .ramadhan-app > .hero-header { margin-top: 0 !important; }
-    </style>
+<x-siswa-layout>
     <div x-data="ramadhanDashboard()" x-init="init()" class="ramadhan-app">
 
         {{-- ===== HERO HEADER ===== --}}
@@ -47,8 +30,16 @@
 
                 {{-- Current prayer time (centered vertically) --}}
                 <div class="text-center flex-1 flex flex-col items-center justify-center gap-0">
-                    <p class="text-blue-200 text-xs font-semibold uppercase tracking-[0.2em] mb-2" x-text="currentPrayerLabel"></p>
-                    <p class="text-white text-6xl lg:text-7xl font-extrabold leading-none tracking-tight" x-text="currentPrayerTime"></p>
+                    {{-- Real-time clock WIB --}}
+                    <p class="text-white text-6xl lg:text-7xl font-extrabold leading-none tracking-tight" x-text="clockWIB"></p>
+                    {{-- WIB / WITA / WIT row --}}
+                    <div class="mt-3 flex items-center gap-3 text-blue-100">
+                        <span class="text-xs font-bold bg-white/15 rounded-full px-3 py-0.5">WIB</span>
+                        <span class="text-blue-300/40 text-[10px]">&bull;</span>
+                        <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WITA</span> <span x-text="clockWITA"></span></span>
+                        <span class="text-blue-300/40 text-[10px]">&bull;</span>
+                        <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WIT</span> <span x-text="clockWIT"></span></span>
+                    </div>
                     <div class="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2">
                         <svg class="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/></svg>
                         <span class="text-yellow-100 text-xs font-semibold" x-text="countdown"></span>
@@ -253,7 +244,7 @@
                                     </div>
                                 </div>
                                 <div class="text-center mb-5">
-                                    <p class="text-3xl font-extrabold text-blue-700" x-text="qiblaDirection.toFixed(1) + 'Â°'"></p>
+                                    <p class="text-3xl font-extrabold text-blue-700" x-text="qiblaDirection.toFixed(1) + '°'"></p>
                                     <p class="text-sm text-gray-500 mt-1" x-text="qiblaStatus"></p>
                                 </div>
                                 <div class="bg-blue-50 rounded-xl p-4">
@@ -363,26 +354,4 @@
         </div>
 
     </div>
-
-</x-filament-panels::page>
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ time() }}">
-    <style>
-        /* Force-kill ALL Filament wrapper padding/margin — inline in head for max priority */
-        .fi-simple-main, .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-        .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
-        .fi-page { padding: 0 !important; margin: 0 !important; }
-        .fi-page > section { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-page > section > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-page-header { display: none !important; }
-        .fi-topbar { display: none !important; }
-        .fi-sidebar, .fi-sidebar-close-overlay, .fi-main-sidebar { display: none !important; }
-        .fi-body { background: #f1f5f9 !important; }
-    </style>
-@endpush
-
-@push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/dashboard.js') }}?v={{ time() }}"></script>
-@endpush
+</x-siswa-layout>

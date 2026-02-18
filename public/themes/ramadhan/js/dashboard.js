@@ -12,8 +12,11 @@ function ramadhanDashboard() {
         calendarDays: [],
         duas: [],
         dailyVerse: {},
-        currentPrayerLabel: "Memuat...",
+        currentPrayerLabel: "",
         currentPrayerTime: "--:--",
+        clockWIB: "--:--:--",
+        clockWITA: "--:--",
+        clockWIT: "--:--",
         countdown: "Menghitung...",
         hijriDate: "",
         gregorianDate: "",
@@ -47,9 +50,6 @@ function ramadhanDashboard() {
 
         // ── Lifecycle ──────────────────────────────────────────────────────
         init() {
-            // Kill Filament wrapper padding/margin via DOM
-            this._killFilamentWrappers();
-
             this.loadIndonesiaLocations();
             this.setDates();
             this.calculateRamadhanDay();
@@ -59,49 +59,7 @@ function ramadhanDashboard() {
             this.setDailyVerse();
             this.getLocation();
             this.startCountdown();
-        },
-
-        // ── Kill Filament Wrappers ─────────────────────────────────────────
-        _killFilamentWrappers() {
-            const zero = (el) => {
-                if (!el) return;
-                el.style.setProperty("padding", "0", "important");
-                el.style.setProperty("margin", "0", "important");
-                el.style.setProperty("gap", "0", "important");
-                el.style.setProperty("max-width", "100%", "important");
-            };
-            // Walk UP from .ramadhan-app to <body>
-            let node = document.querySelector(".ramadhan-app");
-            while (node && node !== document.documentElement) {
-                zero(node);
-                node = node.parentElement;
-            }
-            // Also target by class names just in case
-            [
-                ".fi-main",
-                ".fi-main-ctn",
-                ".fi-page",
-                ".fi-layout",
-                ".fi-page > section",
-                ".fi-page > section > div",
-                ".fi-page > section > div > div",
-            ].forEach((sel) => {
-                document.querySelectorAll(sel).forEach(zero);
-            });
-            // Hide topbar/sidebar completely
-            [
-                ".fi-topbar",
-                ".fi-sidebar",
-                ".fi-page-header",
-                ".fi-sidebar-close-overlay",
-                ".fi-main-sidebar",
-            ].forEach((sel) => {
-                document.querySelectorAll(sel).forEach((el) => {
-                    el.style.setProperty("display", "none", "important");
-                    el.style.setProperty("height", "0", "important");
-                    el.style.setProperty("overflow", "hidden", "important");
-                });
-            });
+            this.startClock();
         },
 
         // ── Location Data ──────────────────────────────────────────────────
@@ -2534,6 +2492,25 @@ function ramadhanDashboard() {
         calculatePrayerTimes() {
             // Re-run setPrayerTimes when location changes (future: use coords for actual calculation)
             this.setPrayerTimes();
+        },
+
+        startClock() {
+            const pad = (n) => String(n).padStart(2, '0');
+            const tick = () => {
+                const now = new Date();
+                // WIB = UTC+7
+                const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+                // WITA = UTC+8
+                const wita = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Makassar' }));
+                // WIT = UTC+9
+                const wit = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jayapura' }));
+
+                this.clockWIB = pad(wib.getHours()) + ':' + pad(wib.getMinutes()) + ':' + pad(wib.getSeconds());
+                this.clockWITA = pad(wita.getHours()) + ':' + pad(wita.getMinutes());
+                this.clockWIT = pad(wit.getHours()) + ':' + pad(wit.getMinutes());
+            };
+            tick();
+            setInterval(tick, 1000);
         },
 
         startCountdown() {

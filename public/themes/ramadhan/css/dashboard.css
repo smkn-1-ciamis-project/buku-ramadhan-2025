@@ -264,43 +264,7 @@
 
 /* ===== FILAMENT OVERRIDES ===== */
 
-/* Hide any residual nav/topbar/sidebar elements */
-.fi-page-header,
-.fi-topbar,
-.fi-sidebar-close-overlay,
-.fi-sidebar,
-.fi-main-sidebar {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-/* Nuke every single wrapper layer — hero must touch top edge */
-html.fi,
-html.fi body,
-.fi-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #f1f5f9 !important;
-}
-html.fi .fi-layout,
-html.fi .fi-layout > *,
-html.fi .fi-main-ctn,
-html.fi .fi-main,
-html.fi .fi-page,
-html.fi .fi-page > *,
-html.fi .fi-page > section,
-html.fi section.py-8,
-html.fi section.gap-y-8,
-html.fi .fi-page > section > * {
-    padding: 0 !important;
-    margin: 0 !important;
-    gap: 0 !important;
-    max-width: 100% !important;
-}
-.fi-layout {
-    min-height: 100vh;
-}
+/* ===== STANDALONE RESETS ===== */
 .ramadhan-app {
     margin: 0 !important;
     padding: 0 !important;

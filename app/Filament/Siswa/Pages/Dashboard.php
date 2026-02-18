@@ -3,6 +3,8 @@
 namespace App\Filament\Siswa\Pages;
 
 use Filament\Pages\Page;
+use Illuminate\Http\RedirectResponse;
+use Livewire\Features\SupportRedirects\Redirector;
 
 class Dashboard extends Page
 {
@@ -11,6 +13,11 @@ class Dashboard extends Page
     protected static ?string $title = '';
     protected static ?string $slug = '/';
     protected static string $view = 'filament.siswa.pages.dashboard';
+
+    public function mount(): Redirector|RedirectResponse
+    {
+        return redirect()->route('siswa.dashboard');
+    }
 
     public function getHeading(): string
     {
