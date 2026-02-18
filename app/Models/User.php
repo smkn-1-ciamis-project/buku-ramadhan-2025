@@ -21,7 +21,7 @@ class User extends Authenticatable implements FilamentUser
     {
         // Get role name
         $roleName = $this->role_user?->name;
-        
+
         if (!$roleName) {
             return false;
         }
@@ -36,7 +36,7 @@ class User extends Authenticatable implements FilamentUser
             default => false,
         };
     }
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -45,6 +45,7 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
+        'nisn',
         'password',
         'role_user_id',
     ];
@@ -70,7 +71,7 @@ class User extends Authenticatable implements FilamentUser
     ];
 
 
-    public function role_user() : BelongsTo
+    public function role_user(): BelongsTo
     {
         return $this->belongsTo(RoleUser::class);
     }

@@ -26,9 +26,9 @@ class KesiswaanPanelProvider extends PanelProvider
             ->id('kesiswaan')
             ->path('kesiswaan')
             ->login()
-            ->brandName('Login Kesiswaan - Buku Ramadhan')
+            ->brandName('Panel Kesiswaan - Buku Ramadhan')
             ->colors([
-                'primary' => Color::Orange,
+                'primary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Kesiswaan/Resources'), for: 'App\\Filament\\Kesiswaan\\Resources')
             ->discoverPages(in: app_path('Filament/Kesiswaan/Pages'), for: 'App\\Filament\\Kesiswaan\\Pages')

@@ -21,7 +21,10 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
-Route::get('/', [IndexController::class, 'index'])->name('index');
+// Redirect root to Siswa login
+Route::get('/', function () {
+    return redirect('/siswa/login');
+})->name('index');
 
 Route::prefix('/product')->name('product.')->controller(ProductController::class)->group(function () {
     Route::get('', 'index')->name('index');
@@ -37,4 +40,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

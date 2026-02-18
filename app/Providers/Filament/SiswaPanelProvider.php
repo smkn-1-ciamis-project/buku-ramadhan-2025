@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Siswa\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,8 +26,8 @@ class SiswaPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('siswa')
-            ->path('/')
-            ->login()
+            ->path('siswa')
+            ->login(Login::class)
             ->brandName('Login Siswa - Buku Ramadhan')
             ->colors([
                 'primary' => Color::Blue,
