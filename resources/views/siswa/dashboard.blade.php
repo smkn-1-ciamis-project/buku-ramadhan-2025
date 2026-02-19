@@ -18,7 +18,7 @@
         {{-- ===== HERO HEADER ===== --}}
         <div class="hero-header">
             {{-- Islamic animated decorations --}}
-            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none" style="border-radius: 0 0 2rem 2rem;">
 
                 {{-- Crescent moon kanan atas --}}
                 <div class="islamic-deco islamic-deco-moon" style="top:8%; right:5%;">
@@ -146,32 +146,69 @@
 
                 {{-- Current prayer time (centered vertically) --}}
                 <div class="text-center flex-1 flex flex-col items-center justify-center gap-2">
-                    {{-- Real-time clock WIB --}}
-                    <p class="text-white text-8xl md:text-9xl lg:text-[10rem] font-extrabold leading-none tracking-tight" x-text="clockWIB"></p>
-                    {{-- WIB / WITA / WIT row --}}
-                    <div class="mt-4 flex items-center gap-3 text-blue-100">
-                        <span class="text-xs font-bold bg-white/15 rounded-full px-3 py-0.5">WIB</span>
-                        <span class="text-blue-300/40 text-[10px]">&bull;</span>
-                        <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WITA</span> <span x-text="clockWITA"></span></span>
-                        <span class="text-blue-300/40 text-[10px]">&bull;</span>
-                        <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WIT</span> <span x-text="clockWIT"></span></span>
+                    {{-- Greeting --}}
+                    <p class="greeting-text" x-text="greeting"></p>
+                    {{-- Real-time clock (local to selected city) --}}
+                    <p class="clock-display" x-text="clockMain"></p>
+                    {{-- Timezone row --}}
+                    <div class="clock-timezone-row">
+                        <span class="tz-badge" :class="selectedTz === 'WIB' && 'tz-active'">WIB <span x-show="selectedTz !== 'WIB'" x-text="clockWIB" style="font-weight:400"></span></span>
+                        <span class="tz-dot">&bull;</span>
+                        <span class="tz-badge" :class="selectedTz === 'WITA' && 'tz-active'">WITA <span x-show="selectedTz !== 'WITA'" x-text="clockWITA" style="font-weight:400"></span></span>
+                        <span class="tz-dot">&bull;</span>
+                        <span class="tz-badge" :class="selectedTz === 'WIT' && 'tz-active'">WIT <span x-show="selectedTz !== 'WIT'" x-text="clockWIT" style="font-weight:400"></span></span>
                     </div>
-                    <div class="mt-5 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5">
-                        <svg class="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/></svg>
-                        <span class="text-yellow-100 text-xs font-semibold" x-text="countdown"></span>
+                    <div class="countdown-badge">
+                        <svg class="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/></svg>
+                        <span x-text="countdown"></span>
                     </div>
-                    {{-- Location row --}}
-                    <div class="mt-5 inline-flex items-center gap-1.5 text-blue-200/90">
-                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-                        </svg>
-                        <span class="text-[11px] font-medium" x-text="locationCity"></span>
-                        <span class="text-blue-300/50 text-[10px]">&bull;</span>
-                        <span class="text-[10px] text-blue-200/70" x-text="locationCoords"></span>
-                        <button @click="locationSearch = ''; filteredLocations = indonesiaLocations; showLocationPicker = true" class="ml-1 text-blue-300 hover:text-white transition-colors" title="Ubah lokasi">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+                    {{-- Location row with dropdown --}}
+                    <div class="location-dropdown-wrap mt-5">
+                        <button @click="openLocationPicker()" class="inline-flex items-center gap-1.5 text-blue-200/90 hover:text-white transition-colors">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                            </svg>
+                            <span class="text-[11px] font-medium" x-text="locationCity"></span>
+                            <svg class="w-3 h-3 ml-0.5 transition-transform" :class="showLocationPicker && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
                         </button>
+
+                        {{-- Click-outside overlay --}}
+                        <div x-show="showLocationPicker" class="location-dropdown-overlay" @click="showLocationPicker = false"></div>
+
+                        {{-- Dropdown --}}
+                        <div x-show="showLocationPicker" class="location-dropdown" @click.stop>
+                            {{-- Search --}}
+                            <div class="location-dropdown-search" style="position:relative;">
+                                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                                <input x-model="locationSearch" @input="filterLocations()" type="text" placeholder="Cari kecamatan, kabupaten...">
+                            </div>
+                            {{-- List --}}
+                            <div class="location-dropdown-list">
+                                {{-- Loading state --}}
+                                <p x-show="locationsLoading" class="location-dropdown-loading">Memuat lokasi...</p>
+                                {{-- Location items --}}
+                                <template x-if="!locationsLoading">
+                                    <div>
+                                        <template x-for="loc in filteredLocations.slice(0, 100)" :key="loc.id">
+                                            <button @click="selectLocation(loc)" class="location-dropdown-item" :style="locationCity && locationCity.includes(loc.kabupaten) ? 'background:#eff6ff' : ''">
+                                                <span class="loc-name" x-text="loc.kecamatan ? loc.kecamatan : loc.kabupaten"></span>
+                                                <span class="loc-detail" x-text="loc.kecamatan ? loc.kabupaten + ', ' + loc.provinsi : loc.provinsi"></span>
+                                            </button>
+                                        </template>
+                                        <p x-show="filteredLocations.length > 100 && !locationSearch" class="location-dropdown-hint">Ketik untuk mempersempit pencarian...</p>
+                                        <p x-show="filteredLocations.length === 0 && locationSearch" class="location-dropdown-empty">Tidak ditemukan</p>
+                                    </div>
+                                </template>
+                            </div>
+                            {{-- GPS button --}}
+                            <div class="location-dropdown-footer">
+                                <button @click="useGPS()" class="location-dropdown-gps">
+                                    <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                    GPS Otomatis
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -186,64 +223,6 @@
                         </template>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        {{-- ===== LOCATION PICKER MODAL ===== --}}
-        <div x-show="showLocationPicker" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center px-4" style="background:rgba(0,0,0,0.6)" @click.self="showLocationPicker = false">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" style="max-height:80vh; display:flex; flex-direction:column;" @click.stop>
-
-                {{-- Header --}}
-                <div class="bg-gradient-to-r from-blue-800 to-blue-600 px-5 py-4 flex items-center justify-between" style="flex-shrink:0">
-                    <h3 class="text-white font-bold text-sm">Pilih Lokasi (Kabupaten/Kota)</h3>
-                    <button @click="showLocationPicker = false" class="text-white/80 hover:text-white">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-
-                {{-- Search input --}}
-                <div class="px-4 pt-4 pb-2" style="flex-shrink:0">
-                    <div class="relative">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color:#9ca3af" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                        <input
-                            x-model="locationSearch"
-                            @input="filterLocations()"
-                            type="text"
-                            placeholder="Ketik nama kabupaten/kota atau provinsi..."
-                            style="width:100%; padding:10px 16px 10px 36px; border:1px solid #d1d5db; border-radius:12px; font-size:14px; color:#111827; background:#fff; outline:none; box-sizing:border-box;"
-                            @focus="$el.style.borderColor='#3b82f6'; $el.style.boxShadow='0 0 0 3px rgba(59,130,246,0.15)'"
-                            @blur="$el.style.borderColor='#d1d5db'; $el.style.boxShadow='none'"
-                        >
-                    </div>
-                    <p style="font-size:11px; color:#9ca3af; margin-top:6px; margin-left:4px;" x-text="filteredLocations.length + ' lokasi tersedia'"></p>
-                </div>
-
-                {{-- Scrollable list --}}
-                <div style="overflow-y:auto; flex:1; border-top:1px solid #f3f4f6; margin:0 16px 8px; border-radius:12px; border:1px solid #f1f5f9;">
-                    <template x-for="loc in filteredLocations.slice(0, 100)" :key="loc.id">
-                        <button
-                            @click="selectLocation(loc)"
-                            style="width:100%; text-align:left; padding:10px 16px; border-bottom:1px solid #f9fafb; cursor:pointer; background:transparent; display:block;"
-                            :style="locationCity && locationCity.includes(loc.kabupaten) ? 'background:#eff6ff;' : ''"
-                            @mouseover="$el.style.background='#eff6ff'"
-                            @mouseout="$el.style.background = (locationCity && locationCity.includes(loc.kabupaten)) ? '#eff6ff' : 'transparent'"
-                        >
-                            <span style="font-size:14px; font-weight:500; color:#111827;" x-text="loc.kabupaten"></span>
-                            <span style="font-size:12px; color:#9ca3af; margin-left:6px;" x-text="loc.provinsi"></span>
-                        </button>
-                    </template>
-                    <p x-show="filteredLocations.length === 0" style="text-align:center; color:#9ca3af; font-size:14px; padding:32px 16px;">Tidak ditemukan</p>
-                </div>
-
-                {{-- GPS button --}}
-                <div style="padding:0 16px 16px; flex-shrink:0;">
-                    <button @click="useGPS()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:12px; border:2px solid #3b82f6; color:#2563eb; font-size:14px; font-weight:600; background:transparent; cursor:pointer;"
-                        @mouseover="$el.style.background='#eff6ff'" @mouseout="$el.style.background='transparent'">
-                        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                        Gunakan GPS Otomatis
-                    </button>
-                </div>
-
             </div>
         </div>
 

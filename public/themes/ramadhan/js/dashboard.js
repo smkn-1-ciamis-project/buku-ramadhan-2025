@@ -14,9 +14,12 @@ function ramadhanDashboard() {
         dailyVerse: {},
         currentPrayerLabel: "",
         currentPrayerTime: "--:--",
-        clockWIB: "--:--:--",
+        clockMain: "--:--:--",
+        clockWIB: "--:--",
         clockWITA: "--:--",
         clockWIT: "--:--",
+        greeting: "",
+        selectedTz: "WIB",
         countdown: "Menghitung...",
         hijriDate: "",
         gregorianDate: "",
@@ -37,6 +40,7 @@ function ramadhanDashboard() {
         locationSearch: "",
         filteredLocations: [],
         indonesiaLocations: [],
+        locationsLoading: true,
         sidebarTabs: [
             {
                 id: "calendar",
@@ -64,8 +68,23 @@ function ramadhanDashboard() {
 
         // ── Location Data ──────────────────────────────────────────────────
         loadIndonesiaLocations() {
+            this.locationsLoading = true;
+            fetch("/themes/ramadhan/data/locations.json")
+                .then((r) => r.json())
+                .then((data) => {
+                    this.indonesiaLocations = data;
+                    this.filteredLocations = data;
+                    this.locationsLoading = false;
+                })
+                .catch(() => {
+                    console.warn("Gagal memuat data lokasi");
+                    this.locationsLoading = false;
+                });
+        },
+
+        _legacyLocations_UNUSED() {
+            // Legacy inline data removed — now loaded from /themes/ramadhan/data/locations.json
             this.indonesiaLocations = [
-                // JAWA BARAT
                 {
                     id: 1,
                     kabupaten: "Kab. Bogor",
@@ -2338,7 +2357,7 @@ function ramadhanDashboard() {
                     lng: 96.8527,
                 },
             ];
-            this.filteredLocations = this.indonesiaLocations;
+            // Legacy data end — not used
         },
 
         // ── Date & Calendar ────────────────────────────────────────────────
@@ -2350,24 +2369,24 @@ function ramadhanDashboard() {
                 month: "long",
                 day: "numeric",
             });
-            const ramadhanStart = new Date(2025, 2, 1);
+            const ramadhanStart = new Date(2026, 1, 19);
             const hijriDay = Math.max(
                 1,
                 Math.min(30, Math.floor((now - ramadhanStart) / 864e5) + 1),
             );
-            this.hijriDate = hijriDay + " Ramadhan 1446 H";
+            this.hijriDate = hijriDay + " Ramadhan 1447 H";
         },
 
         calculateRamadhanDay() {
             const now = new Date();
-            const ramadhanStart = new Date(2025, 2, 1);
+            const ramadhanStart = new Date(2026, 1, 19);
             const diff = Math.floor((now - ramadhanStart) / 864e5);
             this.ramadhanDay = Math.max(1, Math.min(30, diff + 1));
         },
 
         buildCalendar() {
             const days = [];
-            const startDayOfWeek = 5; // Saturday
+            const startDayOfWeek = 4; // Thursday (1 Ramadhan 1447H = 19 Feb 2026)
             for (let i = 0; i < startDayOfWeek; i++) {
                 days.push({
                     key: "e" + i,
@@ -2401,7 +2420,7 @@ function ramadhanDashboard() {
             };
             this.imsakTime = times.imsak;
             this.maghribTime = times.maghrib;
-            const now = new Date();
+            const now = this.getNowInSelectedTz();
             const cm = now.getHours() * 60 + now.getMinutes();
             const tm = (t) => {
                 const [h, m] = t.split(":").map(Number);
@@ -2415,22 +2434,30 @@ function ramadhanDashboard() {
                 { name: "Maghrib", time: times.maghrib },
                 { name: "Isya", time: times.isya },
             ];
-            let ai = 0;
-            for (let i = list.length - 1; i >= 0; i--) {
-                if (cm >= tm(list[i].time)) {
-                    ai = i;
+            // Find the next upcoming prayer (highlight it)
+            let ni = 0; // next prayer index
+            let found = false;
+            for (let i = 0; i < list.length; i++) {
+                if (cm < tm(list[i].time)) {
+                    ni = i;
+                    found = true;
                     break;
                 }
             }
+            if (!found) {
+                // All prayers passed today, next is Imsak (tomorrow)
+                ni = 0;
+            }
             this.prayerTimes = list.map((p, i) => ({
                 ...p,
-                isActive: i === ai,
+                isActive: i === ni,
             }));
-            let ni = (ai + 1) % list.length;
-            this.currentPrayerLabel = list[ai].name;
-            this.currentPrayerTime = list[ai].time;
             this.nextPrayerName = list[ni].name;
             this.nextPrayerMinutes = tm(list[ni].time);
+            // Current prayer is the one before next
+            let ci = (ni - 1 + list.length) % list.length;
+            this.currentPrayerLabel = list[ci].name;
+            this.currentPrayerTime = list[ci].time;
             this.fullPrayerSchedule = [
                 {
                     name: "Imsak",
@@ -2481,8 +2508,9 @@ function ramadhanDashboard() {
                     isActive: false,
                 },
             ];
-            for (let i = this.fullPrayerSchedule.length - 1; i >= 0; i--) {
-                if (cm >= tm(this.fullPrayerSchedule[i].time)) {
+            // Highlight next upcoming prayer in full schedule too
+            for (let i = 0; i < this.fullPrayerSchedule.length; i++) {
+                if (cm < tm(this.fullPrayerSchedule[i].time)) {
                     this.fullPrayerSchedule[i].isActive = true;
                     break;
                 }
@@ -2494,20 +2522,78 @@ function ramadhanDashboard() {
             this.setPrayerTimes();
         },
 
+        getTimezoneForLng(lng) {
+            if (lng < 115) return { tz: "WIB", iana: "Asia/Jakarta" };
+            if (lng < 135) return { tz: "WITA", iana: "Asia/Makassar" };
+            return { tz: "WIT", iana: "Asia/Jayapura" };
+        },
+
+        getSelectedIana() {
+            if (this.selectedTz === "WITA") return "Asia/Makassar";
+            if (this.selectedTz === "WIT") return "Asia/Jayapura";
+            return "Asia/Jakarta";
+        },
+
+        getNowInSelectedTz() {
+            return new Date(
+                new Date().toLocaleString("en-US", {
+                    timeZone: this.getSelectedIana(),
+                }),
+            );
+        },
+
+        updateGreeting(hour) {
+            if (this.maghribTime && this.maghribTime !== "--:--") {
+                const [mH, mM] = this.maghribTime.split(":").map(Number);
+                const maghribMin = mH * 60 + mM;
+                const nowMin = hour * 60 + new Date().getMinutes();
+                if (nowMin >= maghribMin && nowMin <= maghribMin + 90) {
+                    this.greeting = "\u{1F319} Selamat Berbuka Puasa";
+                    return;
+                }
+            }
+            if (hour >= 3 && hour < 11)
+                this.greeting = "\u{2600}\u{FE0F} Selamat Pagi";
+            else if (hour >= 11 && hour < 15)
+                this.greeting = "\u{1F324}\u{FE0F} Selamat Siang";
+            else if (hour >= 15 && hour < 18)
+                this.greeting = "\u{1F305} Selamat Sore";
+            else this.greeting = "\u{1F319} Selamat Malam";
+        },
+
         startClock() {
-            const pad = (n) => String(n).padStart(2, '0');
+            const pad = (n) => String(n).padStart(2, "0");
             const tick = () => {
                 const now = new Date();
-                // WIB = UTC+7
-                const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-                // WITA = UTC+8
-                const wita = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Makassar' }));
-                // WIT = UTC+9
-                const wit = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jayapura' }));
+                const wib = new Date(
+                    now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }),
+                );
+                const wita = new Date(
+                    now.toLocaleString("en-US", { timeZone: "Asia/Makassar" }),
+                );
+                const wit = new Date(
+                    now.toLocaleString("en-US", { timeZone: "Asia/Jayapura" }),
+                );
 
-                this.clockWIB = pad(wib.getHours()) + ':' + pad(wib.getMinutes()) + ':' + pad(wib.getSeconds());
-                this.clockWITA = pad(wita.getHours()) + ':' + pad(wita.getMinutes());
-                this.clockWIT = pad(wit.getHours()) + ':' + pad(wit.getMinutes());
+                this.clockWIB =
+                    pad(wib.getHours()) + ":" + pad(wib.getMinutes());
+                this.clockWITA =
+                    pad(wita.getHours()) + ":" + pad(wita.getMinutes());
+                this.clockWIT =
+                    pad(wit.getHours()) + ":" + pad(wit.getMinutes());
+
+                let mainTime;
+                if (this.selectedTz === "WITA") mainTime = wita;
+                else if (this.selectedTz === "WIT") mainTime = wit;
+                else mainTime = wib;
+
+                this.clockMain =
+                    pad(mainTime.getHours()) +
+                    ":" +
+                    pad(mainTime.getMinutes()) +
+                    ":" +
+                    pad(mainTime.getSeconds());
+                this.updateGreeting(mainTime.getHours());
             };
             tick();
             setInterval(tick, 1000);
@@ -2515,7 +2601,7 @@ function ramadhanDashboard() {
 
         startCountdown() {
             const tick = () => {
-                const now = new Date();
+                const now = this.getNowInSelectedTz();
                 const cm = now.getHours() * 60 + now.getMinutes();
                 let diff = this.nextPrayerMinutes - cm;
                 if (diff < 0) diff += 1440;
@@ -2610,6 +2696,8 @@ function ramadhanDashboard() {
                         this.userLat.toFixed(4) +
                         ", Lng: " +
                         this.userLng.toFixed(4);
+                    const tzInfo = this.getTimezoneForLng(this.userLng);
+                    this.selectedTz = tzInfo.tz;
                     this.calculateQibla();
                     fetch(
                         "https://nominatim.openstreetmap.org/reverse?lat=" +
@@ -2655,6 +2743,7 @@ function ramadhanDashboard() {
             this.userLat = -7.3305;
             this.userLng = 108.3508;
             this.cityName = "Kab. Ciamis";
+            this.selectedTz = "WIB";
             this.calculateQibla();
         },
 
@@ -2663,11 +2752,25 @@ function ramadhanDashboard() {
             this.getLocation();
         },
 
+        openLocationPicker() {
+            this.locationSearch = "";
+            this.filteredLocations = this.indonesiaLocations;
+            this.showLocationPicker = true;
+            this.$nextTick(() => {
+                const inp = document.querySelector(
+                    ".location-dropdown-search input",
+                );
+                if (inp) inp.focus();
+            });
+        },
+
         filterLocations() {
             const q = this.locationSearch.toLowerCase();
             this.filteredLocations = q
                 ? this.indonesiaLocations.filter(
                       (l) =>
+                          (l.kecamatan &&
+                              l.kecamatan.toLowerCase().includes(q)) ||
                           l.kabupaten.toLowerCase().includes(q) ||
                           l.provinsi.toLowerCase().includes(q),
                   )
@@ -2679,9 +2782,14 @@ function ramadhanDashboard() {
             this.userLng = loc.lng;
             this.locationCoords =
                 loc.lat.toFixed(4) + ", " + loc.lng.toFixed(4);
-            this.locationCity = loc.kabupaten + ", " + loc.provinsi;
-            this.cityName = loc.kabupaten;
-            this.locationText = loc.kabupaten + ", " + loc.provinsi;
+            const displayName = loc.kecamatan
+                ? loc.kecamatan + ", " + loc.kabupaten
+                : loc.kabupaten;
+            this.locationCity = displayName + ", " + loc.provinsi;
+            this.cityName = loc.kecamatan ? loc.kecamatan : loc.kabupaten;
+            this.locationText = displayName + ", " + loc.provinsi;
+            const tzInfo = this.getTimezoneForLng(loc.lng);
+            this.selectedTz = tzInfo.tz;
             this.calculateQibla();
             this.calculatePrayerTimes();
             this.showLocationPicker = false;
