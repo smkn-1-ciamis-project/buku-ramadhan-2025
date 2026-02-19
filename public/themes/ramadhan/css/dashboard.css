@@ -166,18 +166,18 @@
     position: relative;
     overflow: hidden;
     background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 35%, #2563eb 100%);
-    min-height: 52vh;
+    min-height: 58vh;
     border-radius: 0 0 2rem 2rem;
 }
 @media (min-width: 768px) {
     .hero-header {
-        min-height: 44vh;
+        min-height: 50vh;
         border-radius: 0 0 2.5rem 2.5rem;
     }
 }
 @media (min-width: 1024px) {
     .hero-header {
-        min-height: 38vh;
+        min-height: 44vh;
         border-radius: 0 0 2.5rem 2.5rem;
     }
 }
@@ -186,33 +186,33 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
-    min-height: 52vh;
-    padding: 20px 20px 0;
+    min-height: 58vh;
+    padding: 24px 20px 0;
     max-width: 900px;
     margin: 0 auto;
 }
 @media (min-width: 640px) {
     .hero-inner {
-        padding: 24px 28px 0;
+        padding: 28px 28px 0;
     }
 }
 @media (min-width: 768px) {
     .hero-inner {
-        min-height: 44vh;
-        padding: 28px 32px 0;
+        min-height: 50vh;
+        padding: 32px 32px 0;
         max-width: 720px;
     }
 }
 @media (min-width: 1024px) {
     .hero-inner {
-        min-height: 38vh;
-        padding: 28px 24px 0;
+        min-height: 44vh;
+        padding: 32px 24px 0;
         max-width: 900px;
     }
 }
 @media (min-width: 1280px) {
     .hero-inner {
-        padding: 32px 32px 0;
+        padding: 36px 32px 0;
         max-width: 1024px;
     }
 }
@@ -220,43 +220,43 @@
 /* ===== PRAYER ROW (inside hero, bottom section) ===== */
 .prayer-row-section {
     margin-top: auto;
-    padding: 0 0 20px;
+    padding: 16px 0 24px;
 }
 @media (min-width: 768px) {
     .prayer-row-section {
-        padding: 0 0 24px;
+        padding: 20px 0 28px;
     }
 }
 @media (min-width: 1024px) {
     .prayer-row-section {
-        padding: 0 0 28px;
+        padding: 20px 0 32px;
     }
 }
 .prayer-row {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
+    gap: 4px;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 1.25rem;
-    padding: 8px;
+    border-radius: 1rem;
+    padding: 6px;
     box-shadow:
         0 4px 24px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 @media (min-width: 768px) {
     .prayer-row {
-        gap: 8px;
-        padding: 10px;
-        border-radius: 1.5rem;
+        gap: 6px;
+        padding: 8px;
+        border-radius: 1.25rem;
     }
 }
 .prayer-slot {
     text-align: center;
-    border-radius: 0.875rem;
-    padding: 12px 4px;
+    border-radius: 0.75rem;
+    padding: 8px 4px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: default;
     border: none;
@@ -264,8 +264,8 @@
 }
 @media (min-width: 768px) {
     .prayer-slot {
-        padding: 14px 8px;
-        border-radius: 1rem;
+        padding: 10px 6px;
+        border-radius: 0.875rem;
     }
 }
 .prayer-slot.active {
@@ -275,17 +275,17 @@
 }
 .prayer-slot-name {
     display: block;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     color: rgba(255, 255, 255, 0.7);
 }
 @media (min-width: 768px) {
     .prayer-slot-name {
-        font-size: 11px;
-        margin-bottom: 5px;
+        font-size: 10px;
+        margin-bottom: 3px;
     }
 }
 .prayer-slot.active .prayer-slot-name {
@@ -293,19 +293,19 @@
 }
 .prayer-slot-time {
     display: block;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     color: rgba(255, 255, 255, 0.95);
 }
 @media (min-width: 768px) {
     .prayer-slot-time {
-        font-size: 17px;
+        font-size: 14px;
     }
 }
 @media (min-width: 1024px) {
     .prayer-slot-time {
-        font-size: 18px;
+        font-size: 15px;
     }
 }
 .prayer-slot.active .prayer-slot-time {

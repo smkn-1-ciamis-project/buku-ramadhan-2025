@@ -132,7 +132,7 @@
                 {{-- Top bar: logo + date --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <img src="{{ asset('img/logo_smk.png') }}" alt="SMKN 1 Ciamis" class="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 p-0.5 ring-2 ring-white/25">
+                        <img src="{{ asset('img/logo_smk.png') }}" alt="SMKN 1 Ciamis" class="w-10 h-10 lg:w-12 lg:h-12">
                         <div>
                             <h1 class="text-white font-bold text-sm lg:text-lg leading-tight">Buku Ramadhan</h1>
                             <p class="text-blue-100 text-[11px] lg:text-xs">SMKN 1 Ciamis</p>
@@ -145,23 +145,23 @@
                 </div>
 
                 {{-- Current prayer time (centered vertically) --}}
-                <div class="text-center flex-1 flex flex-col items-center justify-center gap-0">
+                <div class="text-center flex-1 flex flex-col items-center justify-center gap-2">
                     {{-- Real-time clock WIB --}}
-                    <p class="text-white text-6xl lg:text-7xl font-extrabold leading-none tracking-tight" x-text="clockWIB"></p>
+                    <p class="text-white text-8xl md:text-9xl lg:text-[10rem] font-extrabold leading-none tracking-tight" x-text="clockWIB"></p>
                     {{-- WIB / WITA / WIT row --}}
-                    <div class="mt-3 flex items-center gap-3 text-blue-100">
+                    <div class="mt-4 flex items-center gap-3 text-blue-100">
                         <span class="text-xs font-bold bg-white/15 rounded-full px-3 py-0.5">WIB</span>
                         <span class="text-blue-300/40 text-[10px]">&bull;</span>
                         <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WITA</span> <span x-text="clockWITA"></span></span>
                         <span class="text-blue-300/40 text-[10px]">&bull;</span>
                         <span class="text-xs font-medium"><span class="text-blue-200/60 mr-1">WIT</span> <span x-text="clockWIT"></span></span>
                     </div>
-                    <div class="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2">
+                    <div class="mt-5 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5">
                         <svg class="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/></svg>
                         <span class="text-yellow-100 text-xs font-semibold" x-text="countdown"></span>
                     </div>
                     {{-- Location row --}}
-                    <div class="mt-4 inline-flex items-center gap-1.5 text-blue-200/90">
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-blue-200/90">
                         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
