@@ -1,5 +1,6 @@
+﻿// @ts-nocheck
 /**
- * Buku Ramadhan — Dashboard Alpine.js Component
+ * Buku Ramadhan â€” Dashboard Alpine.js Component
  * File : public/themes/ramadhan/js/dashboard.js
  */
 
@@ -12,6 +13,18 @@ function ramadhanDashboard() {
         fullPrayerSchedule: [],
         calendarDays: [],
         duas: [],
+        allDuas: [],
+        filteredDuas: [],
+        doaSearch: "",
+        activeDoaCategory: "semua",
+        expandedDoas: [],
+        doasLoading: true,
+        doaCategories: [],
+        paginatedDuas: [],
+        doaPage: 1,
+        doaPerPage: 10,
+        doaTotalPages: 1,
+        doaPageNumbers: [],
         dailyVerse: {},
         currentPrayerLabel: "",
         currentPrayerTime: "--:--",
@@ -30,6 +43,15 @@ function ramadhanDashboard() {
         locationCity: "Mendeteksi lokasi...",
         locationCoords: "",
         cityName: "Ciamis",
+        // Compass / Device Orientation
+        compassHeading: 0,
+        compassActive: false,
+        compassSupported: false,
+        compassPermission: "unknown", // unknown | granted | denied | unsupported
+        compassAccuracy: null,
+        distanceToKaaba: 0,
+        gpsAccuracy: null,
+        gpsQuality: "detecting", // detecting | excellent | good | fair | poor | ip-based
         ramadhanDay: 1,
         calendarMonthLabel: "",
         imsakTime: "--:--",
@@ -108,11 +130,12 @@ function ramadhanDashboard() {
             this.checkFormSubmitted();
             this.setPrayerTimes();
             this.buildCalendar();
-            this.setDuas();
+            this.loadDoas();
             this.setDailyVerse();
             this.getLocation();
             this.startCountdown();
             this.startClock();
+            this.initCompass();
         },
 
         // ── Location Data ──────────────────────────────────────────────────
@@ -131,2282 +154,27 @@ function ramadhanDashboard() {
                 });
         },
 
-        _legacyLocations_UNUSED() {
-            // Legacy inline data removed — now loaded from /themes/ramadhan/data/locations.json
-            this.indonesiaLocations = [
-                {
-                    id: 1,
-                    kabupaten: "Kab. Bogor",
-                    provinsi: "Jawa Barat",
-                    lat: -6.5964,
-                    lng: 106.8062,
-                },
-                {
-                    id: 2,
-                    kabupaten: "Kota Bogor",
-                    provinsi: "Jawa Barat",
-                    lat: -6.5971,
-                    lng: 106.806,
-                },
-                {
-                    id: 3,
-                    kabupaten: "Kab. Sukabumi",
-                    provinsi: "Jawa Barat",
-                    lat: -6.9295,
-                    lng: 106.9289,
-                },
-                {
-                    id: 4,
-                    kabupaten: "Kota Sukabumi",
-                    provinsi: "Jawa Barat",
-                    lat: -6.9221,
-                    lng: 106.927,
-                },
-                {
-                    id: 5,
-                    kabupaten: "Kab. Cianjur",
-                    provinsi: "Jawa Barat",
-                    lat: -6.8217,
-                    lng: 107.1389,
-                },
-                {
-                    id: 6,
-                    kabupaten: "Kab. Bandung",
-                    provinsi: "Jawa Barat",
-                    lat: -7.0417,
-                    lng: 107.5996,
-                },
-                {
-                    id: 7,
-                    kabupaten: "Kota Bandung",
-                    provinsi: "Jawa Barat",
-                    lat: -6.9175,
-                    lng: 107.6191,
-                },
-                {
-                    id: 8,
-                    kabupaten: "Kab. Bandung Barat",
-                    provinsi: "Jawa Barat",
-                    lat: -6.8447,
-                    lng: 107.5048,
-                },
-                {
-                    id: 9,
-                    kabupaten: "Kab. Garut",
-                    provinsi: "Jawa Barat",
-                    lat: -7.2239,
-                    lng: 107.901,
-                },
-                {
-                    id: 10,
-                    kabupaten: "Kab. Tasikmalaya",
-                    provinsi: "Jawa Barat",
-                    lat: -7.3525,
-                    lng: 108.12,
-                },
-                {
-                    id: 11,
-                    kabupaten: "Kota Tasikmalaya",
-                    provinsi: "Jawa Barat",
-                    lat: -7.3275,
-                    lng: 108.2186,
-                },
-                {
-                    id: 12,
-                    kabupaten: "Kab. Ciamis",
-                    provinsi: "Jawa Barat",
-                    lat: -7.3305,
-                    lng: 108.3508,
-                },
-                {
-                    id: 13,
-                    kabupaten: "Kota Banjar",
-                    provinsi: "Jawa Barat",
-                    lat: -7.3666,
-                    lng: 108.5412,
-                },
-                {
-                    id: 14,
-                    kabupaten: "Kab. Pangandaran",
-                    provinsi: "Jawa Barat",
-                    lat: -7.6753,
-                    lng: 108.4964,
-                },
-                {
-                    id: 15,
-                    kabupaten: "Kab. Kuningan",
-                    provinsi: "Jawa Barat",
-                    lat: -6.9762,
-                    lng: 108.4833,
-                },
-                {
-                    id: 16,
-                    kabupaten: "Kab. Cirebon",
-                    provinsi: "Jawa Barat",
-                    lat: -6.7594,
-                    lng: 108.4929,
-                },
-                {
-                    id: 17,
-                    kabupaten: "Kota Cirebon",
-                    provinsi: "Jawa Barat",
-                    lat: -6.732,
-                    lng: 108.5523,
-                },
-                {
-                    id: 18,
-                    kabupaten: "Kab. Majalengka",
-                    provinsi: "Jawa Barat",
-                    lat: -6.8363,
-                    lng: 108.2279,
-                },
-                {
-                    id: 19,
-                    kabupaten: "Kab. Sumedang",
-                    provinsi: "Jawa Barat",
-                    lat: -6.8573,
-                    lng: 107.9239,
-                },
-                {
-                    id: 20,
-                    kabupaten: "Kab. Indramayu",
-                    provinsi: "Jawa Barat",
-                    lat: -6.3279,
-                    lng: 108.3196,
-                },
-                {
-                    id: 21,
-                    kabupaten: "Kab. Subang",
-                    provinsi: "Jawa Barat",
-                    lat: -6.571,
-                    lng: 107.7597,
-                },
-                {
-                    id: 22,
-                    kabupaten: "Kab. Purwakarta",
-                    provinsi: "Jawa Barat",
-                    lat: -6.5562,
-                    lng: 107.4386,
-                },
-                {
-                    id: 23,
-                    kabupaten: "Kab. Karawang",
-                    provinsi: "Jawa Barat",
-                    lat: -6.3266,
-                    lng: 107.3381,
-                },
-                {
-                    id: 24,
-                    kabupaten: "Kota Bekasi",
-                    provinsi: "Jawa Barat",
-                    lat: -6.2383,
-                    lng: 106.9756,
-                },
-                {
-                    id: 25,
-                    kabupaten: "Kab. Bekasi",
-                    provinsi: "Jawa Barat",
-                    lat: -6.3148,
-                    lng: 107.1548,
-                },
-                {
-                    id: 26,
-                    kabupaten: "Kota Depok",
-                    provinsi: "Jawa Barat",
-                    lat: -6.4025,
-                    lng: 106.7942,
-                },
-                // BANTEN
-                {
-                    id: 27,
-                    kabupaten: "Kota Serang",
-                    provinsi: "Banten",
-                    lat: -6.1203,
-                    lng: 106.1503,
-                },
-                {
-                    id: 28,
-                    kabupaten: "Kab. Serang",
-                    provinsi: "Banten",
-                    lat: -6.1831,
-                    lng: 106.1522,
-                },
-                {
-                    id: 29,
-                    kabupaten: "Kota Tangerang",
-                    provinsi: "Banten",
-                    lat: -6.1754,
-                    lng: 106.6297,
-                },
-                {
-                    id: 30,
-                    kabupaten: "Kab. Tangerang",
-                    provinsi: "Banten",
-                    lat: -6.1882,
-                    lng: 106.532,
-                },
-                {
-                    id: 31,
-                    kabupaten: "Kota Tangerang Selatan",
-                    provinsi: "Banten",
-                    lat: -6.2883,
-                    lng: 106.7136,
-                },
-                {
-                    id: 32,
-                    kabupaten: "Kab. Lebak",
-                    provinsi: "Banten",
-                    lat: -6.5602,
-                    lng: 106.2527,
-                },
-                {
-                    id: 33,
-                    kabupaten: "Kab. Pandeglang",
-                    provinsi: "Banten",
-                    lat: -6.307,
-                    lng: 106.1066,
-                },
-                {
-                    id: 34,
-                    kabupaten: "Kota Cilegon",
-                    provinsi: "Banten",
-                    lat: -6.002,
-                    lng: 106.0044,
-                },
-                // DKI JAKARTA
-                {
-                    id: 35,
-                    kabupaten: "Jakarta Pusat",
-                    provinsi: "DKI Jakarta",
-                    lat: -6.1862,
-                    lng: 106.8063,
-                },
-                {
-                    id: 36,
-                    kabupaten: "Jakarta Utara",
-                    provinsi: "DKI Jakarta",
-                    lat: -6.1344,
-                    lng: 106.8446,
-                },
-                {
-                    id: 37,
-                    kabupaten: "Jakarta Barat",
-                    provinsi: "DKI Jakarta",
-                    lat: -6.1681,
-                    lng: 106.7631,
-                },
-                {
-                    id: 38,
-                    kabupaten: "Jakarta Selatan",
-                    provinsi: "DKI Jakarta",
-                    lat: -6.2615,
-                    lng: 106.8106,
-                },
-                {
-                    id: 39,
-                    kabupaten: "Jakarta Timur",
-                    provinsi: "DKI Jakarta",
-                    lat: -6.225,
-                    lng: 106.9004,
-                },
-                // JAWA TENGAH
-                {
-                    id: 40,
-                    kabupaten: "Kota Semarang",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.9932,
-                    lng: 110.4203,
-                },
-                {
-                    id: 41,
-                    kabupaten: "Kab. Semarang",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.2208,
-                    lng: 110.4032,
-                },
-                {
-                    id: 42,
-                    kabupaten: "Kab. Kendal",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.9235,
-                    lng: 110.1966,
-                },
-                {
-                    id: 43,
-                    kabupaten: "Kab. Demak",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8942,
-                    lng: 110.6385,
-                },
-                {
-                    id: 44,
-                    kabupaten: "Kab. Grobogan",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.0076,
-                    lng: 110.9213,
-                },
-                {
-                    id: 45,
-                    kabupaten: "Kab. Pati",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.7463,
-                    lng: 111.035,
-                },
-                {
-                    id: 46,
-                    kabupaten: "Kab. Kudus",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8051,
-                    lng: 110.8385,
-                },
-                {
-                    id: 47,
-                    kabupaten: "Kab. Jepara",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.5941,
-                    lng: 110.668,
-                },
-                {
-                    id: 48,
-                    kabupaten: "Kab. Rembang",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.7049,
-                    lng: 111.343,
-                },
-                {
-                    id: 49,
-                    kabupaten: "Kab. Blora",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.9756,
-                    lng: 111.422,
-                },
-                {
-                    id: 50,
-                    kabupaten: "Kab. Boyolali",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.5258,
-                    lng: 110.5999,
-                },
-                {
-                    id: 51,
-                    kabupaten: "Kota Solo",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.5755,
-                    lng: 110.8243,
-                },
-                {
-                    id: 52,
-                    kabupaten: "Kab. Klaten",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.7059,
-                    lng: 110.5958,
-                },
-                {
-                    id: 53,
-                    kabupaten: "Kab. Sukoharjo",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.6817,
-                    lng: 110.8385,
-                },
-                {
-                    id: 54,
-                    kabupaten: "Kab. Wonogiri",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.8132,
-                    lng: 110.9216,
-                },
-                {
-                    id: 55,
-                    kabupaten: "Kab. Karanganyar",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.5963,
-                    lng: 111.0263,
-                },
-                {
-                    id: 56,
-                    kabupaten: "Kab. Sragen",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.4252,
-                    lng: 111.026,
-                },
-                {
-                    id: 57,
-                    kabupaten: "Kab. Purworejo",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.7143,
-                    lng: 110.0234,
-                },
-                {
-                    id: 58,
-                    kabupaten: "Kab. Kebumen",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.6673,
-                    lng: 109.653,
-                },
-                {
-                    id: 59,
-                    kabupaten: "Kab. Magelang",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.4797,
-                    lng: 110.2177,
-                },
-                {
-                    id: 60,
-                    kabupaten: "Kota Magelang",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.4705,
-                    lng: 110.2177,
-                },
-                {
-                    id: 61,
-                    kabupaten: "Kab. Temanggung",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.3165,
-                    lng: 110.1714,
-                },
-                {
-                    id: 62,
-                    kabupaten: "Kab. Wonosobo",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.3602,
-                    lng: 109.9086,
-                },
-                {
-                    id: 63,
-                    kabupaten: "Kab. Banjarnegara",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.3885,
-                    lng: 109.6956,
-                },
-                {
-                    id: 64,
-                    kabupaten: "Kab. Purbalingga",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.3902,
-                    lng: 109.3649,
-                },
-                {
-                    id: 65,
-                    kabupaten: "Kab. Banyumas",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.4304,
-                    lng: 109.2318,
-                },
-                {
-                    id: 66,
-                    kabupaten: "Kota Purwokerto",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.4211,
-                    lng: 109.2368,
-                },
-                {
-                    id: 67,
-                    kabupaten: "Kab. Cilacap",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.7302,
-                    lng: 109.0152,
-                },
-                {
-                    id: 68,
-                    kabupaten: "Kab. Brebes",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8728,
-                    lng: 108.8682,
-                },
-                {
-                    id: 69,
-                    kabupaten: "Kab. Tegal",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.9781,
-                    lng: 109.1411,
-                },
-                {
-                    id: 70,
-                    kabupaten: "Kota Tegal",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8697,
-                    lng: 109.1402,
-                },
-                {
-                    id: 71,
-                    kabupaten: "Kab. Pemalang",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8922,
-                    lng: 109.3792,
-                },
-                {
-                    id: 72,
-                    kabupaten: "Kab. Pekalongan",
-                    provinsi: "Jawa Tengah",
-                    lat: -7.0224,
-                    lng: 109.6745,
-                },
-                {
-                    id: 73,
-                    kabupaten: "Kota Pekalongan",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.8897,
-                    lng: 109.6753,
-                },
-                {
-                    id: 74,
-                    kabupaten: "Kab. Batang",
-                    provinsi: "Jawa Tengah",
-                    lat: -6.9115,
-                    lng: 109.7294,
-                },
-                // DI YOGYAKARTA
-                {
-                    id: 75,
-                    kabupaten: "Kota Yogyakarta",
-                    provinsi: "DI Yogyakarta",
-                    lat: -7.7974,
-                    lng: 110.3657,
-                },
-                {
-                    id: 76,
-                    kabupaten: "Kab. Sleman",
-                    provinsi: "DI Yogyakarta",
-                    lat: -7.7164,
-                    lng: 110.3557,
-                },
-                {
-                    id: 77,
-                    kabupaten: "Kab. Bantul",
-                    provinsi: "DI Yogyakarta",
-                    lat: -7.8894,
-                    lng: 110.3288,
-                },
-                {
-                    id: 78,
-                    kabupaten: "Kab. Kulon Progo",
-                    provinsi: "DI Yogyakarta",
-                    lat: -7.8327,
-                    lng: 110.1627,
-                },
-                {
-                    id: 79,
-                    kabupaten: "Kab. Gunung Kidul",
-                    provinsi: "DI Yogyakarta",
-                    lat: -7.9631,
-                    lng: 110.5975,
-                },
-                // JAWA TIMUR
-                {
-                    id: 80,
-                    kabupaten: "Kota Surabaya",
-                    provinsi: "Jawa Timur",
-                    lat: -7.2575,
-                    lng: 112.7521,
-                },
-                {
-                    id: 81,
-                    kabupaten: "Kab. Sidoarjo",
-                    provinsi: "Jawa Timur",
-                    lat: -7.4472,
-                    lng: 112.7185,
-                },
-                {
-                    id: 82,
-                    kabupaten: "Kab. Gresik",
-                    provinsi: "Jawa Timur",
-                    lat: -7.1571,
-                    lng: 112.6502,
-                },
-                {
-                    id: 83,
-                    kabupaten: "Kab. Mojokerto",
-                    provinsi: "Jawa Timur",
-                    lat: -7.4692,
-                    lng: 112.4348,
-                },
-                {
-                    id: 84,
-                    kabupaten: "Kota Mojokerto",
-                    provinsi: "Jawa Timur",
-                    lat: -7.4726,
-                    lng: 112.4343,
-                },
-                {
-                    id: 85,
-                    kabupaten: "Kab. Jombang",
-                    provinsi: "Jawa Timur",
-                    lat: -7.5465,
-                    lng: 112.2419,
-                },
-                {
-                    id: 86,
-                    kabupaten: "Kab. Lamongan",
-                    provinsi: "Jawa Timur",
-                    lat: -7.1137,
-                    lng: 112.4153,
-                },
-                {
-                    id: 87,
-                    kabupaten: "Kab. Tuban",
-                    provinsi: "Jawa Timur",
-                    lat: -6.8993,
-                    lng: 112.0497,
-                },
-                {
-                    id: 88,
-                    kabupaten: "Kab. Bojonegoro",
-                    provinsi: "Jawa Timur",
-                    lat: -7.1503,
-                    lng: 111.8818,
-                },
-                {
-                    id: 89,
-                    kabupaten: "Kab. Ngawi",
-                    provinsi: "Jawa Timur",
-                    lat: -7.4025,
-                    lng: 111.4488,
-                },
-                {
-                    id: 90,
-                    kabupaten: "Kab. Madiun",
-                    provinsi: "Jawa Timur",
-                    lat: -7.6298,
-                    lng: 111.5232,
-                },
-                {
-                    id: 91,
-                    kabupaten: "Kota Madiun",
-                    provinsi: "Jawa Timur",
-                    lat: -7.6298,
-                    lng: 111.5232,
-                },
-                {
-                    id: 92,
-                    kabupaten: "Kab. Nganjuk",
-                    provinsi: "Jawa Timur",
-                    lat: -7.6045,
-                    lng: 111.9044,
-                },
-                {
-                    id: 93,
-                    kabupaten: "Kab. Kediri",
-                    provinsi: "Jawa Timur",
-                    lat: -7.8275,
-                    lng: 112.0087,
-                },
-                {
-                    id: 94,
-                    kabupaten: "Kota Kediri",
-                    provinsi: "Jawa Timur",
-                    lat: -7.8479,
-                    lng: 112.0171,
-                },
-                {
-                    id: 95,
-                    kabupaten: "Kab. Blitar",
-                    provinsi: "Jawa Timur",
-                    lat: -8.0955,
-                    lng: 112.1683,
-                },
-                {
-                    id: 96,
-                    kabupaten: "Kota Blitar",
-                    provinsi: "Jawa Timur",
-                    lat: -8.0955,
-                    lng: 112.1683,
-                },
-                {
-                    id: 97,
-                    kabupaten: "Kab. Tulungagung",
-                    provinsi: "Jawa Timur",
-                    lat: -8.0651,
-                    lng: 111.9038,
-                },
-                {
-                    id: 98,
-                    kabupaten: "Kab. Trenggalek",
-                    provinsi: "Jawa Timur",
-                    lat: -8.054,
-                    lng: 111.7097,
-                },
-                {
-                    id: 99,
-                    kabupaten: "Kab. Ponorogo",
-                    provinsi: "Jawa Timur",
-                    lat: -7.8672,
-                    lng: 111.4668,
-                },
-                {
-                    id: 100,
-                    kabupaten: "Kab. Pacitan",
-                    provinsi: "Jawa Timur",
-                    lat: -8.2,
-                    lng: 111.101,
-                },
-                {
-                    id: 101,
-                    kabupaten: "Kab. Malang",
-                    provinsi: "Jawa Timur",
-                    lat: -8.0652,
-                    lng: 112.4286,
-                },
-                {
-                    id: 102,
-                    kabupaten: "Kota Malang",
-                    provinsi: "Jawa Timur",
-                    lat: -7.9666,
-                    lng: 112.6326,
-                },
-                {
-                    id: 103,
-                    kabupaten: "Kota Batu",
-                    provinsi: "Jawa Timur",
-                    lat: -7.8707,
-                    lng: 112.5285,
-                },
-                {
-                    id: 104,
-                    kabupaten: "Kab. Pasuruan",
-                    provinsi: "Jawa Timur",
-                    lat: -7.6455,
-                    lng: 112.9076,
-                },
-                {
-                    id: 105,
-                    kabupaten: "Kota Pasuruan",
-                    provinsi: "Jawa Timur",
-                    lat: -7.6451,
-                    lng: 112.9055,
-                },
-                {
-                    id: 106,
-                    kabupaten: "Kab. Probolinggo",
-                    provinsi: "Jawa Timur",
-                    lat: -7.7543,
-                    lng: 113.2159,
-                },
-                {
-                    id: 107,
-                    kabupaten: "Kota Probolinggo",
-                    provinsi: "Jawa Timur",
-                    lat: -7.7543,
-                    lng: 113.2159,
-                },
-                {
-                    id: 108,
-                    kabupaten: "Kab. Lumajang",
-                    provinsi: "Jawa Timur",
-                    lat: -8.1324,
-                    lng: 113.2227,
-                },
-                {
-                    id: 109,
-                    kabupaten: "Kab. Jember",
-                    provinsi: "Jawa Timur",
-                    lat: -8.1724,
-                    lng: 113.7022,
-                },
-                {
-                    id: 110,
-                    kabupaten: "Kab. Banyuwangi",
-                    provinsi: "Jawa Timur",
-                    lat: -8.2192,
-                    lng: 114.3691,
-                },
-                {
-                    id: 111,
-                    kabupaten: "Kab. Bondowoso",
-                    provinsi: "Jawa Timur",
-                    lat: -7.9083,
-                    lng: 113.8222,
-                },
-                {
-                    id: 112,
-                    kabupaten: "Kab. Situbondo",
-                    provinsi: "Jawa Timur",
-                    lat: -7.7068,
-                    lng: 114.0088,
-                },
-                {
-                    id: 113,
-                    kabupaten: "Kab. Sampang",
-                    provinsi: "Jawa Timur",
-                    lat: -7.1965,
-                    lng: 113.2439,
-                },
-                {
-                    id: 114,
-                    kabupaten: "Kab. Pamekasan",
-                    provinsi: "Jawa Timur",
-                    lat: -7.1575,
-                    lng: 113.4765,
-                },
-                {
-                    id: 115,
-                    kabupaten: "Kab. Sumenep",
-                    provinsi: "Jawa Timur",
-                    lat: -7.0168,
-                    lng: 113.8599,
-                },
-                {
-                    id: 116,
-                    kabupaten: "Kab. Bangkalan",
-                    provinsi: "Jawa Timur",
-                    lat: -7.0395,
-                    lng: 112.7303,
-                },
-                // SUMATERA UTARA
-                {
-                    id: 117,
-                    kabupaten: "Kota Medan",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.5952,
-                    lng: 98.6722,
-                },
-                {
-                    id: 118,
-                    kabupaten: "Kab. Deli Serdang",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.5289,
-                    lng: 98.8428,
-                },
-                {
-                    id: 119,
-                    kabupaten: "Kab. Langkat",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.7925,
-                    lng: 98.3046,
-                },
-                {
-                    id: 120,
-                    kabupaten: "Kab. Serdang Bedagai",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.3629,
-                    lng: 99.0273,
-                },
-                {
-                    id: 121,
-                    kabupaten: "Kota Binjai",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.6013,
-                    lng: 98.4851,
-                },
-                {
-                    id: 122,
-                    kabupaten: "Kab. Karo",
-                    provinsi: "Sumatera Utara",
-                    lat: 3.129,
-                    lng: 98.3834,
-                },
-                {
-                    id: 123,
-                    kabupaten: "Kab. Simalungun",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.9594,
-                    lng: 99.0576,
-                },
-                {
-                    id: 124,
-                    kabupaten: "Kota Pematangsiantar",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.9594,
-                    lng: 99.0576,
-                },
-                {
-                    id: 125,
-                    kabupaten: "Kab. Toba",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.3524,
-                    lng: 99.0892,
-                },
-                {
-                    id: 126,
-                    kabupaten: "Kota Sibolga",
-                    provinsi: "Sumatera Utara",
-                    lat: 1.742,
-                    lng: 98.7793,
-                },
-                {
-                    id: 127,
-                    kabupaten: "Kab. Tapanuli Utara",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.088,
-                    lng: 98.9882,
-                },
-                {
-                    id: 128,
-                    kabupaten: "Kab. Tapanuli Tengah",
-                    provinsi: "Sumatera Utara",
-                    lat: 1.6847,
-                    lng: 98.7697,
-                },
-                {
-                    id: 129,
-                    kabupaten: "Kab. Tapanuli Selatan",
-                    provinsi: "Sumatera Utara",
-                    lat: 1.3289,
-                    lng: 99.2769,
-                },
-                {
-                    id: 130,
-                    kabupaten: "Kota Padangsidimpuan",
-                    provinsi: "Sumatera Utara",
-                    lat: 1.3893,
-                    lng: 99.2718,
-                },
-                {
-                    id: 131,
-                    kabupaten: "Kab. Mandailing Natal",
-                    provinsi: "Sumatera Utara",
-                    lat: 0.6059,
-                    lng: 99.358,
-                },
-                {
-                    id: 132,
-                    kabupaten: "Kab. Asahan",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.6895,
-                    lng: 99.855,
-                },
-                {
-                    id: 133,
-                    kabupaten: "Kota Tanjungbalai",
-                    provinsi: "Sumatera Utara",
-                    lat: 2.9618,
-                    lng: 99.8036,
-                },
-                // SUMATERA BARAT
-                {
-                    id: 134,
-                    kabupaten: "Kota Padang",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.9471,
-                    lng: 100.4172,
-                },
-                {
-                    id: 135,
-                    kabupaten: "Kota Padang Panjang",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.4665,
-                    lng: 100.4053,
-                },
-                {
-                    id: 136,
-                    kabupaten: "Kab. Agam",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.2387,
-                    lng: 100.0049,
-                },
-                {
-                    id: 137,
-                    kabupaten: "Kota Bukittinggi",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.3055,
-                    lng: 100.3694,
-                },
-                {
-                    id: 138,
-                    kabupaten: "Kab. Lima Puluh Kota",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.3555,
-                    lng: 100.6693,
-                },
-                {
-                    id: 139,
-                    kabupaten: "Kab. Tanah Datar",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.4566,
-                    lng: 100.6016,
-                },
-                {
-                    id: 140,
-                    kabupaten: "Kab. Pesisir Selatan",
-                    provinsi: "Sumatera Barat",
-                    lat: -1.8626,
-                    lng: 100.5655,
-                },
-                {
-                    id: 141,
-                    kabupaten: "Kab. Solok",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.7958,
-                    lng: 100.7153,
-                },
-                {
-                    id: 142,
-                    kabupaten: "Kota Solok",
-                    provinsi: "Sumatera Barat",
-                    lat: -0.799,
-                    lng: 100.66,
-                },
-                // RIAU
-                {
-                    id: 143,
-                    kabupaten: "Kota Pekanbaru",
-                    provinsi: "Riau",
-                    lat: 0.5071,
-                    lng: 101.4478,
-                },
-                {
-                    id: 144,
-                    kabupaten: "Kab. Kampar",
-                    provinsi: "Riau",
-                    lat: 0.3578,
-                    lng: 101.2145,
-                },
-                {
-                    id: 145,
-                    kabupaten: "Kab. Rokan Hulu",
-                    provinsi: "Riau",
-                    lat: 0.919,
-                    lng: 100.6371,
-                },
-                {
-                    id: 146,
-                    kabupaten: "Kab. Rokan Hilir",
-                    provinsi: "Riau",
-                    lat: 2.153,
-                    lng: 100.9032,
-                },
-                {
-                    id: 147,
-                    kabupaten: "Kab. Siak",
-                    provinsi: "Riau",
-                    lat: 1.1254,
-                    lng: 102.001,
-                },
-                {
-                    id: 148,
-                    kabupaten: "Kab. Pelalawan",
-                    provinsi: "Riau",
-                    lat: 0.0004,
-                    lng: 102.1184,
-                },
-                {
-                    id: 149,
-                    kabupaten: "Kab. Indragiri Hulu",
-                    provinsi: "Riau",
-                    lat: -0.342,
-                    lng: 102.5306,
-                },
-                {
-                    id: 150,
-                    kabupaten: "Kab. Indragiri Hilir",
-                    provinsi: "Riau",
-                    lat: -0.3414,
-                    lng: 103.4073,
-                },
-                {
-                    id: 151,
-                    kabupaten: "Kab. Bengkalis",
-                    provinsi: "Riau",
-                    lat: 1.4695,
-                    lng: 102.1055,
-                },
-                {
-                    id: 152,
-                    kabupaten: "Kota Dumai",
-                    provinsi: "Riau",
-                    lat: 1.6672,
-                    lng: 101.4472,
-                },
-                // KEPULAUAN RIAU
-                {
-                    id: 153,
-                    kabupaten: "Kota Batam",
-                    provinsi: "Kepulauan Riau",
-                    lat: 1.13,
-                    lng: 104.0537,
-                },
-                {
-                    id: 154,
-                    kabupaten: "Kota Tanjungpinang",
-                    provinsi: "Kepulauan Riau",
-                    lat: 0.919,
-                    lng: 104.4431,
-                },
-                {
-                    id: 155,
-                    kabupaten: "Kab. Bintan",
-                    provinsi: "Kepulauan Riau",
-                    lat: 1.1205,
-                    lng: 104.4854,
-                },
-                {
-                    id: 156,
-                    kabupaten: "Kab. Karimun",
-                    provinsi: "Kepulauan Riau",
-                    lat: 1.0052,
-                    lng: 103.3943,
-                },
-                {
-                    id: 157,
-                    kabupaten: "Kab. Lingga",
-                    provinsi: "Kepulauan Riau",
-                    lat: 0.1932,
-                    lng: 104.6123,
-                },
-                // SUMATERA SELATAN
-                {
-                    id: 158,
-                    kabupaten: "Kota Palembang",
-                    provinsi: "Sumatera Selatan",
-                    lat: -2.9761,
-                    lng: 104.7754,
-                },
-                {
-                    id: 159,
-                    kabupaten: "Kab. Ogan Komering Ilir",
-                    provinsi: "Sumatera Selatan",
-                    lat: -3.5026,
-                    lng: 105.0,
-                },
-                {
-                    id: 160,
-                    kabupaten: "Kab. Ogan Komering Ulu",
-                    provinsi: "Sumatera Selatan",
-                    lat: -4.0298,
-                    lng: 104.0456,
-                },
-                {
-                    id: 161,
-                    kabupaten: "Kab. Muara Enim",
-                    provinsi: "Sumatera Selatan",
-                    lat: -3.6581,
-                    lng: 103.7544,
-                },
-                {
-                    id: 162,
-                    kabupaten: "Kab. Musi Banyuasin",
-                    provinsi: "Sumatera Selatan",
-                    lat: -2.5591,
-                    lng: 104.231,
-                },
-                {
-                    id: 163,
-                    kabupaten: "Kab. Musi Rawas",
-                    provinsi: "Sumatera Selatan",
-                    lat: -3.0978,
-                    lng: 103.1219,
-                },
-                {
-                    id: 164,
-                    kabupaten: "Kota Prabumulih",
-                    provinsi: "Sumatera Selatan",
-                    lat: -3.4288,
-                    lng: 104.2336,
-                },
-                // LAMPUNG
-                {
-                    id: 165,
-                    kabupaten: "Kota Bandar Lampung",
-                    provinsi: "Lampung",
-                    lat: -5.3971,
-                    lng: 105.2668,
-                },
-                {
-                    id: 166,
-                    kabupaten: "Kab. Lampung Selatan",
-                    provinsi: "Lampung",
-                    lat: -5.6282,
-                    lng: 105.55,
-                },
-                {
-                    id: 167,
-                    kabupaten: "Kab. Lampung Tengah",
-                    provinsi: "Lampung",
-                    lat: -4.824,
-                    lng: 105.2498,
-                },
-                {
-                    id: 168,
-                    kabupaten: "Kab. Lampung Utara",
-                    provinsi: "Lampung",
-                    lat: -4.822,
-                    lng: 104.9064,
-                },
-                {
-                    id: 169,
-                    kabupaten: "Kab. Lampung Barat",
-                    provinsi: "Lampung",
-                    lat: -5.0218,
-                    lng: 104.1649,
-                },
-                {
-                    id: 170,
-                    kabupaten: "Kab. Tanggamus",
-                    provinsi: "Lampung",
-                    lat: -5.4748,
-                    lng: 104.8744,
-                },
-                {
-                    id: 171,
-                    kabupaten: "Kota Metro",
-                    provinsi: "Lampung",
-                    lat: -5.1167,
-                    lng: 105.306,
-                },
-                {
-                    id: 172,
-                    kabupaten: "Kab. Way Kanan",
-                    provinsi: "Lampung",
-                    lat: -4.3432,
-                    lng: 104.5456,
-                },
-                {
-                    id: 173,
-                    kabupaten: "Kab. Pringsewu",
-                    provinsi: "Lampung",
-                    lat: -5.3598,
-                    lng: 104.974,
-                },
-                {
-                    id: 174,
-                    kabupaten: "Kab. Mesuji",
-                    provinsi: "Lampung",
-                    lat: -3.9613,
-                    lng: 105.38,
-                },
-                {
-                    id: 175,
-                    kabupaten: "Kab. Tulang Bawang",
-                    provinsi: "Lampung",
-                    lat: -4.2578,
-                    lng: 105.5866,
-                },
-                // BENGKULU
-                {
-                    id: 176,
-                    kabupaten: "Kota Bengkulu",
-                    provinsi: "Bengkulu",
-                    lat: -3.798,
-                    lng: 102.2699,
-                },
-                {
-                    id: 177,
-                    kabupaten: "Kab. Bengkulu Selatan",
-                    provinsi: "Bengkulu",
-                    lat: -4.4506,
-                    lng: 103.0206,
-                },
-                {
-                    id: 178,
-                    kabupaten: "Kab. Rejang Lebong",
-                    provinsi: "Bengkulu",
-                    lat: -3.4584,
-                    lng: 102.5617,
-                },
-                // JAMBI
-                {
-                    id: 179,
-                    kabupaten: "Kota Jambi",
-                    provinsi: "Jambi",
-                    lat: -1.6101,
-                    lng: 103.6131,
-                },
-                {
-                    id: 180,
-                    kabupaten: "Kab. Batanghari",
-                    provinsi: "Jambi",
-                    lat: -1.7453,
-                    lng: 103.0283,
-                },
-                {
-                    id: 181,
-                    kabupaten: "Kab. Kerinci",
-                    provinsi: "Jambi",
-                    lat: -2.0864,
-                    lng: 101.6567,
-                },
-                {
-                    id: 182,
-                    kabupaten: "Kab. Muaro Jambi",
-                    provinsi: "Jambi",
-                    lat: -1.5884,
-                    lng: 103.6427,
-                },
-                {
-                    id: 183,
-                    kabupaten: "Kab. Tanjung Jabung Barat",
-                    provinsi: "Jambi",
-                    lat: -1.0426,
-                    lng: 103.1234,
-                },
-                // KALIMANTAN BARAT
-                {
-                    id: 184,
-                    kabupaten: "Kota Pontianak",
-                    provinsi: "Kalimantan Barat",
-                    lat: -0.0263,
-                    lng: 109.3425,
-                },
-                {
-                    id: 185,
-                    kabupaten: "Kab. Kubu Raya",
-                    provinsi: "Kalimantan Barat",
-                    lat: -0.215,
-                    lng: 109.3699,
-                },
-                {
-                    id: 186,
-                    kabupaten: "Kab. Mempawah",
-                    provinsi: "Kalimantan Barat",
-                    lat: 0.3672,
-                    lng: 108.9865,
-                },
-                {
-                    id: 187,
-                    kabupaten: "Kab. Sambas",
-                    provinsi: "Kalimantan Barat",
-                    lat: 1.3652,
-                    lng: 109.2888,
-                },
-                {
-                    id: 188,
-                    kabupaten: "Kab. Sanggau",
-                    provinsi: "Kalimantan Barat",
-                    lat: 0.1286,
-                    lng: 110.5944,
-                },
-                {
-                    id: 189,
-                    kabupaten: "Kab. Sintang",
-                    provinsi: "Kalimantan Barat",
-                    lat: 0.0742,
-                    lng: 111.4748,
-                },
-                {
-                    id: 190,
-                    kabupaten: "Kab. Kapuas Hulu",
-                    provinsi: "Kalimantan Barat",
-                    lat: 1.0023,
-                    lng: 113.9481,
-                },
-                {
-                    id: 191,
-                    kabupaten: "Kota Singkawang",
-                    provinsi: "Kalimantan Barat",
-                    lat: 0.9025,
-                    lng: 108.9861,
-                },
-                {
-                    id: 192,
-                    kabupaten: "Kab. Ketapang",
-                    provinsi: "Kalimantan Barat",
-                    lat: -1.8303,
-                    lng: 110.0039,
-                },
-                // KALIMANTAN TENGAH
-                {
-                    id: 193,
-                    kabupaten: "Kota Palangka Raya",
-                    provinsi: "Kalimantan Tengah",
-                    lat: -2.2136,
-                    lng: 113.9108,
-                },
-                {
-                    id: 194,
-                    kabupaten: "Kab. Kotawaringin Barat",
-                    provinsi: "Kalimantan Tengah",
-                    lat: -2.198,
-                    lng: 111.6878,
-                },
-                {
-                    id: 195,
-                    kabupaten: "Kab. Kotawaringin Timur",
-                    provinsi: "Kalimantan Tengah",
-                    lat: -2.2088,
-                    lng: 113.0413,
-                },
-                {
-                    id: 196,
-                    kabupaten: "Kab. Kapuas",
-                    provinsi: "Kalimantan Tengah",
-                    lat: -3.0215,
-                    lng: 114.3893,
-                },
-                {
-                    id: 197,
-                    kabupaten: "Kab. Barito Selatan",
-                    provinsi: "Kalimantan Tengah",
-                    lat: -1.9954,
-                    lng: 114.8268,
-                },
-                // KALIMANTAN SELATAN
-                {
-                    id: 198,
-                    kabupaten: "Kota Banjarmasin",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -3.3186,
-                    lng: 114.5944,
-                },
-                {
-                    id: 199,
-                    kabupaten: "Kota Banjarbaru",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -3.4422,
-                    lng: 114.8316,
-                },
-                {
-                    id: 200,
-                    kabupaten: "Kab. Banjar",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -3.5872,
-                    lng: 114.8339,
-                },
-                {
-                    id: 201,
-                    kabupaten: "Kab. Barito Kuala",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.9889,
-                    lng: 114.7617,
-                },
-                {
-                    id: 202,
-                    kabupaten: "Kab. Tanah Laut",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -3.9578,
-                    lng: 115.0,
-                },
-                {
-                    id: 203,
-                    kabupaten: "Kab. Hulu Sungai Selatan",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.5255,
-                    lng: 115.4148,
-                },
-                {
-                    id: 204,
-                    kabupaten: "Kab. Hulu Sungai Tengah",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.3559,
-                    lng: 115.3629,
-                },
-                {
-                    id: 205,
-                    kabupaten: "Kab. Hulu Sungai Utara",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.0765,
-                    lng: 115.2305,
-                },
-                {
-                    id: 206,
-                    kabupaten: "Kab. Tabalong",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.0244,
-                    lng: 115.8714,
-                },
-                {
-                    id: 207,
-                    kabupaten: "Kab. Balangan",
-                    provinsi: "Kalimantan Selatan",
-                    lat: -2.3044,
-                    lng: 115.5066,
-                },
-                // KALIMANTAN TIMUR
-                {
-                    id: 208,
-                    kabupaten: "Kota Samarinda",
-                    provinsi: "Kalimantan Timur",
-                    lat: -0.5021,
-                    lng: 117.1536,
-                },
-                {
-                    id: 209,
-                    kabupaten: "Kota Balikpapan",
-                    provinsi: "Kalimantan Timur",
-                    lat: -1.2654,
-                    lng: 116.8312,
-                },
-                {
-                    id: 210,
-                    kabupaten: "Kab. Kutai Kartanegara",
-                    provinsi: "Kalimantan Timur",
-                    lat: -0.3813,
-                    lng: 116.9879,
-                },
-                {
-                    id: 211,
-                    kabupaten: "Kab. Berau",
-                    provinsi: "Kalimantan Timur",
-                    lat: 2.1564,
-                    lng: 117.4843,
-                },
-                {
-                    id: 212,
-                    kabupaten: "Kab. Kutai Barat",
-                    provinsi: "Kalimantan Timur",
-                    lat: -0.5949,
-                    lng: 115.6593,
-                },
-                {
-                    id: 213,
-                    kabupaten: "Kab. Kutai Timur",
-                    provinsi: "Kalimantan Timur",
-                    lat: 1.0166,
-                    lng: 117.578,
-                },
-                {
-                    id: 214,
-                    kabupaten: "Kota Bontang",
-                    provinsi: "Kalimantan Timur",
-                    lat: 0.1337,
-                    lng: 117.5001,
-                },
-                // KALIMANTAN UTARA
-                {
-                    id: 215,
-                    kabupaten: "Kota Tarakan",
-                    provinsi: "Kalimantan Utara",
-                    lat: 3.2986,
-                    lng: 117.6297,
-                },
-                {
-                    id: 216,
-                    kabupaten: "Kab. Nunukan",
-                    provinsi: "Kalimantan Utara",
-                    lat: 4.1393,
-                    lng: 117.661,
-                },
-                {
-                    id: 217,
-                    kabupaten: "Kab. Bulungan",
-                    provinsi: "Kalimantan Utara",
-                    lat: 2.8437,
-                    lng: 117.2432,
-                },
-                {
-                    id: 218,
-                    kabupaten: "Kab. Malinau",
-                    provinsi: "Kalimantan Utara",
-                    lat: 3.586,
-                    lng: 116.6325,
-                },
-                // SULAWESI SELATAN
-                {
-                    id: 219,
-                    kabupaten: "Kota Makassar",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -5.1477,
-                    lng: 119.4327,
-                },
-                {
-                    id: 220,
-                    kabupaten: "Kab. Gowa",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -5.2904,
-                    lng: 119.6072,
-                },
-                {
-                    id: 221,
-                    kabupaten: "Kab. Maros",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -5.0051,
-                    lng: 119.5793,
-                },
-                {
-                    id: 222,
-                    kabupaten: "Kab. Pangkajene",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -4.7715,
-                    lng: 119.5285,
-                },
-                {
-                    id: 223,
-                    kabupaten: "Kab. Bone",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -4.5407,
-                    lng: 120.3294,
-                },
-                {
-                    id: 224,
-                    kabupaten: "Kab. Bulukumba",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -5.559,
-                    lng: 120.1974,
-                },
-                {
-                    id: 225,
-                    kabupaten: "Kab. Sinjai",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -5.1209,
-                    lng: 120.2456,
-                },
-                {
-                    id: 226,
-                    kabupaten: "Kab. Wajo",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -4.1218,
-                    lng: 120.0347,
-                },
-                {
-                    id: 227,
-                    kabupaten: "Kab. Soppeng",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -4.3459,
-                    lng: 119.8779,
-                },
-                {
-                    id: 228,
-                    kabupaten: "Kota Palopo",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -2.9925,
-                    lng: 120.1969,
-                },
-                {
-                    id: 229,
-                    kabupaten: "Kab. Luwu",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -3.0678,
-                    lng: 120.2527,
-                },
-                {
-                    id: 230,
-                    kabupaten: "Kota Parepare",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -4.0136,
-                    lng: 119.6198,
-                },
-                {
-                    id: 231,
-                    kabupaten: "Kab. Pinrang",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -3.7881,
-                    lng: 119.5821,
-                },
-                {
-                    id: 232,
-                    kabupaten: "Kab. Sidrap",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -3.9481,
-                    lng: 119.8491,
-                },
-                {
-                    id: 233,
-                    kabupaten: "Kab. Enrekang",
-                    provinsi: "Sulawesi Selatan",
-                    lat: -3.567,
-                    lng: 119.789,
-                },
-                // SULAWESI TENGAH
-                {
-                    id: 234,
-                    kabupaten: "Kota Palu",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -0.9003,
-                    lng: 119.8779,
-                },
-                {
-                    id: 235,
-                    kabupaten: "Kab. Donggala",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -0.6782,
-                    lng: 119.7493,
-                },
-                {
-                    id: 236,
-                    kabupaten: "Kab. Sigi",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -1.2068,
-                    lng: 119.9252,
-                },
-                {
-                    id: 237,
-                    kabupaten: "Kab. Poso",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -1.3982,
-                    lng: 120.7537,
-                },
-                {
-                    id: 238,
-                    kabupaten: "Kab. Morowali",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -2.4977,
-                    lng: 121.9497,
-                },
-                {
-                    id: 239,
-                    kabupaten: "Kab. Banggai",
-                    provinsi: "Sulawesi Tengah",
-                    lat: -1.3718,
-                    lng: 122.6038,
-                },
-                {
-                    id: 240,
-                    kabupaten: "Kab. Toli-Toli",
-                    provinsi: "Sulawesi Tengah",
-                    lat: 1.1244,
-                    lng: 120.7918,
-                },
-                {
-                    id: 241,
-                    kabupaten: "Kab. Buol",
-                    provinsi: "Sulawesi Tengah",
-                    lat: 1.1835,
-                    lng: 121.4468,
-                },
-                // SULAWESI UTARA
-                {
-                    id: 242,
-                    kabupaten: "Kota Manado",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.4748,
-                    lng: 124.8421,
-                },
-                {
-                    id: 243,
-                    kabupaten: "Kab. Minahasa",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.3151,
-                    lng: 124.8318,
-                },
-                {
-                    id: 244,
-                    kabupaten: "Kab. Minahasa Utara",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.6289,
-                    lng: 125.0399,
-                },
-                {
-                    id: 245,
-                    kabupaten: "Kab. Minahasa Selatan",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.1082,
-                    lng: 124.636,
-                },
-                {
-                    id: 246,
-                    kabupaten: "Kota Bitung",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.4415,
-                    lng: 125.1984,
-                },
-                {
-                    id: 247,
-                    kabupaten: "Kota Tomohon",
-                    provinsi: "Sulawesi Utara",
-                    lat: 1.3213,
-                    lng: 124.8278,
-                },
-                {
-                    id: 248,
-                    kabupaten: "Kab. Bolaang Mongondow",
-                    provinsi: "Sulawesi Utara",
-                    lat: 0.6,
-                    lng: 124.0,
-                },
-                {
-                    id: 249,
-                    kabupaten: "Kota Kotamobagu",
-                    provinsi: "Sulawesi Utara",
-                    lat: 0.7278,
-                    lng: 124.3043,
-                },
-                // GORONTALO
-                {
-                    id: 250,
-                    kabupaten: "Kota Gorontalo",
-                    provinsi: "Gorontalo",
-                    lat: 0.5387,
-                    lng: 123.0595,
-                },
-                {
-                    id: 251,
-                    kabupaten: "Kab. Gorontalo",
-                    provinsi: "Gorontalo",
-                    lat: 0.6936,
-                    lng: 122.8228,
-                },
-                {
-                    id: 252,
-                    kabupaten: "Kab. Bone Bolango",
-                    provinsi: "Gorontalo",
-                    lat: 0.5548,
-                    lng: 123.2267,
-                },
-                // SULAWESI TENGGARA
-                {
-                    id: 253,
-                    kabupaten: "Kota Kendari",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -3.9747,
-                    lng: 122.5136,
-                },
-                {
-                    id: 254,
-                    kabupaten: "Kab. Konawe",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -3.9777,
-                    lng: 122.5136,
-                },
-                {
-                    id: 255,
-                    kabupaten: "Kab. Kolaka",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -4.0533,
-                    lng: 121.6099,
-                },
-                {
-                    id: 256,
-                    kabupaten: "Kab. Buton",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -5.5348,
-                    lng: 122.574,
-                },
-                {
-                    id: 257,
-                    kabupaten: "Kota Bau-Bau",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -5.4654,
-                    lng: 122.5948,
-                },
-                {
-                    id: 258,
-                    kabupaten: "Kab. Muna",
-                    provinsi: "Sulawesi Tenggara",
-                    lat: -4.7706,
-                    lng: 122.5834,
-                },
-                // MALUKU
-                {
-                    id: 259,
-                    kabupaten: "Kota Ambon",
-                    provinsi: "Maluku",
-                    lat: -3.6557,
-                    lng: 128.1908,
-                },
-                {
-                    id: 260,
-                    kabupaten: "Kab. Maluku Tengah",
-                    provinsi: "Maluku",
-                    lat: -3.3568,
-                    lng: 129.706,
-                },
-                {
-                    id: 261,
-                    kabupaten: "Kab. Seram Bagian Barat",
-                    provinsi: "Maluku",
-                    lat: -3.1453,
-                    lng: 128.3875,
-                },
-                {
-                    id: 262,
-                    kabupaten: "Kab. Maluku Tenggara",
-                    provinsi: "Maluku",
-                    lat: -5.6234,
-                    lng: 132.74,
-                },
-                {
-                    id: 263,
-                    kabupaten: "Kota Tual",
-                    provinsi: "Maluku",
-                    lat: -5.6323,
-                    lng: 132.7529,
-                },
-                {
-                    id: 264,
-                    kabupaten: "Kab. Buru",
-                    provinsi: "Maluku",
-                    lat: -3.282,
-                    lng: 126.6817,
-                },
-                // MALUKU UTARA
-                {
-                    id: 265,
-                    kabupaten: "Kota Ternate",
-                    provinsi: "Maluku Utara",
-                    lat: 0.7876,
-                    lng: 127.382,
-                },
-                {
-                    id: 266,
-                    kabupaten: "Kota Tidore",
-                    provinsi: "Maluku Utara",
-                    lat: 0.6826,
-                    lng: 127.4463,
-                },
-                {
-                    id: 267,
-                    kabupaten: "Kab. Halmahera Barat",
-                    provinsi: "Maluku Utara",
-                    lat: 1.072,
-                    lng: 127.5283,
-                },
-                {
-                    id: 268,
-                    kabupaten: "Kab. Halmahera Utara",
-                    provinsi: "Maluku Utara",
-                    lat: 1.7989,
-                    lng: 128.0476,
-                },
-                {
-                    id: 269,
-                    kabupaten: "Kab. Halmahera Selatan",
-                    provinsi: "Maluku Utara",
-                    lat: -0.5534,
-                    lng: 127.8524,
-                },
-                // PAPUA
-                {
-                    id: 270,
-                    kabupaten: "Kota Jayapura",
-                    provinsi: "Papua",
-                    lat: -2.5916,
-                    lng: 140.669,
-                },
-                {
-                    id: 271,
-                    kabupaten: "Kab. Jayapura",
-                    provinsi: "Papua",
-                    lat: -2.5916,
-                    lng: 140.669,
-                },
-                {
-                    id: 272,
-                    kabupaten: "Kab. Merauke",
-                    provinsi: "Papua Selatan",
-                    lat: -8.4935,
-                    lng: 140.4017,
-                },
-                {
-                    id: 273,
-                    kabupaten: "Kab. Biak Numfor",
-                    provinsi: "Papua",
-                    lat: -1.1763,
-                    lng: 136.0817,
-                },
-                {
-                    id: 274,
-                    kabupaten: "Kab. Nabire",
-                    provinsi: "Papua Tengah",
-                    lat: -3.368,
-                    lng: 135.4918,
-                },
-                {
-                    id: 275,
-                    kabupaten: "Kab. Mimika",
-                    provinsi: "Papua Tengah",
-                    lat: -4.5473,
-                    lng: 136.3939,
-                },
-                {
-                    id: 276,
-                    kabupaten: "Kab. Puncak Jaya",
-                    provinsi: "Papua Tengah",
-                    lat: -3.5429,
-                    lng: 137.1189,
-                },
-                // PAPUA BARAT
-                {
-                    id: 277,
-                    kabupaten: "Kota Sorong",
-                    provinsi: "Papua Barat",
-                    lat: -0.8762,
-                    lng: 131.2571,
-                },
-                {
-                    id: 278,
-                    kabupaten: "Kab. Sorong",
-                    provinsi: "Papua Barat",
-                    lat: -1.0822,
-                    lng: 131.5032,
-                },
-                {
-                    id: 279,
-                    kabupaten: "Kab. Manokwari",
-                    provinsi: "Papua Barat",
-                    lat: -0.86,
-                    lng: 134.062,
-                },
-                {
-                    id: 280,
-                    kabupaten: "Kab. Fak-Fak",
-                    provinsi: "Papua Barat",
-                    lat: -2.9252,
-                    lng: 132.2984,
-                },
-                {
-                    id: 281,
-                    kabupaten: "Kab. Kaimana",
-                    provinsi: "Papua Barat",
-                    lat: -3.6476,
-                    lng: 133.7499,
-                },
-                // NUSA TENGGARA BARAT
-                {
-                    id: 282,
-                    kabupaten: "Kota Mataram",
-                    provinsi: "NTB",
-                    lat: -8.5833,
-                    lng: 116.1167,
-                },
-                {
-                    id: 283,
-                    kabupaten: "Kab. Lombok Barat",
-                    provinsi: "NTB",
-                    lat: -8.6526,
-                    lng: 116.0994,
-                },
-                {
-                    id: 284,
-                    kabupaten: "Kab. Lombok Tengah",
-                    provinsi: "NTB",
-                    lat: -8.717,
-                    lng: 116.2765,
-                },
-                {
-                    id: 285,
-                    kabupaten: "Kab. Lombok Timur",
-                    provinsi: "NTB",
-                    lat: -8.6151,
-                    lng: 116.5869,
-                },
-                {
-                    id: 286,
-                    kabupaten: "Kab. Lombok Utara",
-                    provinsi: "NTB",
-                    lat: -8.3814,
-                    lng: 116.1528,
-                },
-                {
-                    id: 287,
-                    kabupaten: "Kab. Sumbawa Barat",
-                    provinsi: "NTB",
-                    lat: -8.7857,
-                    lng: 116.8977,
-                },
-                {
-                    id: 288,
-                    kabupaten: "Kab. Sumbawa",
-                    provinsi: "NTB",
-                    lat: -8.4889,
-                    lng: 117.4213,
-                },
-                {
-                    id: 289,
-                    kabupaten: "Kab. Dompu",
-                    provinsi: "NTB",
-                    lat: -8.5379,
-                    lng: 118.4628,
-                },
-                {
-                    id: 290,
-                    kabupaten: "Kab. Bima",
-                    provinsi: "NTB",
-                    lat: -8.4565,
-                    lng: 118.7285,
-                },
-                {
-                    id: 291,
-                    kabupaten: "Kota Bima",
-                    provinsi: "NTB",
-                    lat: -8.4655,
-                    lng: 118.7233,
-                },
-                // NUSA TENGGARA TIMUR
-                {
-                    id: 292,
-                    kabupaten: "Kota Kupang",
-                    provinsi: "NTT",
-                    lat: -10.1772,
-                    lng: 123.607,
-                },
-                {
-                    id: 293,
-                    kabupaten: "Kab. Kupang",
-                    provinsi: "NTT",
-                    lat: -10.175,
-                    lng: 123.607,
-                },
-                {
-                    id: 294,
-                    kabupaten: "Kab. Timor Tengah Selatan",
-                    provinsi: "NTT",
-                    lat: -9.7456,
-                    lng: 124.2272,
-                },
-                {
-                    id: 295,
-                    kabupaten: "Kab. Belu",
-                    provinsi: "NTT",
-                    lat: -9.2992,
-                    lng: 124.8736,
-                },
-                {
-                    id: 296,
-                    kabupaten: "Kab. Ende",
-                    provinsi: "NTT",
-                    lat: -8.8505,
-                    lng: 121.6625,
-                },
-                {
-                    id: 297,
-                    kabupaten: "Kab. Manggarai",
-                    provinsi: "NTT",
-                    lat: -8.6068,
-                    lng: 120.4783,
-                },
-                {
-                    id: 298,
-                    kabupaten: "Kab. Sikka",
-                    provinsi: "NTT",
-                    lat: -8.6591,
-                    lng: 122.2121,
-                },
-                {
-                    id: 299,
-                    kabupaten: "Kab. Flores Timur",
-                    provinsi: "NTT",
-                    lat: -8.3316,
-                    lng: 122.9765,
-                },
-                // BALI
-                {
-                    id: 300,
-                    kabupaten: "Kota Denpasar",
-                    provinsi: "Bali",
-                    lat: -8.6705,
-                    lng: 115.2126,
-                },
-                {
-                    id: 301,
-                    kabupaten: "Kab. Badung",
-                    provinsi: "Bali",
-                    lat: -8.6244,
-                    lng: 115.1807,
-                },
-                {
-                    id: 302,
-                    kabupaten: "Kab. Gianyar",
-                    provinsi: "Bali",
-                    lat: -8.5337,
-                    lng: 115.3231,
-                },
-                {
-                    id: 303,
-                    kabupaten: "Kab. Tabanan",
-                    provinsi: "Bali",
-                    lat: -8.5411,
-                    lng: 115.1237,
-                },
-                {
-                    id: 304,
-                    kabupaten: "Kab. Buleleng",
-                    provinsi: "Bali",
-                    lat: -8.1116,
-                    lng: 115.0888,
-                },
-                {
-                    id: 305,
-                    kabupaten: "Kab. Klungkung",
-                    provinsi: "Bali",
-                    lat: -8.5431,
-                    lng: 115.4024,
-                },
-                {
-                    id: 306,
-                    kabupaten: "Kab. Bangli",
-                    provinsi: "Bali",
-                    lat: -8.4578,
-                    lng: 115.3566,
-                },
-                {
-                    id: 307,
-                    kabupaten: "Kab. Karangasem",
-                    provinsi: "Bali",
-                    lat: -8.4536,
-                    lng: 115.6069,
-                },
-                {
-                    id: 308,
-                    kabupaten: "Kab. Jembrana",
-                    provinsi: "Bali",
-                    lat: -8.361,
-                    lng: 114.6238,
-                },
-                // ACEH
-                {
-                    id: 309,
-                    kabupaten: "Kota Banda Aceh",
-                    provinsi: "Aceh",
-                    lat: 5.5577,
-                    lng: 95.3222,
-                },
-                {
-                    id: 310,
-                    kabupaten: "Kab. Aceh Besar",
-                    provinsi: "Aceh",
-                    lat: 5.478,
-                    lng: 95.439,
-                },
-                {
-                    id: 311,
-                    kabupaten: "Kab. Pidie",
-                    provinsi: "Aceh",
-                    lat: 4.9706,
-                    lng: 96.0818,
-                },
-                {
-                    id: 312,
-                    kabupaten: "Kab. Aceh Utara",
-                    provinsi: "Aceh",
-                    lat: 5.1118,
-                    lng: 96.9993,
-                },
-                {
-                    id: 313,
-                    kabupaten: "Kota Lhokseumawe",
-                    provinsi: "Aceh",
-                    lat: 5.1801,
-                    lng: 97.1381,
-                },
-                {
-                    id: 314,
-                    kabupaten: "Kab. Aceh Timur",
-                    provinsi: "Aceh",
-                    lat: 4.5953,
-                    lng: 97.7627,
-                },
-                {
-                    id: 315,
-                    kabupaten: "Kota Langsa",
-                    provinsi: "Aceh",
-                    lat: 4.4683,
-                    lng: 97.9671,
-                },
-                {
-                    id: 316,
-                    kabupaten: "Kab. Aceh Tamiang",
-                    provinsi: "Aceh",
-                    lat: 4.3239,
-                    lng: 97.9888,
-                },
-                {
-                    id: 317,
-                    kabupaten: "Kab. Aceh Selatan",
-                    provinsi: "Aceh",
-                    lat: 3.2929,
-                    lng: 97.203,
-                },
-                {
-                    id: 318,
-                    kabupaten: "Kab. Aceh Barat",
-                    provinsi: "Aceh",
-                    lat: 4.205,
-                    lng: 96.0284,
-                },
-                {
-                    id: 319,
-                    kabupaten: "Kab. Aceh Tengah",
-                    provinsi: "Aceh",
-                    lat: 4.6265,
-                    lng: 96.8019,
-                },
-                {
-                    id: 320,
-                    kabupaten: "Kab. Bener Meriah",
-                    provinsi: "Aceh",
-                    lat: 4.7179,
-                    lng: 96.8527,
-                },
-            ];
-            // Legacy data end — not used
+        // Find nearest location from loaded kecamatan data
+        _findNearestLocation(lat, lng) {
+            if (
+                !this.indonesiaLocations ||
+                this.indonesiaLocations.length === 0
+            )
+                return null;
+            let nearest = null;
+            let minDist = Infinity;
+            for (const loc of this.indonesiaLocations) {
+                const dLat = lat - loc.lat;
+                const dLng = lng - loc.lng;
+                const dist = dLat * dLat + dLng * dLng;
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = loc;
+                }
+            }
+            // Only match if within ~20km (roughly 0.18° at equator)
+            if (minDist > 0.032) return null;
+            return nearest;
         },
 
         // ── Date & Calendar ────────────────────────────────────────────────
@@ -2448,6 +216,7 @@ function ramadhanDashboard() {
                 const isToday = date.getTime() === today.getTime();
                 const isCompleted = this.submittedDays.includes(hijriDay);
                 const isPast = date < today && !isToday;
+                const isPastUnfilled = (isPast || isToday) && !isCompleted;
 
                 days.push({
                     key: "d" + hijriDay,
@@ -2458,6 +227,7 @@ function ramadhanDashboard() {
                     isToday: isToday,
                     isCompleted: isCompleted,
                     isPast: isPast,
+                    isPastUnfilled: isPastUnfilled,
                     dateObj: date,
                 });
             }
@@ -2501,17 +271,19 @@ function ramadhanDashboard() {
         },
 
         // ── Prayer Times ───────────────────────────────────────────────────
-        setPrayerTimes() {
-            const times = {
-                imsak: "04:13",
-                subuh: "04:23",
-                terbit: "05:42",
-                dhuha: "06:15",
-                dzuhur: "11:52",
-                ashar: "15:13",
-                maghrib: "17:55",
-                isya: "19:08",
-            };
+        setPrayerTimes(times) {
+            if (!times) {
+                times = {
+                    imsak: "04:13",
+                    subuh: "04:23",
+                    terbit: "05:42",
+                    dhuha: "06:15",
+                    dzuhur: "11:52",
+                    ashar: "15:13",
+                    maghrib: "17:55",
+                    isya: "19:08",
+                };
+            }
             this.imsakTime = times.imsak;
             this.maghribTime = times.maghrib;
             const now = this.getNowInSelectedTz();
@@ -2612,8 +384,91 @@ function ramadhanDashboard() {
         },
 
         calculatePrayerTimes() {
-            // Re-run setPrayerTimes when location changes (future: use coords for actual calculation)
-            this.setPrayerTimes();
+            const lat = this.userLat || -7.3305;
+            const lng = this.userLng || 108.3508;
+            const now = this.getNowInSelectedTz();
+            const dd = String(now.getDate()).padStart(2, "0");
+            const mm = String(now.getMonth() + 1).padStart(2, "0");
+            const yyyy = now.getFullYear();
+            const dateStr = dd + "-" + mm + "-" + yyyy;
+            // Method 20 = Kementerian Agama Republik Indonesia
+            const url =
+                "https://api.aladhan.com/v1/timings/" +
+                dateStr +
+                "?latitude=" +
+                lat +
+                "&longitude=" +
+                lng +
+                "&method=20";
+            fetch(url)
+                .then((r) => r.json())
+                .then((data) => {
+                    if (
+                        data &&
+                        data.code === 200 &&
+                        data.data &&
+                        data.data.timings
+                    ) {
+                        const t = data.data.timings;
+                        // Imsak = 10 min before Fajr if not provided
+                        const imsak = t.Imsak
+                            ? t.Imsak.split(" ")[0]
+                            : this._subtractMinutes(t.Fajr.split(" ")[0], 10);
+                        const times = {
+                            imsak: imsak,
+                            subuh: t.Fajr.split(" ")[0],
+                            terbit: t.Sunrise.split(" ")[0],
+                            dhuha: this._addMinutes(
+                                t.Sunrise.split(" ")[0],
+                                15,
+                            ),
+                            dzuhur: t.Dhuhr.split(" ")[0],
+                            ashar: t.Asr.split(" ")[0],
+                            maghrib: t.Maghrib.split(" ")[0],
+                            isya: t.Isha.split(" ")[0],
+                        };
+                        this.setPrayerTimes(times);
+                        this.startCountdown();
+                        console.log(
+                            "[Jadwal Sholat] Data dari API Aladhan untuk",
+                            this.cityName || "koordinat",
+                            lat.toFixed(4) + "," + lng.toFixed(4),
+                        );
+                    } else {
+                        console.warn(
+                            "[Jadwal Sholat] Respons API tidak valid, pakai default",
+                        );
+                        this.setPrayerTimes(null);
+                    }
+                })
+                .catch((err) => {
+                    console.warn(
+                        "[Jadwal Sholat] Gagal fetch API, pakai default:",
+                        err,
+                    );
+                    this.setPrayerTimes(null);
+                });
+        },
+
+        _addMinutes(timeStr, mins) {
+            const [h, m] = timeStr.split(":").map(Number);
+            const total = h * 60 + m + mins;
+            return (
+                String(Math.floor(total / 60)).padStart(2, "0") +
+                ":" +
+                String(total % 60).padStart(2, "0")
+            );
+        },
+
+        _subtractMinutes(timeStr, mins) {
+            const [h, m] = timeStr.split(":").map(Number);
+            let total = h * 60 + m - mins;
+            if (total < 0) total += 1440;
+            return (
+                String(Math.floor(total / 60)).padStart(2, "0") +
+                ":" +
+                String(total % 60).padStart(2, "0")
+            );
         },
 
         getTimezoneForLng(lng) {
@@ -2694,6 +549,7 @@ function ramadhanDashboard() {
         },
 
         startCountdown() {
+            if (this._countdownInterval) clearInterval(this._countdownInterval);
             const tick = () => {
                 const now = this.getNowInSelectedTz();
                 const cm = now.getHours() * 60 + now.getMinutes();
@@ -2705,59 +561,591 @@ function ramadhanDashboard() {
                     h + " jam " + m + " menit menuju " + this.nextPrayerName;
             };
             tick();
-            setInterval(tick, 30000);
+            this._countdownInterval = setInterval(tick, 30000);
         },
 
-        // ── Dua & Verse ────────────────────────────────────────────────────
-        setDuas() {
-            this.duas = [
-                {
-                    title: "Doa Niat Puasa",
-                    arabic: "نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هٰذِهِ السَّنَةِ لِلّٰهِ تَعَالَى",
-                    latin: "Nawaitu shauma ghadin 'an adaa-i fardhi syahri ramadhaana haadzihis sanati lillaahi ta'aalaa",
-                    meaning:
-                        "Aku berniat puasa esok hari untuk menunaikan kewajiban di bulan Ramadhan tahun ini karena Allah Ta'ala.",
-                },
-                {
-                    title: "Doa Berbuka Puasa",
-                    arabic: "اَللّٰهُمَّ لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",
-                    latin: "Allahumma laka shumtu wa bika aamantu wa 'ala rizqika afthartu",
-                    meaning:
-                        "Ya Allah, untuk-Mu aku berpuasa, kepada-Mu aku beriman, dan dengan rezeki-Mu aku berbuka.",
-                },
-                {
-                    title: "Doa Setelah Adzan",
-                    arabic: "اَللّٰهُمَّ رَبَّ هٰذِهِ الدَّعْوَةِ التَّامَّةِ وَالصَّلاَةِ الْقَائِمَةِ اٰتِ مُحَمَّدًا الْوَسِيْلَةَ وَالْفَضِيْلَةَ",
-                    latin: "Allahumma rabba haadzihid da'watit taammah, wash sholaatil qoo-imah, aati muhammadanil wasiilata wal fadhiilah",
-                    meaning:
-                        "Ya Allah, Tuhan pemilik seruan yang sempurna ini dan sholat yang akan ditegakkan, berikanlah kepada Muhammad wasilah dan keutamaan.",
-                },
-                {
-                    title: "Doa Lailatul Qadr",
-                    arabic: "اَللّٰهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
-                    latin: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'annii",
-                    meaning:
-                        "Ya Allah, sesungguhnya Engkau Maha Pemaaf dan menyukai maaf, maka maafkanlah aku.",
-                },
+        // ── Doa Collection ───────────────────────────────────────────────
+        async loadDoas() {
+            this.doasLoading = true;
+            try {
+                const res = await fetch("/themes/ramadhan/data/doas.json");
+                if (!res.ok) throw new Error("Failed to load doas");
+                this.allDuas = await res.json();
+            } catch (e) {
+                console.warn("Doa JSON load failed, using fallback:", e);
+                this.allDuas = [
+                    {
+                        id: 1,
+                        title: "Doa Niat Puasa",
+                        category: "ramadhan",
+                        arabic: "نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هٰذِهِ السَّنَةِ لِلّٰهِ تَعَالَى",
+                        latin: "Nawaitu shauma ghadin 'an adaa-i fardhi syahri ramadhaana haadzihis sanati lillaahi ta'aalaa",
+                        translation:
+                            "Aku berniat puasa esok hari untuk menunaikan kewajiban di bulan Ramadhan tahun ini karena Allah Ta'ala.",
+                        source: "Hadits",
+                    },
+                    {
+                        id: 2,
+                        title: "Doa Berbuka Puasa",
+                        category: "ramadhan",
+                        arabic: "اَللّٰهُمَّ لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",
+                        latin: "Allahumma laka shumtu wa bika aamantu wa 'ala rizqika afthartu",
+                        translation:
+                            "Ya Allah, untuk-Mu aku berpuasa, kepada-Mu aku beriman, dan dengan rezeki-Mu aku berbuka.",
+                        source: "HR. Abu Dawud",
+                    },
+                    {
+                        id: 4,
+                        title: "Doa Lailatul Qadr",
+                        category: "ramadhan",
+                        arabic: "اَللّٰهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّيْ",
+                        latin: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'annii",
+                        translation:
+                            "Ya Allah, sesungguhnya Engkau Maha Pemaaf dan menyukai maaf, maka maafkanlah aku.",
+                        source: "HR. Tirmidzi",
+                    },
+                ];
+            }
+
+            // Also keep duas for backward compatibility
+            this.duas = this.allDuas.map((d) => ({
+                title: d.title,
+                arabic: d.arabic,
+                latin: d.latin,
+                meaning: d.translation,
+            }));
+
+            this._buildDoaCategories();
+            this.filterDuas();
+            this.doasLoading = false;
+        },
+
+        _buildDoaCategories() {
+            const catDefs = [
+                { id: "semua", label: "Semua", icon: "📖" },
+                { id: "ramadhan", label: "Ramadhan", icon: "🌙" },
+                { id: "quran", label: "Al-Quran", icon: "📗" },
+                { id: "hadits", label: "Hadits", icon: "📜" },
+                { id: "ibadah", label: "Ibadah", icon: "🕌" },
+                { id: "harian", label: "Harian", icon: "☀️" },
             ];
+            this.doaCategories = catDefs
+                .map((c) => ({
+                    ...c,
+                    count:
+                        c.id === "semua"
+                            ? this.allDuas.length
+                            : this.allDuas.filter((d) => d.category === c.id)
+                                  .length,
+                }))
+                .filter((c) => c.count > 0 || c.id === "semua");
+        },
+
+        filterDuas() {
+            let result = this.allDuas;
+
+            // Category filter
+            if (this.activeDoaCategory !== "semua") {
+                result = result.filter(
+                    (d) => d.category === this.activeDoaCategory,
+                );
+            }
+
+            // Search filter
+            if (this.doaSearch.trim()) {
+                const q = this.doaSearch.trim().toLowerCase();
+                result = result.filter(
+                    (d) =>
+                        d.title.toLowerCase().includes(q) ||
+                        d.latin.toLowerCase().includes(q) ||
+                        d.translation.toLowerCase().includes(q) ||
+                        d.source.toLowerCase().includes(q),
+                );
+            }
+
+            this.filteredDuas = result;
+            this.doaPage = 1;
+            this.paginateDuas();
+        },
+
+        paginateDuas() {
+            this.doaTotalPages = Math.max(
+                1,
+                Math.ceil(this.filteredDuas.length / this.doaPerPage),
+            );
+            if (this.doaPage > this.doaTotalPages)
+                this.doaPage = this.doaTotalPages;
+            const start = (this.doaPage - 1) * this.doaPerPage;
+            this.paginatedDuas = this.filteredDuas.slice(
+                start,
+                start + this.doaPerPage,
+            );
+            this._buildDoaPageNumbers();
+        },
+
+        _buildDoaPageNumbers() {
+            const pages = [];
+            const total = this.doaTotalPages;
+            const cur = this.doaPage;
+            if (total <= 7) {
+                for (let i = 1; i <= total; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                if (cur > 3) pages.push("...");
+                const start = Math.max(2, cur - 1);
+                const end = Math.min(total - 1, cur + 1);
+                for (let i = start; i <= end; i++) pages.push(i);
+                if (cur < total - 2) pages.push("...");
+                pages.push(total);
+            }
+            this.doaPageNumbers = pages;
+        },
+
+        toggleDoaExpand(id) {
+            const idx = this.expandedDoas.indexOf(id);
+            if (idx === -1) {
+                this.expandedDoas.push(id);
+            } else {
+                this.expandedDoas.splice(idx, 1);
+            }
+        },
+
+        getCategoryLabel(catId) {
+            const map = {
+                ramadhan: "Ramadhan",
+                quran: "Al-Quran",
+                hadits: "Hadits",
+                ibadah: "Ibadah",
+                harian: "Harian",
+            };
+            return map[catId] || catId;
         },
 
         setDailyVerse() {
-            const verses = [
+            // Set initial placeholder then fetch from API
+            this.dailyVerse = {
+                text: "Memuat ayat...",
+                arabic: "",
+                source: "",
+                contextLabel: "Ayat Hari Ini",
+                loading: true,
+            };
+            this.fetchContextualVerse();
+        },
+
+        /**
+         * Determines context based on prayer times / time of day:
+         * - 03:00 â€“ Subuh   â†’ sahur
+         * - Subuh â€“ 10:00   â†’ pagi (morning)
+         * - 10:00 â€“ Ashar   â†’ siang (daytime)
+         * - Ashar â€“ Maghrib â†’ sore (afternoon approaching iftar)
+         * - Maghrib â€“ 21:00 â†’ berbuka (iftar)
+         * - 21:00 â€“ 03:00  â†’ malam (night)
+         */
+        getVerseContext() {
+            const now = new Date();
+            const hh = now.getHours();
+            const mm = now.getMinutes();
+            const nowMin = hh * 60 + mm;
+
+            // Try to get prayer times, fall back to reasonable defaults
+            const parseTime = (label) => {
+                const p = this.fullPrayerSchedule.find(
+                    (x) => x.label === label,
+                );
+                if (!p || !p.time) return null;
+                const [h, m] = p.time.split(":").map(Number);
+                return h * 60 + m;
+            };
+
+            const subuhMin = parseTime("Subuh") || 4 * 60 + 30;
+            const asharMin = parseTime("Ashar") || 15 * 60;
+            const maghribMin = parseTime("Maghrib") || 18 * 60;
+
+            if (nowMin >= 3 * 60 && nowMin < subuhMin) return "sahur";
+            if (nowMin >= subuhMin && nowMin < 10 * 60) return "pagi";
+            if (nowMin >= 10 * 60 && nowMin < asharMin) return "siang";
+            if (nowMin >= asharMin && nowMin < maghribMin) return "sore";
+            if (nowMin >= maghribMin && nowMin < 21 * 60) return "berbuka";
+            return "malam";
+        },
+
+        /**
+         * Curated verse lists per context.
+         * Each has surah:ayah identifiers for the al-quran.cloud API.
+         */
+        getContextualVersePool() {
+            return {
+                sahur: {
+                    label: "Waktu Sahur",
+                    refs: [
+                        // === Tema: Sahur & Makan Minum Sebelum Fajar ===
+                        { s: 2, a: 187, note: "QS. Al-Baqarah: 187" }, // makan minum hingga fajar
+                        { s: 97, a: 5, note: "QS. Al-Qadr: 5" }, // malam lailatul qadr hingga terbit fajar
+                        // === Tema: Istighfar & Taubat ===
+                        { s: 51, a: 18, note: "QS. Adz-Dzariyat: 18" }, // waktu sahur memohon ampun
+                        { s: 3, a: 17, note: "QS. Ali Imran: 17" }, // yang memohon ampun di waktu sahur
+                        { s: 3, a: 16, note: "QS. Ali Imran: 16" }, // ampunilah dosa-dosa kami
+                        { s: 3, a: 135, note: "QS. Ali Imran: 135" }, // ingat Allah lalu memohon ampun
+                        { s: 3, a: 147, note: "QS. Ali Imran: 147" }, // doa memohon ampunan
+                        { s: 71, a: 10, note: "QS. Nuh: 10" }, // mohonlah ampun kepada Tuhanmu
+                        { s: 71, a: 11, note: "QS. Nuh: 11" }, // Dia menurunkan hujan lebat
+                        { s: 39, a: 53, note: "QS. Az-Zumar: 53" }, // jangan berputus asa dari rahmat Allah
+                        { s: 66, a: 8, note: "QS. At-Tahrim: 8" }, // bertaubatlah dengan taubat yang murni
+                        { s: 110, a: 3, note: "QS. An-Nasr: 3" }, // bertasbihlah dan mohon ampun
+                        { s: 4, a: 110, note: "QS. An-Nisa: 110" }, // berbuat buruk lalu memohon ampun
+                        { s: 11, a: 3, note: "QS. Hud: 3" }, // memohon ampun lalu bertaubat
+                        { s: 11, a: 90, note: "QS. Hud: 90" }, // mohon ampun lalu bertaubat, Tuhanku Maha Penyayang
+                        { s: 11, a: 114, note: "QS. Hud: 114" }, // kebaikan menghapus keburukan
+                        { s: 4, a: 106, note: "QS. An-Nisa: 106" }, // mohonlah ampun kepada Allah
+                        { s: 47, a: 19, note: "QS. Muhammad: 19" }, // mohonlah ampun atas dosamu
+                        // === Tema: Bangun Malam & Qiyamul Lail ===
+                        { s: 73, a: 2, note: "QS. Al-Muzzammil: 2" }, // shalat malam
+                        { s: 73, a: 4, note: "QS. Al-Muzzammil: 4" }, // bacalah Al-Quran dengan tartil
+                        { s: 73, a: 6, note: "QS. Al-Muzzammil: 6" }, // bangun malam lebih kuat
+                        { s: 76, a: 26, note: "QS. Al-Insan: 26" }, // sujudlah dan bertasbihlah semalam
+                        { s: 17, a: 79, note: "QS. Al-Isra: 79" }, // tahajjud sebagai tambahan
+                        { s: 32, a: 16, note: "QS. As-Sajdah: 16" }, // lambung jauh dari tempat tidur
+                        // === Tema: Tasbih Sebelum Fajar ===
+                        { s: 52, a: 49, note: "QS. At-Tur: 49" }, // bertasbihlah di waktu malam
+                        { s: 20, a: 130, note: "QS. Taha: 130" }, // bertasbihlah sebelum terbit matahari
+                        { s: 50, a: 39, note: "QS. Qaf: 39" }, // bertasbihlah sebelum terbit matahari
+                        { s: 50, a: 40, note: "QS. Qaf: 40" }, // bertasbihlah di waktu malam dan setelah sujud
+                        { s: 52, a: 48, note: "QS. At-Tur: 48" }, // bertasbihlah ketika bangun
+                        { s: 40, a: 55, note: "QS. Ghafir: 55" }, // bertasbihlah pagi dan petang
+                        { s: 3, a: 41, note: "QS. Ali Imran: 41" }, // berdzikirlah dan bertasbihlah
+                        // === Tema: Rahmat & Harapan Fajar ===
+                        { s: 6, a: 54, note: "QS. Al-An'am: 54" }, // Tuhanmu telah menetapkan rahmat
+                        { s: 39, a: 9, note: "QS. Az-Zumar: 9" }, // yang beribadah di waktu malam
+                        { s: 25, a: 64, note: "QS. Al-Furqan: 64" }, // yang bermalam dengan bersujud
+                        { s: 51, a: 17, note: "QS. Adz-Dzariyat: 17" }, // sedikit sekali tidur di waktu malam
+                    ],
+                },
+                pagi: {
+                    label: "Pagi Hari",
+                    refs: [
+                        // === Tema: Semangat & Kemudahan ===
+                        { s: 94, a: 5, note: "QS. Al-Insyirah: 5" }, // bersama kesulitan ada kemudahan
+                        { s: 94, a: 6, note: "QS. Al-Insyirah: 6" }, // bersama kesulitan ada kemudahan (2)
+                        { s: 94, a: 7, note: "QS. Al-Insyirah: 7" }, // apabila engkau telah selesai, bersungguh-sungguhlah
+                        { s: 93, a: 3, note: "QS. Ad-Dhuha: 3" }, // Tuhanmu tidak meninggalkanmu
+                        { s: 93, a: 4, note: "QS. Ad-Dhuha: 4" }, // akhirat lebih baik dari permulaan
+                        { s: 93, a: 5, note: "QS. Ad-Dhuha: 5" }, // kelak Tuhanmu pasti memberimu
+                        { s: 93, a: 11, note: "QS. Ad-Dhuha: 11" }, // nikmat Tuhanmu ceritakanlah
+                        // === Tema: Tawakkal & Ketergantungan pada Allah ===
+                        { s: 65, a: 3, note: "QS. At-Talaq: 3" }, // barangsiapa bertawakal
+                        { s: 3, a: 159, note: "QS. Ali Imran: 159" }, // bertawakkallah kepada Allah
+                        { s: 8, a: 2, note: "QS. Al-Anfal: 2" }, // hati bergetar ketika disebut nama Allah
+                        { s: 9, a: 51, note: "QS. At-Taubah: 51" }, // tidak menimpa kami kecuali yang Allah tetapkan
+                        { s: 14, a: 12, note: "QS. Ibrahim: 12" }, // hanya kepada Allah kami bertawakkal
+                        { s: 33, a: 3, note: "QS. Al-Ahzab: 3" }, // bertawakkallah kepada Allah
+                        { s: 12, a: 67, note: "QS. Yusuf: 67" }, // hanya kepada Allah aku bertawakkal
+                        // === Tema: Sabar & Keteguhan ===
+                        { s: 2, a: 153, note: "QS. Al-Baqarah: 153" }, // minta tolong dengan sabar dan shalat
+                        { s: 2, a: 286, note: "QS. Al-Baqarah: 286" }, // Allah tidak membebani
+                        { s: 3, a: 139, note: "QS. Ali Imran: 139" }, // jangan bersedih
+                        { s: 3, a: 200, note: "QS. Ali Imran: 200" }, // bersabarlah dan kuatkanlah
+                        { s: 8, a: 46, note: "QS. Al-Anfal: 46" }, // bersabarlah, Allah bersama orang sabar
+                        { s: 39, a: 10, note: "QS. Az-Zumar: 10" }, // orang sabar diberi pahala tanpa batas
+                        { s: 16, a: 96, note: "QS. An-Nahl: 96" }, // Allah membalas yang sabar
+                        { s: 2, a: 155, note: "QS. Al-Baqarah: 155" }, // Kami menguji dengan ketakutan dan kelaparan
+                        { s: 2, a: 156, note: "QS. Al-Baqarah: 156" }, // yang mengatakan inna lillahi wa inna ilaihi raji'un
+                        { s: 2, a: 157, note: "QS. Al-Baqarah: 157" }, // mereka mendapat shalawat dan rahmat
+                        // === Tema: Dzikir & Ketenangan ===
+                        { s: 2, a: 152, note: "QS. Al-Baqarah: 152" }, // ingatlah Aku niscaya Aku ingat kamu
+                        { s: 13, a: 28, note: "QS. Ar-Ra'd: 28" }, // dzikrullah hati menjadi tenteram
+                        { s: 33, a: 41, note: "QS. Al-Ahzab: 41" }, // berdzikirlah yang sebanyak-banyaknya
+                        { s: 33, a: 42, note: "QS. Al-Ahzab: 42" }, // bertasbihlah pagi dan petang
+                        { s: 57, a: 4, note: "QS. Al-Hadid: 4" }, // Dia bersama kamu di mana saja
+                        { s: 10, a: 62, note: "QS. Yunus: 62" }, // wali Allah tidak ada rasa takut
+                        { s: 10, a: 63, note: "QS. Yunus: 63" }, // bagi mereka kabar gembira
+                        // === Tema: Berjuang di Jalan Allah ===
+                        { s: 29, a: 69, note: "QS. Al-Ankabut: 69" }, // orang yang berjuang di jalan Kami
+                        { s: 29, a: 2, note: "QS. Al-Ankabut: 2" }, // manusia berkata kami beriman tanpa diuji
+                        { s: 29, a: 3, note: "QS. Al-Ankabut: 3" }, // Allah menguji orang-orang sebelum mereka
+                        { s: 47, a: 31, note: "QS. Muhammad: 31" }, // Kami menguji untuk mengetahui yang berjuang
+                        { s: 21, a: 35, note: "QS. Al-Anbiya: 35" }, // setiap jiwa akan merasakan mati
+                    ],
+                },
+                siang: {
+                    label: "Siang Hari",
+                    refs: [
+                        // === Tema: Puasa & Ramadhan ===
+                        { s: 2, a: 183, note: "QS. Al-Baqarah: 183" }, // diwajibkan puasa
+                        { s: 2, a: 184, note: "QS. Al-Baqarah: 184" }, // puasa hari-hari tertentu
+                        { s: 2, a: 185, note: "QS. Al-Baqarah: 185" }, // bulan Ramadhan Al-Quran diturunkan
+                        { s: 2, a: 197, note: "QS. Al-Baqarah: 197" }, // sebaik-baik bekal adalah takwa
+                        // === Tema: Amal Saleh & Kebaikan ===
+                        { s: 16, a: 97, note: "QS. An-Nahl: 97" }, // amal saleh hidup yang baik
+                        { s: 2, a: 195, note: "QS. Al-Baqarah: 195" }, // berbuat baiklah
+                        { s: 2, a: 267, note: "QS. Al-Baqarah: 267" }, // infakkan yang baik-baik
+                        { s: 2, a: 261, note: "QS. Al-Baqarah: 261" }, // perumpamaan infak 700 kali lipat
+                        { s: 2, a: 262, note: "QS. Al-Baqarah: 262" }, // berinfak tanpa menyebut-nyebut
+                        { s: 2, a: 271, note: "QS. Al-Baqarah: 271" }, // sedekah secara tersembunyi
+                        { s: 2, a: 274, note: "QS. Al-Baqarah: 274" }, // berinfak malam dan siang
+                        { s: 3, a: 92, note: "QS. Ali Imran: 92" }, // tidak akan meraih kebaikan sampai menafkahkan
+                        { s: 57, a: 18, note: "QS. Al-Hadid: 18" }, // bersedekah akan dilipatgandakan
+                        { s: 73, a: 20, note: "QS. Al-Muzzammil: 20" }, // bacalah Al-Quran, shalat, zakat
+                        { s: 76, a: 8, note: "QS. Al-Insan: 8" }, // memberi makan orang miskin, yatim, tawanan
+                        { s: 76, a: 9, note: "QS. Al-Insan: 9" }, // memberi makan karena Allah semata
+                        // === Tema: Akhlak & Persaudaraan ===
+                        { s: 49, a: 10, note: "QS. Al-Hujurat: 10" }, // orang mukmin bersaudara
+                        { s: 49, a: 11, note: "QS. Al-Hujurat: 11" }, // jangan mengolok-olok
+                        { s: 49, a: 12, note: "QS. Al-Hujurat: 12" }, // jauhilah banyak prasangka buruk
+                        { s: 49, a: 13, note: "QS. Al-Hujurat: 13" }, // paling mulia yang paling bertakwa
+                        { s: 31, a: 17, note: "QS. Luqman: 17" }, // shalat, amar makruf, sabar
+                        { s: 31, a: 18, note: "QS. Luqman: 18" }, // jangan sombong
+                        { s: 31, a: 19, note: "QS. Luqman: 19" }, // sederhanalah dalam berjalan dan lunakkan suara
+                        { s: 41, a: 34, note: "QS. Fussilat: 34" }, // balaslah keburukan dengan kebaikan
+                        { s: 5, a: 2, note: "QS. Al-Ma'idah: 2" }, // tolong-menolong dalam kebaikan
+                        { s: 5, a: 8, note: "QS. Al-Ma'idah: 8" }, // berlaku adil
+                        { s: 60, a: 8, note: "QS. Al-Mumtahanah: 8" }, // berbuat baik kepada yang tidak memusuhi
+                        { s: 16, a: 90, note: "QS. An-Nahl: 90" }, // berlaku adil dan berbuat ihsan
+                        // === Tema: Ilmu & Menasihati ===
+                        { s: 103, a: 2, note: "QS. Al-Asr: 2" }, // manusia dalam kerugian
+                        { s: 103, a: 3, note: "QS. Al-Asr: 3" }, // saling menasihati kebenaran
+                        { s: 13, a: 11, note: "QS. Ar-Ra'd: 11" }, // Allah tidak mengubah keadaan suatu kaum
+                        { s: 58, a: 11, note: "QS. Al-Mujadalah: 11" }, // Allah mengangkat derajat orang berilmu
+                        { s: 20, a: 114, note: "QS. Taha: 114" }, // Ya Tuhanku tambahkanlah ilmu kepadaku
+                        { s: 39, a: 9, note: "QS. Az-Zumar: 9" }, // apakah sama yang berilmu dan tidak
+                        { s: 96, a: 1, note: "QS. Al-Alaq: 1" }, // bacalah dengan nama Tuhanmu
+                        { s: 96, a: 3, note: "QS. Al-Alaq: 3" }, // bacalah, Tuhanmu Maha Mulia
+                        { s: 96, a: 4, note: "QS. Al-Alaq: 4" }, // yang mengajar dengan pena
+                        { s: 96, a: 5, note: "QS. Al-Alaq: 5" }, // mengajarkan manusia apa yang tidak diketahui
+                        // === Tema: Beriman & Bertakwa ===
+                        { s: 23, a: 1, note: "QS. Al-Mu'minun: 1" }, // beruntunglah orang-orang beriman
+                        { s: 23, a: 2, note: "QS. Al-Mu'minun: 2" }, // yang khusyuk dalam shalatnya
+                        { s: 23, a: 3, note: "QS. Al-Mu'minun: 3" }, // yang menjauhkan diri dari perbuatan sia-sia
+                        { s: 23, a: 4, note: "QS. Al-Mu'minun: 4" }, // yang menunaikan zakat
+                        { s: 23, a: 8, note: "QS. Al-Mu'minun: 8" }, // yang memelihara amanat dan janjinya
+                        { s: 8, a: 2, note: "QS. Al-Anfal: 2" }, // hati bergetar ketika disebut nama Allah
+                        { s: 8, a: 3, note: "QS. Al-Anfal: 3" }, // yang menegakkan shalat dan berinfak
+                        { s: 8, a: 4, note: "QS. Al-Anfal: 4" }, // itulah orang-orang beriman yang sebenarnya
+                    ],
+                },
+                sore: {
+                    label: "Menjelang Berbuka",
+                    refs: [
+                        // === Tema: Allah Dekat & Mengabulkan Doa ===
+                        { s: 2, a: 186, note: "QS. Al-Baqarah: 186" }, // Aku dekat, mengabulkan doa
+                        { s: 40, a: 60, note: "QS. Ghafir: 60" }, // berdoalah kepada-Ku
+                        { s: 27, a: 62, note: "QS. An-Naml: 62" }, // mengabulkan doa orang yang terdesak
+                        { s: 42, a: 26, note: "QS. Asy-Syura: 26" }, // memperkenankan doa orang beriman
+                        { s: 7, a: 55, note: "QS. Al-A'raf: 55" }, // berdoalah dengan rendah hati
+                        { s: 7, a: 56, note: "QS. Al-A'raf: 56" }, // berdoalah dengan rasa takut dan harap
+                        { s: 2, a: 185, note: "QS. Al-Baqarah: 185" }, // bulan Ramadhan
+                        { s: 13, a: 14, note: "QS. Ar-Ra'd: 14" }, // hanya kepada Allah doa yang benar
+                        // === Tema: Doa-doa Penting dari Al-Quran ===
+                        { s: 2, a: 201, note: "QS. Al-Baqarah: 201" }, // doa kebaikan dunia akhirat
+                        { s: 2, a: 127, note: "QS. Al-Baqarah: 127" }, // doa Ibrahim: terimalah dari kami
+                        { s: 2, a: 128, note: "QS. Al-Baqarah: 128" }, // doa Ibrahim: jadikan kami muslim
+                        { s: 2, a: 250, note: "QS. Al-Baqarah: 250" }, // doa menghadapi musuh
+                        { s: 2, a: 286, note: "QS. Al-Baqarah: 286" }, // jangan bebankan yang tidak sanggup
+                        { s: 3, a: 8, note: "QS. Ali Imran: 8" }, // jangan palingkan hati kami
+                        { s: 3, a: 9, note: "QS. Ali Imran: 9" }, // Engkau pengumpul manusia di hari kiamat
+                        { s: 3, a: 16, note: "QS. Ali Imran: 16" }, // ampunilah dosa-dosa kami
+                        { s: 3, a: 26, note: "QS. Ali Imran: 26" }, // Engkau yang memiliki kerajaan
+                        { s: 3, a: 27, note: "QS. Ali Imran: 27" }, // memasukkan malam ke siang
+                        { s: 3, a: 38, note: "QS. Ali Imran: 38" }, // doa Zakariya meminta keturunan
+                        { s: 3, a: 53, note: "QS. Ali Imran: 53" }, // doa memohon ampunan
+                        { s: 3, a: 147, note: "QS. Ali Imran: 147" }, // doa keteguhan di medan perang
+                        { s: 3, a: 191, note: "QS. Ali Imran: 191" }, // mengingat Allah dalam segala keadaan
+                        { s: 3, a: 192, note: "QS. Ali Imran: 192" }, // siapa yang Engkau masukkan ke neraka
+                        { s: 3, a: 193, note: "QS. Ali Imran: 193" }, // kami mendengar seruan untuk beriman
+                        { s: 3, a: 194, note: "QS. Ali Imran: 194" }, // berikanlah apa yang Engkau janjikan
+                        // === Tema: Doa Para Nabi ===
+                        { s: 21, a: 83, note: "QS. Al-Anbiya: 83" }, // doa Ayyub: aku ditimpa penyakit
+                        { s: 21, a: 87, note: "QS. Al-Anbiya: 87" }, // doa Yunus: tidak ada Tuhan selain Engkau
+                        { s: 21, a: 89, note: "QS. Al-Anbiya: 89" }, // doa Zakariya: jangan biarkan aku sendiri
+                        { s: 14, a: 40, note: "QS. Ibrahim: 40" }, // doa Ibrahim menegakkan shalat
+                        { s: 14, a: 41, note: "QS. Ibrahim: 41" }, // doa ampunan untuk orangtua
+                        { s: 25, a: 74, note: "QS. Al-Furqan: 74" }, // doa hamba Rahman
+                        { s: 28, a: 24, note: "QS. Al-Qasas: 24" }, // doa Musa: aku sangat membutuhkan kebaikan
+                        { s: 20, a: 25, note: "QS. Taha: 25" }, // doa Musa: lapangkan dadaku
+                        { s: 20, a: 26, note: "QS. Taha: 26" }, // mudahkanlah urusanku
+                        { s: 20, a: 114, note: "QS. Taha: 114" }, // Ya Tuhanku tambahkan ilmu
+                        { s: 46, a: 15, note: "QS. Al-Ahqaf: 15" }, // doa berbakti kepada orangtua
+                        { s: 23, a: 97, note: "QS. Al-Mu'minun: 97" }, // berlindung dari godaan setan
+                        { s: 23, a: 98, note: "QS. Al-Mu'minun: 98" }, // berlindung dari kehadiran setan
+                        { s: 23, a: 118, note: "QS. Al-Mu'minun: 118" }, // Engkau Maha Pengasih
+                        { s: 59, a: 10, note: "QS. Al-Hasyr: 10" }, // jangan biarkan dengki dalam hati
+                        // === Tema: Doa Keselamatan & Perlindungan ===
+                        { s: 1, a: 6, note: "QS. Al-Fatihah: 6" }, // tunjukilah kami jalan yang lurus
+                        { s: 1, a: 7, note: "QS. Al-Fatihah: 7" }, // jalan orang yang Engkau beri nikmat
+                        { s: 113, a: 1, note: "QS. Al-Falaq: 1" }, // aku berlindung kepada Tuhan yang menguasai subuh
+                        { s: 114, a: 1, note: "QS. An-Nas: 1" }, // aku berlindung kepada Tuhannya manusia
+                        { s: 10, a: 85, note: "QS. Yunus: 85" }, // kepada Allah kami bertawakkal
+                        { s: 10, a: 86, note: "QS. Yunus: 86" }, // selamatkanlah kami dari kaum yang zalim
+                    ],
+                },
+                berbuka: {
+                    label: "Waktu Berbuka",
+                    refs: [
+                        // === Tema: Ramadhan & Puasa ===
+                        { s: 2, a: 185, note: "QS. Al-Baqarah: 185" }, // Al-Quran diturunkan di Ramadhan
+                        { s: 2, a: 187, note: "QS. Al-Baqarah: 187" }, // makan minum sampai fajar
+                        // === Tema: Makan & Minum yang Halal ===
+                        { s: 2, a: 168, note: "QS. Al-Baqarah: 168" }, // makanlah yang halal dari bumi
+                        { s: 2, a: 172, note: "QS. Al-Baqarah: 172" }, // makanlah yang baik-baik
+                        { s: 5, a: 4, note: "QS. Al-Ma'idah: 4" }, // dihalalkan makanan yang baik
+                        { s: 5, a: 6, note: "QS. Al-Ma'idah: 6" }, // menyempurnakan nikmat
+                        { s: 5, a: 88, note: "QS. Al-Ma'idah: 88" }, // makanlah yang halal lagi baik
+                        { s: 6, a: 141, note: "QS. Al-An'am: 141" }, // makan buahnya dan tunaikan haknya
+                        { s: 6, a: 142, note: "QS. Al-An'am: 142" }, // makanlah dari rezeki Allah
+                        { s: 7, a: 31, note: "QS. Al-A'raf: 31" }, // makan minum jangan berlebihan
+                        { s: 7, a: 32, note: "QS. Al-A'raf: 32" }, // perhiasan dan makanan yang baik
+                        { s: 16, a: 114, note: "QS. An-Nahl: 114" }, // makanlah rezeki yang halal
+                        { s: 23, a: 51, note: "QS. Al-Mu'minun: 51" }, // makanlah yang baik dan beramal salehlah
+                        { s: 67, a: 15, note: "QS. Al-Mulk: 15" }, // berjalan dan makan dari rezekinya
+                        // === Tema: Syukur Nikmat ===
+                        { s: 14, a: 7, note: "QS. Ibrahim: 7" }, // bersyukur niscaya ditambah
+                        { s: 14, a: 34, note: "QS. Ibrahim: 34" }, // memberi segala yang kamu minta
+                        { s: 16, a: 18, note: "QS. An-Nahl: 18" }, // jika kamu menghitung nikmat Allah
+                        { s: 16, a: 53, note: "QS. An-Nahl: 53" }, // segala nikmat dari Allah
+                        { s: 16, a: 78, note: "QS. An-Nahl: 78" }, // Allah memberi pendengaran, penglihatan, hati
+                        { s: 27, a: 40, note: "QS. An-Naml: 40" }, // ujian bersyukur atau kufur
+                        { s: 28, a: 73, note: "QS. Al-Qasas: 73" }, // rahmat-Nya malam dan siang
+                        { s: 29, a: 17, note: "QS. Al-Ankabut: 17" }, // mintalah rezeki dari Allah
+                        { s: 31, a: 12, note: "QS. Luqman: 12" }, // bersyukurlah kepada Allah
+                        { s: 34, a: 15, note: "QS. Saba: 15" }, // negeri yang baik dan Tuhan yang pengampun
+                        { s: 35, a: 3, note: "QS. Fatir: 3" }, // ingatlah nikmat Allah kepadamu
+                        { s: 40, a: 64, note: "QS. Ghafir: 64" }, // bumi sebagai tempat menetap
+                        { s: 45, a: 12, note: "QS. Al-Jasiyah: 12" }, // Allah menundukkan laut untukmu
+                        { s: 45, a: 13, note: "QS. Al-Jasiyah: 13" }, // menundukkan langit dan bumi untukmu
+                        // === Tema: Nikmat Ar-Rahman ===
+                        { s: 55, a: 1, note: "QS. Ar-Rahman: 1" }, // Ar-Rahman
+                        { s: 55, a: 2, note: "QS. Ar-Rahman: 2" }, // yang mengajarkan Al-Quran
+                        { s: 55, a: 3, note: "QS. Ar-Rahman: 3" }, // menciptakan manusia
+                        { s: 55, a: 4, note: "QS. Ar-Rahman: 4" }, // mengajarkan pandai berbicara
+                        { s: 55, a: 13, note: "QS. Ar-Rahman: 13" }, // nikmat Tuhan mana yang kau dustakan
+                        { s: 55, a: 60, note: "QS. Ar-Rahman: 60" }, // balasan kebaikan adalah kebaikan
+                        { s: 56, a: 68, note: "QS. Al-Waqi'ah: 68" }, // pernahkah kamu memperhatikan air yang kamu minum
+                        { s: 56, a: 69, note: "QS. Al-Waqi'ah: 69" }, // kamukah yang menurunkan dari awan
+                        { s: 80, a: 24, note: "QS. Abasa: 24" }, // hendaklah manusia memperhatikan makanannya
+                    ],
+                },
+                malam: {
+                    label: "Malam Hari",
+                    refs: [
+                        // === Tema: Lailatul Qadr ===
+                        { s: 97, a: 1, note: "QS. Al-Qadr: 1" }, // lailatul qadr
+                        { s: 97, a: 2, note: "QS. Al-Qadr: 2" }, // tahukah kamu apa lailatul qadr
+                        { s: 97, a: 3, note: "QS. Al-Qadr: 3" }, // lebih baik dari seribu bulan
+                        { s: 97, a: 4, note: "QS. Al-Qadr: 4" }, // malaikat turun
+                        { s: 97, a: 5, note: "QS. Al-Qadr: 5" }, // sejahtera hingga terbit fajar
+                        { s: 44, a: 3, note: "QS. Ad-Dukhan: 3" }, // Kami menurunkannya pada malam yang diberkahi
+                        { s: 44, a: 4, note: "QS. Ad-Dukhan: 4" }, // pada malam itu dijelaskan segala urusan
+                        // === Tema: Qiyamul Lail & Tahajjud ===
+                        { s: 17, a: 79, note: "QS. Al-Isra: 79" }, // tahajjud
+                        { s: 17, a: 78, note: "QS. Al-Isra: 78" }, // shalat dari matahari tergelincir
+                        { s: 73, a: 1, note: "QS. Al-Muzzammil: 1" }, // wahai orang yang berselimut
+                        { s: 73, a: 2, note: "QS. Al-Muzzammil: 2" }, // bangunlah di malam hari
+                        { s: 73, a: 3, note: "QS. Al-Muzzammil: 3" }, // separuhnya atau kurangi sedikit
+                        { s: 73, a: 4, note: "QS. Al-Muzzammil: 4" }, // bacalah Al-Quran dengan tartil
+                        { s: 73, a: 6, note: "QS. Al-Muzzammil: 6" }, // bangun malam lebih kuat
+                        { s: 73, a: 20, note: "QS. Al-Muzzammil: 20" }, // bacalah Al-Quran
+                        { s: 39, a: 9, note: "QS. Az-Zumar: 9" }, // yang beribadah di waktu malam
+                        { s: 25, a: 64, note: "QS. Al-Furqan: 64" }, // yang bermalam dengan bersujud
+                        { s: 25, a: 63, note: "QS. Al-Furqan: 63" }, // hamba yang berjalan rendah hati
+                        { s: 32, a: 16, note: "QS. As-Sajdah: 16" }, // lambung jauh dari tempat tidur
+                        { s: 32, a: 17, note: "QS. As-Sajdah: 17" }, // tidak seorangpun tahu apa yang disembunyikan
+                        { s: 51, a: 17, note: "QS. Adz-Dzariyat: 17" }, // sedikit sekali tidur di waktu malam
+                        { s: 51, a: 18, note: "QS. Adz-Dzariyat: 18" }, // memohon ampun di waktu sahur
+                        // === Tema: Tasbih & Dzikir Malam ===
+                        { s: 76, a: 25, note: "QS. Al-Insan: 25" }, // sebutlah nama Tuhanmu pagi dan petang
+                        { s: 76, a: 26, note: "QS. Al-Insan: 26" }, // sujudlah dan bertasbihlah
+                        { s: 52, a: 49, note: "QS. At-Tur: 49" }, // bertasbihlah di waktu malam
+                        { s: 50, a: 40, note: "QS. Qaf: 40" }, // bertasbihlah setelah sujud
+                        { s: 87, a: 1, note: "QS. Al-A'la: 1" }, // sucikanlah nama Tuhanmu
+                        { s: 87, a: 14, note: "QS. Al-A'la: 14" }, // beruntung orang yang menyucikan diri
+                        { s: 87, a: 15, note: "QS. Al-A'la: 15" }, // menyebut nama Tuhannya lalu shalat
+                        // === Tema: Keagungan Allah & Alam Semesta ===
+                        { s: 2, a: 255, note: "QS. Al-Baqarah: 255" }, // Ayat Kursi
+                        { s: 59, a: 22, note: "QS. Al-Hasyr: 22" }, // mengetahui yang ghaib dan nyata
+                        { s: 59, a: 23, note: "QS. Al-Hasyr: 23" }, // tiada Tuhan selain Dia
+                        { s: 59, a: 24, note: "QS. Al-Hasyr: 24" }, // Dialah Allah, Pencipta
+                        { s: 6, a: 162, note: "QS. Al-An'am: 162" }, // shalatku, ibadahku, hidupku, matiku
+                        { s: 6, a: 163, note: "QS. Al-An'am: 163" }, // tidak ada sekutu bagi-Nya
+                        { s: 3, a: 113, note: "QS. Ali Imran: 113" }, // membaca ayat di waktu malam
+                        { s: 3, a: 114, note: "QS. Ali Imran: 114" }, // beriman dan berlomba kebaikan
+                        { s: 3, a: 190, note: "QS. Ali Imran: 190" }, // penciptaan langit dan bumi
+                        { s: 3, a: 191, note: "QS. Ali Imran: 191" }, // mengingat Allah dalam segala keadaan
+                        { s: 67, a: 1, note: "QS. Al-Mulk: 1" }, // Maha Suci yang memiliki kerajaan
+                        { s: 67, a: 2, note: "QS. Al-Mulk: 2" }, // menciptakan mati dan hidup untuk menguji
+                        { s: 67, a: 3, note: "QS. Al-Mulk: 3" }, // menciptakan tujuh langit berlapis
+                        { s: 36, a: 36, note: "QS. Yasin: 36" }, // Maha Suci yang menciptakan berpasang-pasangan
+                        { s: 36, a: 40, note: "QS. Yasin: 40" }, // matahari tidak bisa mendahului bulan
+                        { s: 112, a: 1, note: "QS. Al-Ikhlas: 1" }, // katakanlah Dialah Allah Yang Maha Esa
+                        { s: 112, a: 2, note: "QS. Al-Ikhlas: 2" }, // Allahush-Shamad
+                    ],
+                },
+            };
+        },
+
+        async fetchContextualVerse() {
+            const context = this.getVerseContext();
+            const pool = this.getContextualVersePool();
+            const group = pool[context] || pool.siang;
+
+            // Pick a random verse from the pool
+            const pick =
+                group.refs[Math.floor(Math.random() * group.refs.length)];
+
+            this.dailyVerse = {
+                text: "Memuat ayat...",
+                arabic: "",
+                source: pick.note,
+                contextLabel: group.label,
+                loading: true,
+            };
+
+            try {
+                // Fetch both Arabic and Indonesian translations in parallel
+                const [arRes, idRes] = await Promise.all([
+                    fetch(
+                        `https://api.alquran.cloud/v1/ayah/${pick.s}:${pick.a}/ar.alafasy`,
+                    ),
+                    fetch(
+                        `https://api.alquran.cloud/v1/ayah/${pick.s}:${pick.a}/id.indonesian`,
+                    ),
+                ]);
+
+                const arData = await arRes.json();
+                const idData = await idRes.json();
+
+                if (arData.code === 200 && idData.code === 200) {
+                    this.dailyVerse = {
+                        arabic: arData.data.text,
+                        text: '"' + idData.data.text + '"',
+                        source: pick.note,
+                        contextLabel: group.label,
+                        loading: false,
+                    };
+                } else {
+                    this._fallbackVerse(group.label);
+                }
+            } catch (err) {
+                console.warn("Quran API failed, using fallback", err);
+                this._fallbackVerse(group.label);
+            }
+        },
+
+        _fallbackVerse(contextLabel) {
+            const fallbacks = [
                 {
                     text: '"Sesungguhnya bersama kesulitan ada kemudahan."',
-                    source: "QS. Al-Insyirah: 6",
+                    source: "QS. Al-Insyirah: 5-6",
                 },
                 {
-                    text: '"Hai orang-orang yang beriman, diwajibkan atas kamu berpuasa sebagaimana diwajibkan atas orang-orang sebelum kamu agar kamu bertakwa."',
+                    text: '"Hai orang-orang yang beriman, diwajibkan atas kamu berpuasa."',
                     source: "QS. Al-Baqarah: 183",
                 },
                 {
-                    text: '"Dan apabila hamba-hamba-Ku bertanya kepadamu tentang Aku, maka sesungguhnya Aku dekat."',
+                    text: '"Dan apabila hamba-hamba-Ku bertanya tentang Aku, maka sesungguhnya Aku dekat."',
                     source: "QS. Al-Baqarah: 186",
                 },
                 {
-                    text: '"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Quran, sebagai petunjuk bagi manusia."',
+                    text: '"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Quran."',
                     source: "QS. Al-Baqarah: 185",
                 },
                 {
@@ -2765,8 +1153,18 @@ function ramadhanDashboard() {
                     source: "QS. Ar-Ra'd: 11",
                 },
             ];
-            this.dailyVerse = verses[new Date().getDate() % verses.length];
+            const pick =
+                fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            this.dailyVerse = {
+                arabic: "",
+                text: pick.text,
+                source: pick.source,
+                contextLabel: contextLabel || "Ayat Hari Ini",
+                loading: false,
+            };
         },
+
+        _gpsWatchId: null,
 
         // ── Location ───────────────────────────────────────────────────────
         getLocation() {
@@ -2777,10 +1175,19 @@ function ramadhanDashboard() {
                 this.setDefaultLocation();
                 return;
             }
-            navigator.geolocation.getCurrentPosition(
+            // Clear previous watch
+            if (this._gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(this._gpsWatchId);
+            }
+            // Use watchPosition for progressively better accuracy
+            this._gpsWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     this.userLat = pos.coords.latitude;
                     this.userLng = pos.coords.longitude;
+                    this.gpsAccuracy = pos.coords.accuracy
+                        ? Math.round(pos.coords.accuracy)
+                        : null;
+                    this._updateGpsQuality();
                     this.locationCoords =
                         this.userLat.toFixed(4) +
                         ", " +
@@ -2793,40 +1200,72 @@ function ramadhanDashboard() {
                     const tzInfo = this.getTimezoneForLng(this.userLng);
                     this.selectedTz = tzInfo.tz;
                     this.calculateQibla();
-                    fetch(
-                        "https://nominatim.openstreetmap.org/reverse?lat=" +
-                            this.userLat +
-                            "&lon=" +
-                            this.userLng +
-                            "&format=json&accept-language=id&zoom=10",
-                    )
-                        .then((r) => r.json())
-                        .then((d) => {
-                            const addr = d.address || {};
-                            const kabupaten =
-                                addr.county ||
-                                addr.city ||
-                                addr.state_district ||
-                                addr.town ||
-                                addr.state ||
-                                "Lokasi Anda";
-                            const provinsi = addr.state || "";
-                            const clean = kabupaten
-                                .replace(/^Kabupaten\s+/i, "Kab. ")
-                                .replace(/^Kota\s+/i, "Kota ");
-                            this.locationCity = provinsi
-                                ? clean + ", " + provinsi
-                                : clean;
-                            this.cityName = clean;
-                        })
-                        .catch(() => {
-                            this.locationCity = this.locationCoords;
-                        });
+                    this.calculatePrayerTimes();
+                    // Use nearest kecamatan from loaded data first
+                    const nearest = this._findNearestLocation(
+                        this.userLat,
+                        this.userLng,
+                    );
+                    if (nearest) {
+                        const displayKec =
+                            nearest.kecamatan || nearest.kabupaten;
+                        this.locationCity =
+                            displayKec + ", " + nearest.kabupaten;
+                        this.cityName = displayKec;
+                        this.locationText =
+                            displayKec + ", " + nearest.provinsi;
+                    } else {
+                        // Fallback: reverse geocode with high zoom for kecamatan-level
+                        fetch(
+                            "https://nominatim.openstreetmap.org/reverse?lat=" +
+                                this.userLat +
+                                "&lon=" +
+                                this.userLng +
+                                "&format=json&accept-language=id&zoom=14",
+                        )
+                            .then((r) => r.json())
+                            .then((d) => {
+                                const addr = d.address || {};
+                                const kecamatan =
+                                    addr.suburb ||
+                                    addr.village ||
+                                    addr.town ||
+                                    addr.city_district ||
+                                    "";
+                                const kabupaten =
+                                    addr.county ||
+                                    addr.city ||
+                                    addr.state_district ||
+                                    addr.town ||
+                                    addr.state ||
+                                    "Lokasi Anda";
+                                const provinsi = addr.state || "";
+                                const cleanKab = kabupaten
+                                    .replace(/^Kabupaten\s+/i, "Kab. ")
+                                    .replace(/^Kota\s+/i, "Kota ");
+                                if (kecamatan) {
+                                    this.locationCity =
+                                        kecamatan + ", " + cleanKab;
+                                    this.cityName = kecamatan;
+                                } else {
+                                    this.locationCity = provinsi
+                                        ? cleanKab + ", " + provinsi
+                                        : cleanKab;
+                                    this.cityName = cleanKab;
+                                }
+                                this.locationText =
+                                    this.locationCity +
+                                    (provinsi ? ", " + provinsi : "");
+                            })
+                            .catch(() => {
+                                this.locationCity = this.locationCoords;
+                            });
+                    }
                 },
                 () => {
                     this.setDefaultLocation();
                 },
-                { enableHighAccuracy: true, timeout: 10000 },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
             );
         },
 
@@ -2839,6 +1278,7 @@ function ramadhanDashboard() {
             this.cityName = "Kab. Ciamis";
             this.selectedTz = "WIB";
             this.calculateQibla();
+            this.calculatePrayerTimes();
         },
 
         useGPS() {
@@ -2905,9 +1345,209 @@ function ramadhanDashboard() {
             this.qiblaDirection =
                 ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
             this.qiblaStatus =
-                "Arah " +
-                this.qiblaDirection.toFixed(1) +
-                " derajat dari utara";
+                "Arah " + this.qiblaDirection.toFixed(1) + "° dari utara";
+            // Calculate distance to Kaaba (Haversine)
+            const R = 6371;
+            const dLat = ((kLat - this.userLat) * Math.PI) / 180;
+            const dLon = ((kLng - this.userLng) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) *
+                    Math.cos(lat2) *
+                    Math.sin(dLon / 2) *
+                    Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            this.distanceToKaaba = Math.round(R * c);
+        },
+
+        // ── Compass / Device Orientation ────────────────────────────────────
+        _compassHandler: null,
+        _compassAbsHandler: null,
+        _hasAbsolute: false,
+
+        initCompass() {
+            // Try absolute orientation first (Android Chrome)
+            if ("ondeviceorientationabsolute" in window) {
+                this.compassSupported = true;
+                this.compassPermission = "granted";
+                this._startAbsoluteCompassListener();
+                return;
+            }
+            // Check support
+            if (window.DeviceOrientationEvent) {
+                this.compassSupported = true;
+                // iOS 13+ requires permission
+                if (
+                    typeof DeviceOrientationEvent.requestPermission ===
+                    "function"
+                ) {
+                    this.compassPermission = "unknown";
+                } else {
+                    // Android / other â€” auto-granted
+                    this.compassPermission = "granted";
+                    this._startCompassListener();
+                }
+            } else {
+                this.compassSupported = false;
+                this.compassPermission = "unsupported";
+            }
+        },
+
+        async requestCompassPermission() {
+            if (
+                typeof DeviceOrientationEvent.requestPermission === "function"
+            ) {
+                try {
+                    const perm =
+                        await DeviceOrientationEvent.requestPermission();
+                    if (perm === "granted") {
+                        this.compassPermission = "granted";
+                        this._startCompassListener();
+                    } else {
+                        this.compassPermission = "denied";
+                    }
+                } catch (e) {
+                    this.compassPermission = "denied";
+                }
+            }
+        },
+
+        _startAbsoluteCompassListener() {
+            this._compassAbsHandler = (e) => {
+                if (e.alpha !== null) {
+                    this._hasAbsolute = true;
+                    const heading = (360 - e.alpha) % 360;
+                    this._applyHeading(heading);
+                }
+            };
+            window.addEventListener(
+                "deviceorientationabsolute",
+                this._compassAbsHandler,
+                true,
+            );
+        },
+
+        _startCompassListener() {
+            this._compassHandler = (e) => {
+                // Skip if we already have absolute readings
+                if (this._hasAbsolute) return;
+                let heading = null;
+                // iOS: webkitCompassHeading is degrees from magnetic north
+                if (e.webkitCompassHeading !== undefined) {
+                    heading = e.webkitCompassHeading;
+                    this.compassAccuracy = e.webkitCompassAccuracy || null;
+                }
+                // Android: alpha = rotation around z-axis (0-360)
+                else if (e.alpha !== null) {
+                    heading = (360 - e.alpha) % 360;
+                }
+                if (heading !== null) {
+                    this._applyHeading(heading);
+                }
+            };
+            window.addEventListener(
+                "deviceorientation",
+                this._compassHandler,
+                true,
+            );
+        },
+
+        _applyHeading(heading) {
+            // Smooth the compass reading with weighted average
+            const diff = heading - this.compassHeading;
+            const shortDiff = ((diff + 540) % 360) - 180;
+            this.compassHeading =
+                (this.compassHeading + shortDiff * 0.2 + 360) % 360;
+            this.compassActive = true;
+        },
+
+        stopCompass() {
+            if (this._compassHandler) {
+                window.removeEventListener(
+                    "deviceorientation",
+                    this._compassHandler,
+                    true,
+                );
+                this._compassHandler = null;
+            }
+            if (this._compassAbsHandler) {
+                window.removeEventListener(
+                    "deviceorientationabsolute",
+                    this._compassAbsHandler,
+                    true,
+                );
+                this._compassAbsHandler = null;
+            }
+            this.compassActive = false;
+        },
+
+        _updateGpsQuality() {
+            if (!this.gpsAccuracy) {
+                this.gpsQuality = "detecting";
+                return;
+            }
+            if (this.gpsAccuracy <= 10) this.gpsQuality = "excellent";
+            else if (this.gpsAccuracy <= 50) this.gpsQuality = "good";
+            else if (this.gpsAccuracy <= 200) this.gpsQuality = "fair";
+            else if (this.gpsAccuracy <= 5000) this.gpsQuality = "poor";
+            else this.gpsQuality = "ip-based";
+        },
+
+        get gpsQualityLabel() {
+            const labels = {
+                detecting: "Mendeteksi...",
+                excellent: "Sangat akurat",
+                good: "Akurat",
+                fair: "Cukup akurat",
+                poor: "Kurang akurat",
+                "ip-based": "Perkiraan (non-GPS)",
+            };
+            return labels[this.gpsQuality] || "Mendeteksi...";
+        },
+
+        get gpsQualityColor() {
+            const colors = {
+                detecting: "#94a3b8",
+                excellent: "#16a34a",
+                good: "#22c55e",
+                fair: "#eab308",
+                poor: "#f97316",
+                "ip-based": "#ef4444",
+            };
+            return colors[this.gpsQuality] || "#94a3b8";
+        },
+
+        // The angle to rotate the compass dial (so North points to real north)
+        get compassRotation() {
+            return -this.compassHeading;
+        },
+
+        // The angle at which to show the Kaaba indicator on the compass
+        // When compass is rotating, Kaaba appears at qiblaDirection - compassHeading
+        get qiblaOnCompass() {
+            return this.qiblaDirection - this.compassHeading;
+        },
+
+        // Cardinal direction label
+        get compassCardinal() {
+            const dirs = ["U", "TL", "T", "TG", "S", "BD", "B", "BL"];
+            const idx = Math.round(this.compassHeading / 45) % 8;
+            return dirs[idx];
+        },
+
+        get qiblaCardinal() {
+            const dirs = [
+                "Utara",
+                "Timur Laut",
+                "Timur",
+                "Tenggara",
+                "Selatan",
+                "Barat Daya",
+                "Barat",
+                "Barat Laut",
+            ];
+            const idx = Math.round(this.qiblaDirection / 45) % 8;
+            return dirs[idx];
         },
 
         // ── Form Methods ───────────────────────────────────────────────────

@@ -30,6 +30,7 @@ class SiswaPanelProvider extends PanelProvider
             ->path('siswa')
             ->login(Login::class)
             ->brandName('Buku Ramadhan - SMKN 1 Ciamis')
+            ->favicon(asset('img/logo_smk.png'))
             ->brandLogo(asset('img/logo_smk.png'))
             ->brandLogoHeight('3rem')
             ->topNavigation(false)

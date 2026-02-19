@@ -1,28 +1,205 @@
+/**
+ * Buku Ramadhan — Formulir Harian Alpine.js Component
+ */
+
+/* ── 114 Surah data (number, name, total ayat) ── */
+const QURAN_SURAHS = [
+    { number: 1, name: "Al-Fatihah", ayat: 7 },
+    { number: 2, name: "Al-Baqarah", ayat: 286 },
+    { number: 3, name: "Ali 'Imran", ayat: 200 },
+    { number: 4, name: "An-Nisa'", ayat: 176 },
+    { number: 5, name: "Al-Ma'idah", ayat: 120 },
+    { number: 6, name: "Al-An'am", ayat: 165 },
+    { number: 7, name: "Al-A'raf", ayat: 206 },
+    { number: 8, name: "Al-Anfal", ayat: 75 },
+    { number: 9, name: "At-Taubah", ayat: 129 },
+    { number: 10, name: "Yunus", ayat: 109 },
+    { number: 11, name: "Hud", ayat: 123 },
+    { number: 12, name: "Yusuf", ayat: 111 },
+    { number: 13, name: "Ar-Ra'd", ayat: 43 },
+    { number: 14, name: "Ibrahim", ayat: 52 },
+    { number: 15, name: "Al-Hijr", ayat: 99 },
+    { number: 16, name: "An-Nahl", ayat: 128 },
+    { number: 17, name: "Al-Isra'", ayat: 111 },
+    { number: 18, name: "Al-Kahf", ayat: 110 },
+    { number: 19, name: "Maryam", ayat: 98 },
+    { number: 20, name: "Taha", ayat: 135 },
+    { number: 21, name: "Al-Anbiya'", ayat: 112 },
+    { number: 22, name: "Al-Hajj", ayat: 78 },
+    { number: 23, name: "Al-Mu'minun", ayat: 118 },
+    { number: 24, name: "An-Nur", ayat: 64 },
+    { number: 25, name: "Al-Furqan", ayat: 77 },
+    { number: 26, name: "Asy-Syu'ara'", ayat: 227 },
+    { number: 27, name: "An-Naml", ayat: 93 },
+    { number: 28, name: "Al-Qasas", ayat: 88 },
+    { number: 29, name: "Al-'Ankabut", ayat: 69 },
+    { number: 30, name: "Ar-Rum", ayat: 60 },
+    { number: 31, name: "Luqman", ayat: 34 },
+    { number: 32, name: "As-Sajdah", ayat: 30 },
+    { number: 33, name: "Al-Ahzab", ayat: 73 },
+    { number: 34, name: "Saba'", ayat: 54 },
+    { number: 35, name: "Fatir", ayat: 45 },
+    { number: 36, name: "Ya-Sin", ayat: 83 },
+    { number: 37, name: "As-Saffat", ayat: 182 },
+    { number: 38, name: "Sad", ayat: 88 },
+    { number: 39, name: "Az-Zumar", ayat: 75 },
+    { number: 40, name: "Ghafir", ayat: 85 },
+    { number: 41, name: "Fussilat", ayat: 54 },
+    { number: 42, name: "Asy-Syura", ayat: 53 },
+    { number: 43, name: "Az-Zukhruf", ayat: 89 },
+    { number: 44, name: "Ad-Dukhan", ayat: 59 },
+    { number: 45, name: "Al-Jasiyah", ayat: 37 },
+    { number: 46, name: "Al-Ahqaf", ayat: 35 },
+    { number: 47, name: "Muhammad", ayat: 38 },
+    { number: 48, name: "Al-Fath", ayat: 29 },
+    { number: 49, name: "Al-Hujurat", ayat: 18 },
+    { number: 50, name: "Qaf", ayat: 45 },
+    { number: 51, name: "Az-Zariyat", ayat: 60 },
+    { number: 52, name: "At-Tur", ayat: 49 },
+    { number: 53, name: "An-Najm", ayat: 62 },
+    { number: 54, name: "Al-Qamar", ayat: 55 },
+    { number: 55, name: "Ar-Rahman", ayat: 78 },
+    { number: 56, name: "Al-Waqi'ah", ayat: 96 },
+    { number: 57, name: "Al-Hadid", ayat: 29 },
+    { number: 58, name: "Al-Mujadalah", ayat: 22 },
+    { number: 59, name: "Al-Hasyr", ayat: 24 },
+    { number: 60, name: "Al-Mumtahanah", ayat: 13 },
+    { number: 61, name: "As-Saff", ayat: 14 },
+    { number: 62, name: "Al-Jumu'ah", ayat: 11 },
+    { number: 63, name: "Al-Munafiqun", ayat: 11 },
+    { number: 64, name: "At-Tagabun", ayat: 18 },
+    { number: 65, name: "At-Talaq", ayat: 12 },
+    { number: 66, name: "At-Tahrim", ayat: 12 },
+    { number: 67, name: "Al-Mulk", ayat: 30 },
+    { number: 68, name: "Al-Qalam", ayat: 52 },
+    { number: 69, name: "Al-Haqqah", ayat: 52 },
+    { number: 70, name: "Al-Ma'arij", ayat: 44 },
+    { number: 71, name: "Nuh", ayat: 28 },
+    { number: 72, name: "Al-Jinn", ayat: 28 },
+    { number: 73, name: "Al-Muzzammil", ayat: 20 },
+    { number: 74, name: "Al-Muddassir", ayat: 56 },
+    { number: 75, name: "Al-Qiyamah", ayat: 40 },
+    { number: 76, name: "Al-Insan", ayat: 31 },
+    { number: 77, name: "Al-Mursalat", ayat: 50 },
+    { number: 78, name: "An-Naba'", ayat: 40 },
+    { number: 79, name: "An-Nazi'at", ayat: 46 },
+    { number: 80, name: "'Abasa", ayat: 42 },
+    { number: 81, name: "At-Takwir", ayat: 29 },
+    { number: 82, name: "Al-Infitar", ayat: 19 },
+    { number: 83, name: "Al-Mutaffifin", ayat: 36 },
+    { number: 84, name: "Al-Insyiqaq", ayat: 25 },
+    { number: 85, name: "Al-Buruj", ayat: 22 },
+    { number: 86, name: "At-Tariq", ayat: 17 },
+    { number: 87, name: "Al-A'la", ayat: 19 },
+    { number: 88, name: "Al-Gasyiyah", ayat: 26 },
+    { number: 89, name: "Al-Fajr", ayat: 30 },
+    { number: 90, name: "Al-Balad", ayat: 20 },
+    { number: 91, name: "Asy-Syams", ayat: 15 },
+    { number: 92, name: "Al-Lail", ayat: 21 },
+    { number: 93, name: "Ad-Duha", ayat: 11 },
+    { number: 94, name: "Al-Insyirah", ayat: 8 },
+    { number: 95, name: "At-Tin", ayat: 8 },
+    { number: 96, name: "Al-'Alaq", ayat: 19 },
+    { number: 97, name: "Al-Qadr", ayat: 5 },
+    { number: 98, name: "Al-Bayyinah", ayat: 8 },
+    { number: 99, name: "Az-Zalzalah", ayat: 8 },
+    { number: 100, name: "Al-'Adiyat", ayat: 11 },
+    { number: 101, name: "Al-Qari'ah", ayat: 11 },
+    { number: 102, name: "At-Takasur", ayat: 8 },
+    { number: 103, name: "Al-'Asr", ayat: 3 },
+    { number: 104, name: "Al-Humazah", ayat: 9 },
+    { number: 105, name: "Al-Fil", ayat: 5 },
+    { number: 106, name: "Quraisy", ayat: 4 },
+    { number: 107, name: "Al-Ma'un", ayat: 7 },
+    { number: 108, name: "Al-Kausar", ayat: 3 },
+    { number: 109, name: "Al-Kafirun", ayat: 6 },
+    { number: 110, name: "An-Nasr", ayat: 3 },
+    { number: 111, name: "Al-Lahab", ayat: 5 },
+    { number: 112, name: "Al-Ikhlas", ayat: 4 },
+    { number: 113, name: "Al-Falaq", ayat: 5 },
+    { number: 114, name: "An-Nas", ayat: 6 },
+];
+
 function formulirHarian() {
     return {
         formDay: 1,
         formSubmitted: false,
         formSaving: false,
         submittedDays: [],
+
+        /* ── Surah autocomplete ── */
+        allSurahs: QURAN_SURAHS,
+        filteredSurahs: [],
+        showSurahList: false,
+        selectedSurahAyat: 0,
+        ayatError: "",
+
+        /* ── Editor format state ── */
+        editorFormats: {
+            bold: false,
+            italic: false,
+            underline: false,
+            ul: false,
+            ol: false,
+        },
+
+        updateEditorFormats() {
+            this.editorFormats.bold = document.queryCommandState("bold");
+            this.editorFormats.italic = document.queryCommandState("italic");
+            this.editorFormats.underline =
+                document.queryCommandState("underline");
+            this.editorFormats.ul = document.queryCommandState(
+                "insertUnorderedList",
+            );
+            this.editorFormats.ol =
+                document.queryCommandState("insertOrderedList");
+        },
+
+        /* ── Puasa reason suggestions ── */
+        showPuasaSuggest: false,
+        puasaSuggestions: [
+            "Sakit (demam, maag, dll)",
+            "Haid",
+            "Lupa niat / tidak sahur",
+            "Kondisi tubuh tidak kuat",
+            "Bepergian jauh",
+            "Izin orang tua",
+        ],
+
+        /* ── Kegiatan groups (matches paper form) ── */
+        kegiatanGroupA: [
+            { key: "dzikir_pagi", label: "Dzikir Pagi" },
+            { key: "olahraga", label: "Olahraga Ringan" },
+            { key: "membantu_ortu", label: "Membantu Orang Tua" },
+            { key: "membersihkan_kamar", label: "Membersihkan Kamar" },
+            { key: "membersihkan_rumah", label: "Membersihkan Rumah" },
+            { key: "membersihkan_halaman", label: "Membersihkan Halaman" },
+            { key: "merawat_lingkungan", label: "Merawat Lingkungan" },
+            { key: "dzikir_petang", label: "Dzikir Petang" },
+            { key: "sedekah", label: "Sedekah / Poe Ibu" },
+            { key: "buka_keluarga", label: "Buka Bersama Keluarga" },
+        ],
+        kegiatanGroupB: [
+            { key: "kajian", label: "Kajian Al-Quran, Tafsir & Hadits" },
+        ],
+        kegiatanGroupC: [
+            { key: "menabung", label: "Menabung" },
+            { key: "tidur_cepat", label: "Tidur Cepat" },
+            { key: "bangun_pagi", label: "Bangun Pagi / Sahur" },
+        ],
+
+        /* ── Form data ── */
         formData: {
             puasa: "",
-            sholat_dzuhur_j: false,
-            sholat_dzuhur_m: false,
-            sholat_ashar_j: false,
-            sholat_ashar_m: false,
-            sholat_maghrib_j: false,
-            sholat_maghrib_m: false,
-            sholat_isya_j: false,
-            sholat_isya_m: false,
-            sholat_subuh_j: false,
-            sholat_subuh_m: false,
-            tarawih_j: false,
-            tarawih_m: false,
-            rowatib: "",
-            tahajud: "",
-            dhuha: "",
+            puasa_alasan: "",
+
+            sholat: { subuh: "", dzuhur: "", ashar: "", maghrib: "", isya: "" },
+            tarawih: "",
+            sunat: { rowatib: "", tahajud: "", dhuha: "" },
+
             tadarus_surat: "",
             tadarus_ayat: "",
+
             kegiatan: {
                 dzikir_pagi: false,
                 olahraga: false,
@@ -35,25 +212,30 @@ function formulirHarian() {
                 sedekah: false,
                 buka_keluarga: false,
                 literasi: false,
+                kajian: false,
                 menabung: false,
                 tidur_cepat: false,
                 bangun_pagi: false,
             },
+
+            ceramah_mode: "",
+            ceramah_tema: "",
             ringkasan_ceramah: "",
         },
 
+        /* ── Lifecycle ── */
         init() {
             this.calculateRamadhanDay();
             this.formDay = this.ramadhanDay;
             this.loadSubmittedDays();
             this.checkFormSubmitted();
+            this.filteredSurahs = this.allSurahs.slice(0, 15);
         },
 
         ramadhanDay: 1,
 
         calculateRamadhanDay() {
-            // 1 Ramadhan 1447H = 19 Februari 2026
-            const ramadhanStart = new Date(2026, 1, 19); // Feb 19, 2026
+            const ramadhanStart = new Date(2026, 1, 19); // 1 Ramadhan 1447H
             const now = new Date();
             const today = new Date(
                 now.getFullYear(),
@@ -64,9 +246,79 @@ function formulirHarian() {
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
         },
 
+        /* ── Surah search / filter ── */
+        filterSurah(query) {
+            if (!query || query.length === 0) {
+                this.filteredSurahs = this.allSurahs.slice(0, 15);
+                return;
+            }
+            var q = query.toLowerCase();
+            this.filteredSurahs = this.allSurahs
+                .filter(function (s) {
+                    return (
+                        s.name.toLowerCase().indexOf(q) !== -1 ||
+                        String(s.number).indexOf(q) !== -1
+                    );
+                })
+                .slice(0, 20);
+        },
+
+        selectSurah(s) {
+            this.formData.tadarus_surat = s.name;
+            this.selectedSurahAyat = s.ayat;
+            this.showSurahList = false;
+            this.ayatError = "";
+            // Re-validate existing ayat input against new surah
+            if (this.formData.tadarus_ayat) {
+                this.validateAyat(this.formData.tadarus_ayat);
+            }
+        },
+
+        validateAyat(val) {
+            // Strip anything that's not a digit or dash
+            var clean = val.replace(/[^0-9\-]/g, "");
+            // Collapse multiple dashes
+            clean = clean.replace(/-{2,}/g, "-");
+            // Remove leading dash
+            clean = clean.replace(/^-/, "");
+            this.formData.tadarus_ayat = clean;
+
+            if (!clean || !this.selectedSurahAyat) {
+                this.ayatError = "";
+                return;
+            }
+
+            var parts = clean.split("-").filter(function (p) {
+                return p !== "";
+            });
+            var max = this.selectedSurahAyat;
+            var exceeded = parts.some(function (p) {
+                return parseInt(p) > max;
+            });
+            var reversed =
+                parts.length === 2 && parseInt(parts[0]) > parseInt(parts[1]);
+
+            if (exceeded) {
+                this.ayatError = "Melebihi jumlah ayat surat ini (" + max + ")";
+            } else if (reversed) {
+                this.ayatError =
+                    "Ayat awal tidak boleh lebih besar dari ayat akhir";
+            } else {
+                this.ayatError = "";
+            }
+        },
+
+        /* ── Rich text editor commands ── */
+        execCmd(cmd) {
+            document.execCommand(cmd, false, null);
+            if (this.$refs.ceramahEditor) this.$refs.ceramahEditor.focus();
+            this.updateEditorFormats();
+        },
+
+        /* ── LocalStorage persistence ── */
         loadSubmittedDays() {
             try {
-                const saved = localStorage.getItem("ramadhan_submitted_days");
+                var saved = localStorage.getItem("ramadhan_submitted_days");
                 this.submittedDays = saved ? JSON.parse(saved) : [];
             } catch (e) {
                 this.submittedDays = [];
@@ -76,17 +328,60 @@ function formulirHarian() {
         checkFormSubmitted() {
             this.formSubmitted = this.submittedDays.includes(this.formDay);
             try {
-                const savedForm = localStorage.getItem(
+                var savedForm = localStorage.getItem(
                     "ramadhan_form_day_" + this.formDay,
                 );
                 if (savedForm) {
-                    this.formData = JSON.parse(savedForm);
+                    var parsed = JSON.parse(savedForm);
+                    this.formData = this._deepMerge(this.formData, parsed);
+                    // Restore rich text editor content
+                    var self = this;
+                    if (self.formData.ringkasan_ceramah) {
+                        this.$nextTick(function () {
+                            if (self.$refs.ceramahEditor) {
+                                self.$refs.ceramahEditor.innerHTML =
+                                    self.formData.ringkasan_ceramah;
+                            }
+                        });
+                    }
+                    // Restore surah ayat count
+                    if (this.formData.tadarus_surat) {
+                        var found = this.allSurahs.find(function (s) {
+                            return s.name === self.formData.tadarus_surat;
+                        });
+                        if (found) this.selectedSurahAyat = found.ayat;
+                    }
                 }
             } catch (e) {}
         },
 
+        _deepMerge(target, source) {
+            var result = Object.assign({}, target);
+            for (var key in source) {
+                if (!source.hasOwnProperty(key)) continue;
+                if (
+                    source[key] &&
+                    typeof source[key] === "object" &&
+                    !Array.isArray(source[key]) &&
+                    target[key] &&
+                    typeof target[key] === "object" &&
+                    !Array.isArray(target[key])
+                ) {
+                    result[key] = this._deepMerge(target[key], source[key]);
+                } else if (source[key] !== undefined) {
+                    result[key] = source[key];
+                }
+            }
+            return result;
+        },
+
         submitForm() {
             this.formSaving = true;
+            // Capture editor content before saving
+            if (this.$refs.ceramahEditor) {
+                this.formData.ringkasan_ceramah =
+                    this.$refs.ceramahEditor.innerHTML;
+            }
             localStorage.setItem(
                 "ramadhan_form_day_" + this.formDay,
                 JSON.stringify(this.formData),
@@ -99,8 +394,9 @@ function formulirHarian() {
                 );
             }
             this.formSubmitted = true;
-            setTimeout(() => {
-                this.formSaving = false;
+            var self = this;
+            setTimeout(function () {
+                self.formSaving = false;
             }, 500);
         },
 
