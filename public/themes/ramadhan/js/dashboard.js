@@ -7,6 +7,7 @@ function ramadhanDashboard() {
     return {
         // ── State ──────────────────────────────────────────────────────────
         activeTab: "calendar",
+        showChangePassword: false,
         prayerTimes: [],
         fullPrayerSchedule: [],
         calendarDays: [],
@@ -30,6 +31,7 @@ function ramadhanDashboard() {
         locationCoords: "",
         cityName: "Ciamis",
         ramadhanDay: 1,
+        calendarMonthLabel: "",
         imsakTime: "--:--",
         maghribTime: "--:--",
         userLat: -7.3305,
@@ -47,16 +49,63 @@ function ramadhanDashboard() {
                 label: "Kalender Ramadhan",
                 mobileLabel: "Kalender",
             },
-            { id: "qibla", label: "Arah Kiblat", mobileLabel: "Kiblat" },
             { id: "schedule", label: "Jadwal Sholat", mobileLabel: "Jadwal" },
+            { id: "qibla", label: "Arah Kiblat", mobileLabel: "Kiblat" },
             { id: "dua", label: "Doa Harian", mobileLabel: "Doa" },
+            { id: "account", label: "Pengaturan Akun", mobileLabel: "Akun" },
         ],
+
+        // ── Form State ─────────────────────────────────────────────────────
+        formDay: 1,
+        formSubmitted: false,
+        formSaving: false,
+        submittedDays: [],
+        formData: {
+            puasa: "",
+            sholat_dzuhur_j: false,
+            sholat_dzuhur_m: false,
+            sholat_ashar_j: false,
+            sholat_ashar_m: false,
+            sholat_maghrib_j: false,
+            sholat_maghrib_m: false,
+            sholat_isya_j: false,
+            sholat_isya_m: false,
+            sholat_subuh_j: false,
+            sholat_subuh_m: false,
+            tarawih_j: false,
+            tarawih_m: false,
+            rowatib: "",
+            tahajud: "",
+            dhuha: "",
+            tadarus_surat: "",
+            tadarus_ayat: "",
+            kegiatan: {
+                dzikir_pagi: false,
+                olahraga: false,
+                membantu_ortu: false,
+                membersihkan_kamar: false,
+                membersihkan_rumah: false,
+                membersihkan_halaman: false,
+                merawat_lingkungan: false,
+                dzikir_petang: false,
+                sedekah: false,
+                buka_keluarga: false,
+                literasi: false,
+                menabung: false,
+                tidur_cepat: false,
+                bangun_pagi: false,
+            },
+            ringkasan_ceramah: "",
+        },
 
         // ── Lifecycle ──────────────────────────────────────────────────────
         init() {
             this.loadIndonesiaLocations();
             this.setDates();
             this.calculateRamadhanDay();
+            this.formDay = this.ramadhanDay;
+            this.loadSubmittedDays();
+            this.checkFormSubmitted();
             this.setPrayerTimes();
             this.buildCalendar();
             this.setDuas();
@@ -2386,24 +2435,69 @@ function ramadhanDashboard() {
 
         buildCalendar() {
             const days = [];
-            const startDayOfWeek = 4; // Thursday (1 Ramadhan 1447H = 19 Feb 2026)
-            for (let i = 0; i < startDayOfWeek; i++) {
+            const ramadhanStart = new Date(2026, 1, 19); // 19 Feb 2026 = 1 Ramadhan 1447H
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Build 30 days with Masehi + Hijri dates
+            for (let d = 0; d < 30; d++) {
+                const date = new Date(ramadhanStart);
+                date.setDate(ramadhanStart.getDate() + d);
+                const hijriDay = d + 1;
+                const masehiDay = date.getDate();
+                const isToday = date.getTime() === today.getTime();
+                const isCompleted = this.submittedDays.includes(hijriDay);
+                const isPast = date < today && !isToday;
+
                 days.push({
+                    key: "d" + hijriDay,
+                    hijriDay: hijriDay,
+                    masehiDay: masehiDay,
+                    month: date.getMonth(), // 0=Jan, 1=Feb, 2=Mar
+                    dayOfWeek: date.getDay(), // 0=Sun
+                    isToday: isToday,
+                    isCompleted: isCompleted,
+                    isPast: isPast,
+                    dateObj: date,
+                });
+            }
+
+            // Group by weeks (Mon-Sun grid)
+            // First, find offset for the first day
+            const firstDow = days[0].dayOfWeek; // 0=Sun..6=Sat
+            // Convert to Mon=0 format: (dow + 6) % 7
+            const monBasedDow = (firstDow + 6) % 7;
+
+            const grid = [];
+            // Empty cells before first day
+            for (let i = 0; i < monBasedDow; i++) {
+                grid.push({
                     key: "e" + i,
-                    day: 0,
+                    hijriDay: 0,
+                    masehiDay: 0,
                     isToday: false,
                     isCompleted: false,
+                    isPast: false,
                 });
             }
-            for (let d = 1; d <= 30; d++) {
-                days.push({
-                    key: "d" + d,
-                    day: d,
-                    isToday: d === this.ramadhanDay,
-                    isCompleted: d < this.ramadhanDay,
-                });
+            // Fill all 30 days
+            for (const d of days) {
+                grid.push(d);
             }
-            this.calendarDays = days;
+            this.calendarDays = grid;
+
+            // Set month label
+            const firstMonth = days[0].dateObj.toLocaleString("id-ID", {
+                month: "long",
+            });
+            const lastMonth = days[29].dateObj.toLocaleString("id-ID", {
+                month: "long",
+            });
+            const year = days[0].dateObj.getFullYear();
+            this.calendarMonthLabel =
+                firstMonth === lastMonth
+                    ? firstMonth + " " + year
+                    : firstMonth + " - " + lastMonth + " " + year;
         },
 
         // ── Prayer Times ───────────────────────────────────────────────────
@@ -2814,6 +2908,99 @@ function ramadhanDashboard() {
                 "Arah " +
                 this.qiblaDirection.toFixed(1) +
                 " derajat dari utara";
+        },
+
+        // ── Form Methods ───────────────────────────────────────────────────
+        loadSubmittedDays() {
+            try {
+                const saved = localStorage.getItem("ramadhan_submitted_days");
+                this.submittedDays = saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                this.submittedDays = [];
+            }
+        },
+
+        checkFormSubmitted() {
+            this.formSubmitted = this.submittedDays.includes(this.formDay);
+            // Load saved form data for current day
+            try {
+                const savedForm = localStorage.getItem(
+                    "ramadhan_form_day_" + this.formDay,
+                );
+                if (savedForm) {
+                    this.formData = JSON.parse(savedForm);
+                }
+            } catch (e) {}
+        },
+
+        resetFormData() {
+            this.formData = {
+                puasa: "",
+                sholat_dzuhur_j: false,
+                sholat_dzuhur_m: false,
+                sholat_ashar_j: false,
+                sholat_ashar_m: false,
+                sholat_maghrib_j: false,
+                sholat_maghrib_m: false,
+                sholat_isya_j: false,
+                sholat_isya_m: false,
+                sholat_subuh_j: false,
+                sholat_subuh_m: false,
+                tarawih_j: false,
+                tarawih_m: false,
+                rowatib: "",
+                tahajud: "",
+                dhuha: "",
+                tadarus_surat: "",
+                tadarus_ayat: "",
+                kegiatan: {
+                    dzikir_pagi: false,
+                    olahraga: false,
+                    membantu_ortu: false,
+                    membersihkan_kamar: false,
+                    membersihkan_rumah: false,
+                    membersihkan_halaman: false,
+                    merawat_lingkungan: false,
+                    dzikir_petang: false,
+                    sedekah: false,
+                    buka_keluarga: false,
+                    literasi: false,
+                    menabung: false,
+                    tidur_cepat: false,
+                    bangun_pagi: false,
+                },
+                ringkasan_ceramah: "",
+            };
+        },
+
+        submitForm() {
+            this.formSaving = true;
+            // Save form data locally
+            localStorage.setItem(
+                "ramadhan_form_day_" + this.formDay,
+                JSON.stringify(this.formData),
+            );
+            // Mark day as submitted
+            if (!this.submittedDays.includes(this.formDay)) {
+                this.submittedDays.push(this.formDay);
+                localStorage.setItem(
+                    "ramadhan_submitted_days",
+                    JSON.stringify(this.submittedDays),
+                );
+            }
+            this.formSubmitted = true;
+            this.buildCalendar(); // refresh calendar progress
+            setTimeout(() => {
+                this.formSaving = false;
+            }, 500);
+        },
+
+        editForm() {
+            this.formSubmitted = false;
+        },
+
+        getProgressPercent() {
+            return Math.round((this.submittedDays.length / 30) * 100);
         },
     };
 }

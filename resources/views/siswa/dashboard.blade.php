@@ -233,13 +233,32 @@
                 {{-- Centered menu bar --}}
                 <div class="center-menu-wrap">
                     <div class="center-menu">
-                        <template x-for="tab in sidebarTabs" :key="tab.id">
+                        {{-- Left tabs: Kalender, Jadwal --}}
+                        <template x-for="tab in sidebarTabs.slice(0, 2)" :key="tab.id">
                             <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
                                 <div class="center-menu-icon">
                                     <svg x-show="tab.id === 'calendar'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
-                                    <svg x-show="tab.id === 'qibla'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     <svg x-show="tab.id === 'schedule'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <span class="center-menu-label" x-text="tab.mobileLabel"></span>
+                            </button>
+                        </template>
+
+                        {{-- Center: Formulir (same style, links to separate page) --}}
+                        <a href="{{ \App\Filament\Siswa\Pages\FormulirHarian::getUrl() }}" class="center-menu-btn" style="text-decoration:none;">
+                            <div class="center-menu-icon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                            </div>
+                            <span class="center-menu-label">Formulir</span>
+                        </a>
+
+                        {{-- Right tabs: Kiblat, Doa, Akun --}}
+                        <template x-for="tab in sidebarTabs.slice(2)" :key="tab.id">
+                            <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
+                                <div class="center-menu-icon">
+                                    <svg x-show="tab.id === 'qibla'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     <svg x-show="tab.id === 'dua'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                    <svg x-show="tab.id === 'account'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </div>
                                 <span class="center-menu-label" x-text="tab.mobileLabel"></span>
                             </button>
@@ -255,8 +274,8 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <h3 class="text-white font-bold text-sm lg:text-base">Kalender Ramadhan 1446 H</h3>
-                                    <p class="text-blue-100 text-[11px] mt-0.5">Maret - April 2025</p>
+                                    <h3 class="text-white font-bold text-sm lg:text-base">Kalender Ramadhan 1447 H</h3>
+                                    <p class="text-blue-100 text-[11px] mt-0.5" x-text="calendarMonthLabel"></p>
                                 </div>
                                 <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-md" x-text="'Hari ke-' + ramadhanDay"></span>
                             </div>
@@ -270,22 +289,27 @@
                                 {{-- Calendar grid --}}
                                 <div class="grid grid-cols-7 gap-1">
                                     <template x-for="item in calendarDays" :key="item.key">
-                                        <div class="calendar-day"
+                                        <div class="calendar-day-dual"
                                             :class="{
                                                 'calendar-day-today': item.isToday,
                                                 'calendar-day-completed': item.isCompleted && !item.isToday,
-                                                'calendar-day-future': !item.isToday && !item.isCompleted && item.day > 0,
-                                                'calendar-day-empty': item.day <= 0
+                                                'calendar-day-future': !item.isToday && !item.isCompleted && item.hijriDay > 0,
+                                                'calendar-day-empty': item.hijriDay <= 0
                                             }">
-                                            <span x-text="item.day > 0 ? item.day : ''"></span>
+                                            <template x-if="item.hijriDay > 0">
+                                                <div class="flex flex-col items-center leading-none">
+                                                    <span class="text-[11px] font-bold" x-text="item.masehiDay"></span>
+                                                    <span class="text-[8px] opacity-60" x-text="item.hijriDay + ' Rmdn'"></span>
+                                                </div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
                                 {{-- Legend --}}
                                 <div class="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-100">
                                     <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div><span class="text-[10px] text-gray-500 font-medium">Hari ini</span></div>
-                                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div><span class="text-[10px] text-gray-500 font-medium">Sudah lewat</span></div>
-                                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-gray-200"></div><span class="text-[10px] text-gray-500 font-medium">Akan datang</span></div>
+                                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div><span class="text-[10px] text-gray-500 font-medium">Terisi</span></div>
+                                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-gray-200"></div><span class="text-[10px] text-gray-500 font-medium">Belum diisi</span></div>
                                 </div>
                             </div>
                         </div>
@@ -294,12 +318,12 @@
                         <div class="card mt-3 p-4 lg:p-5">
                             <div class="flex items-center justify-between mb-3">
                                 <h4 class="text-sm font-bold text-gray-700">Progress Ramadhan</h4>
-                                <span class="text-blue-600 font-bold text-sm" x-text="Math.round((ramadhanDay/30)*100) + '%'"></span>
+                                <span class="text-blue-600 font-bold text-sm" x-text="getProgressPercent() + '%'"></span>
                             </div>
                             <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000" :style="'width:'+Math.round((ramadhanDay/30)*100)+'%'"></div>
+                                <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000" :style="'width:'+getProgressPercent()+'%'"></div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-2" x-text="'Hari ke-' + ramadhanDay + ' dari 30 hari'"></p>
+                            <p class="text-xs text-gray-500 mt-2" x-text="submittedDays.length + ' dari 30 hari terisi'"></p>
                         </div>
                     </div>
 
@@ -426,6 +450,89 @@
                                         <p class="text-xs text-gray-600 leading-relaxed" x-text="dua.meaning"></p>
                                     </div>
                                 </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- PENGATURAN AKUN --}}
+                    <div x-show="activeTab === 'account'" x-transition.opacity.duration.200ms>
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="text-white font-bold text-sm lg:text-base">Pengaturan Akun</h3>
+                                    <p class="text-blue-100 text-[11px] mt-0.5">Kelola profil dan pengaturan</p>
+                                </div>
+                            </div>
+                            <div class="p-4 lg:p-5">
+                                {{-- Profile info --}}
+                                <div class="flex items-center gap-4 mb-5 pb-5 border-b border-gray-100">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                                        <span x-text="'{{ auth()->user()->name ?? 'S' }}'.charAt(0).toUpperCase()"></span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-gray-800 truncate">{{ auth()->user()->name ?? 'Siswa' }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email ?? '-' }}</p>
+                                    </div>
+                                </div>
+
+                                {{-- Menu items --}}
+                                <div class="space-y-1">
+                                    {{-- Ubah Password --}}
+                                    <button class="account-menu-item" @click="showChangePassword = !showChangePassword">
+                                        <div class="account-menu-icon bg-amber-50">
+                                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                                        </div>
+                                        <div class="flex-1 text-left">
+                                            <p class="text-sm font-semibold text-gray-700">Ubah Password</p>
+                                            <p class="text-[11px] text-gray-400">Perbarui kata sandi akun</p>
+                                        </div>
+                                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="showChangePassword && 'rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                                    </button>
+
+                                    {{-- Change password form (expandable) --}}
+                                    <div x-show="showChangePassword" x-transition class="pl-12 pr-2 pb-3 space-y-3">
+                                        <div>
+                                            <label class="text-[11px] font-medium text-gray-500 mb-1 block">Password Lama</label>
+                                            <input type="password" class="form-input" placeholder="Masukkan password lama">
+                                        </div>
+                                        <div>
+                                            <label class="text-[11px] font-medium text-gray-500 mb-1 block">Password Baru</label>
+                                            <input type="password" class="form-input" placeholder="Masukkan password baru">
+                                        </div>
+                                        <div>
+                                            <label class="text-[11px] font-medium text-gray-500 mb-1 block">Konfirmasi Password</label>
+                                            <input type="password" class="form-input" placeholder="Ulangi password baru">
+                                        </div>
+                                        <button class="text-xs font-semibold bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition-all">
+                                            Simpan Password
+                                        </button>
+                                    </div>
+
+                                    {{-- Tentang Aplikasi --}}
+                                    <div class="account-menu-item">
+                                        <div class="account-menu-icon bg-blue-50">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                                        </div>
+                                        <div class="flex-1 text-left">
+                                            <p class="text-sm font-semibold text-gray-700">Tentang Aplikasi</p>
+                                            <p class="text-[11px] text-gray-400">Buku Ramadhan v1.0 - SMKN 1 Ciamis</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Logout --}}
+                                    <form method="POST" action="{{ route('filament.siswa.auth.logout') }}">
+                                        @csrf
+                                        <button type="submit" class="account-menu-item w-full">
+                                            <div class="account-menu-icon bg-red-50">
+                                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+                                            </div>
+                                            <div class="flex-1 text-left">
+                                                <p class="text-sm font-semibold text-red-600">Keluar</p>
+                                                <p class="text-[11px] text-gray-400">Logout dari akun</p>
+                                            </div>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

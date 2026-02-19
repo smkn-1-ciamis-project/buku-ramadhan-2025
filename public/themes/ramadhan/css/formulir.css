@@ -1,0 +1,91 @@
+/* ===== FORMULIR PAGE ===== */
+.formulir-page {
+    min-height: 100vh;
+    background: #f1f5f9;
+}
+
+.formulir-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.formulir-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.formulir-back-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.formulir-body {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1rem 1rem 2rem;
+}
+
+.formulir-content {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+    .formulir-body {
+        padding: 1.5rem 1.5rem 3rem;
+    }
+    .formulir-content {
+        padding: 1.75rem;
+        border-radius: 1.25rem;
+    }
+}
+
+/* Override Filament for this page too */
+.fi-page-header,
+.fi-topbar,
+.fi-sidebar-close-overlay,
+.fi-sidebar,
+.fi-main-sidebar {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+html.fi,
+html.fi body,
+.fi-body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f1f5f9 !important;
+}
+html.fi .fi-layout,
+html.fi .fi-layout > *,
+html.fi .fi-main-ctn,
+html.fi .fi-main,
+html.fi .fi-page,
+html.fi .fi-page > *,
+html.fi .fi-page > section,
+html.fi section.py-8,
+html.fi section.gap-y-8,
+html.fi .fi-page > section > * {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    max-width: 100% !important;
+}
+.fi-layout {
+    min-height: 100vh;
+}
