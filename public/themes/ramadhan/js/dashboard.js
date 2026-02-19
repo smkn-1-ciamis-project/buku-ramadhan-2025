@@ -1175,12 +1175,14 @@ function ramadhanDashboard() {
                 this.setDefaultLocation();
                 return;
             }
-            // Clear previous watch
+            // Clear any previous watch
             if (this._gpsWatchId !== null) {
                 navigator.geolocation.clearWatch(this._gpsWatchId);
+                this._gpsWatchId = null;
             }
-            // Use watchPosition for progressively better accuracy
-            this._gpsWatchId = navigator.geolocation.watchPosition(
+            // Use getCurrentPosition (fires once) to avoid name flickering
+            // as watchPosition keeps re-triggering with improving accuracy
+            navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     this.userLat = pos.coords.latitude;
                     this.userLng = pos.coords.longitude;
@@ -1201,66 +1203,66 @@ function ramadhanDashboard() {
                     this.selectedTz = tzInfo.tz;
                     this.calculateQibla();
                     this.calculatePrayerTimes();
-                    // Use nearest kecamatan from loaded data first
-                    const nearest = this._findNearestLocation(
-                        this.userLat,
-                        this.userLng,
-                    );
-                    if (nearest) {
-                        const displayKec =
-                            nearest.kecamatan || nearest.kabupaten;
-                        this.locationCity =
-                            displayKec + ", " + nearest.kabupaten;
-                        this.cityName = displayKec;
-                        this.locationText =
-                            displayKec + ", " + nearest.provinsi;
-                    } else {
-                        // Fallback: reverse geocode with high zoom for kecamatan-level
-                        fetch(
-                            "https://nominatim.openstreetmap.org/reverse?lat=" +
-                                this.userLat +
-                                "&lon=" +
-                                this.userLng +
-                                "&format=json&accept-language=id&zoom=14",
-                        )
-                            .then((r) => r.json())
-                            .then((d) => {
-                                const addr = d.address || {};
-                                const kecamatan =
-                                    addr.suburb ||
-                                    addr.village ||
-                                    addr.town ||
-                                    addr.city_district ||
-                                    "";
-                                const kabupaten =
-                                    addr.county ||
-                                    addr.city ||
-                                    addr.state_district ||
-                                    addr.town ||
-                                    addr.state ||
-                                    "Lokasi Anda";
-                                const provinsi = addr.state || "";
-                                const cleanKab = kabupaten
-                                    .replace(/^Kabupaten\s+/i, "Kab. ")
-                                    .replace(/^Kota\s+/i, "Kota ");
-                                if (kecamatan) {
-                                    this.locationCity =
-                                        kecamatan + ", " + cleanKab;
-                                    this.cityName = kecamatan;
-                                } else {
-                                    this.locationCity = provinsi
-                                        ? cleanKab + ", " + provinsi
-                                        : cleanKab;
-                                    this.cityName = cleanKab;
-                                }
+                    // Always use Nominatim reverse geocoding for accurate
+                    // administrative boundary names (avoids nearest-centroid errors)
+                    fetch(
+                        "https://nominatim.openstreetmap.org/reverse?lat=" +
+                            this.userLat +
+                            "&lon=" +
+                            this.userLng +
+                            "&format=json&accept-language=id&zoom=10",
+                    )
+                        .then((r) => r.json())
+                        .then((d) => {
+                            const addr = d.address || {};
+                            const kecamatan =
+                                addr.suburb ||
+                                addr.city_district ||
+                                addr.village ||
+                                addr.town ||
+                                "";
+                            const kabupaten =
+                                addr.county ||
+                                addr.city ||
+                                addr.state_district ||
+                                addr.town ||
+                                addr.state ||
+                                "Lokasi Anda";
+                            const provinsi = addr.state || "";
+                            const cleanKab = kabupaten
+                                .replace(/^Kabupaten\s+/i, "Kab. ")
+                                .replace(/^Kota\s+/i, "Kota ");
+                            if (kecamatan) {
+                                this.locationCity = kecamatan + ", " + cleanKab;
+                                this.cityName = kecamatan;
+                            } else {
+                                this.locationCity = provinsi
+                                    ? cleanKab + ", " + provinsi
+                                    : cleanKab;
+                                this.cityName = cleanKab;
+                            }
+                            this.locationText =
+                                this.locationCity +
+                                (provinsi ? ", " + provinsi : "");
+                        })
+                        .catch(() => {
+                            // Fallback: nearest from JSON if Nominatim fails
+                            const nearest = this._findNearestLocation(
+                                this.userLat,
+                                this.userLng,
+                            );
+                            if (nearest) {
+                                const displayKec =
+                                    nearest.kecamatan || nearest.kabupaten;
+                                this.locationCity =
+                                    displayKec + ", " + nearest.kabupaten;
+                                this.cityName = displayKec;
                                 this.locationText =
-                                    this.locationCity +
-                                    (provinsi ? ", " + provinsi : "");
-                            })
-                            .catch(() => {
+                                    displayKec + ", " + nearest.provinsi;
+                            } else {
                                 this.locationCity = this.locationCoords;
-                            });
-                    }
+                            }
+                        });
                 },
                 () => {
                     this.setDefaultLocation();

@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Siswa\Pages\Auth\Login;
 use App\Filament\Siswa\Pages\Dashboard;
+use App\Http\Middleware\EnsureSingleSession;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -58,6 +59,7 @@ class SiswaPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureSingleSession::class,
             ]);
     }
 }

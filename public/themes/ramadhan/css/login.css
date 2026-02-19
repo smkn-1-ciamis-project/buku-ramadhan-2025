@@ -1,0 +1,847 @@
+﻿/* =====================================================
+   RAMADAN LOGIN PAGE — Clean Islamic Modern UI
+   Buku Ramadhan 2026 — SMKN 1 Ciamis
+   ===================================================== */
+
+/* ── Variables ── */
+:root {
+    --login-navy: #1e3a5f;
+    --login-navy-dark: #0f2440;
+    --login-blue: #2563eb;
+    --login-blue-light: #3b82f6;
+    --login-blue-hover: #1d4ed8;
+    --login-blue-bg: #4b8af0;
+    --login-gold: #b8860b;
+    --login-gold-bg: #fef9ee;
+    --login-gold-border: #f0d68a;
+    --login-gray-50: #f8fafc;
+    --login-gray-100: #f1f5f9;
+    --login-gray-200: #e2e8f0;
+    --login-gray-400: #94a3b8;
+    --login-gray-500: #64748b;
+    --login-gray-700: #334155;
+    --login-gray-900: #0f172a;
+    --login-white: #ffffff;
+    --login-radius: 12px;
+    --login-radius-lg: 20px;
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ── Page Background ── */
+.login-page {
+    height: 100vh;
+    max-height: 100vh;
+    background: var(--login-gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+    font-family:
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        sans-serif;
+}
+
+/* ── Main Container (the big card) ── */
+.login-container {
+    width: 100%;
+    max-width: 900px;
+    max-height: calc(100vh - 40px);
+    background: var(--login-white);
+    border-radius: var(--login-radius-lg);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.07),
+        0 20px 50px -12px rgba(0, 0, 0, 0.12);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    animation: loginSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes loginSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── LEFT COLUMN: Form ── */
+.login-form-col {
+    padding: 40px 40px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Header */
+.login-header {
+    margin-bottom: 32px;
+}
+
+.login-header-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.login-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--login-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.login-logo img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.login-logo-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.login-brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-brand-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--login-gray-900);
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+}
+
+.login-brand-school {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--login-gray-500);
+    letter-spacing: 0.2px;
+}
+
+.login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--login-gold-bg);
+    border: 1px solid var(--login-gold-border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--login-gold);
+    letter-spacing: 0.2px;
+    width: fit-content;
+}
+
+/* Title */
+.login-form-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--login-gray-900);
+    margin-bottom: 6px;
+    letter-spacing: -0.4px;
+}
+
+.login-form-subtitle {
+    font-size: 0.85rem;
+    color: var(--login-gray-500);
+    margin-bottom: 28px;
+}
+
+/* ── Session Expired Alert ── */
+.login-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--login-radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #991b1b;
+    line-height: 1.45;
+    animation: loginAlertFade 0.3s ease-out;
+}
+
+.login-alert svg {
+    flex-shrink: 0;
+    color: #dc2626;
+    margin-top: 1px;
+}
+
+@keyframes loginAlertFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Form Field Overrides (Filament) ── */
+.login-form-area .fi-fo-field-wrp {
+    margin-bottom: 18px;
+}
+
+.login-form-area .fi-fo-field-wrp-label,
+.login-form-area label {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: var(--login-gray-700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+    margin-bottom: 6px !important;
+}
+
+/* Input wrapper IS the visual border container (holds input + suffix like eye icon) */
+.login-form-area .fi-input-wrp {
+    border: 1.5px solid var(--login-gray-200) !important;
+    border-radius: var(--login-radius) !important;
+    background: var(--login-white) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s !important;
+    ring: none !important;
+    --tw-ring-shadow: none !important;
+}
+
+.login-form-area .fi-input-wrp:focus-within {
+    border-color: var(--login-blue) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Input itself — no border, transparent bg (wrapper handles border) */
+.login-form-area input[type="text"],
+.login-form-area input[type="password"],
+.login-form-area input[type="number"],
+.login-form-area .fi-input {
+    width: 100% !important;
+    height: 46px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 14px !important;
+    font-size: 0.9rem !important;
+    color: var(--login-gray-900) !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.login-form-area input:focus,
+.login-form-area .fi-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Suffix container (eye icon toggle) — inside the wrapper */
+.login-form-area .fi-input-wrp-suffix {
+    display: flex !important;
+    align-items: center !important;
+    padding-right: 12px !important;
+}
+
+.login-form-area .fi-input-wrp-suffix .fi-icon-btn {
+    color: var(--login-gray-400) !important;
+    transition: color 0.15s !important;
+}
+
+.login-form-area .fi-input-wrp-suffix .fi-icon-btn:hover {
+    color: var(--login-gray-700) !important;
+}
+
+.login-form-area input::placeholder {
+    color: var(--login-gray-400) !important;
+    font-weight: 400 !important;
+}
+
+/* Hide number input spinners */
+.login-form-area input[type="number"]::-webkit-outer-spin-button,
+.login-form-area input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+.login-form-area input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+/* Helper text */
+.login-form-area .fi-fo-field-wrp-helper-text {
+    font-size: 0.7rem !important;
+    color: var(--login-gray-400) !important;
+    margin-top: 4px !important;
+}
+
+/* Error */
+.login-form-area .fi-fo-field-wrp-error-message {
+    font-size: 0.75rem !important;
+    color: #dc2626 !important;
+    margin-top: 4px !important;
+}
+
+/* Remember checkbox */
+.login-form-area .fi-checkbox-input {
+    accent-color: var(--login-blue) !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* ── Submit Button ── */
+.login-form-area button[type="submit"],
+.login-form-area .fi-btn-primary {
+    width: 100% !important;
+    height: 48px !important;
+    min-height: 44px !important;
+    background: var(--login-blue) !important;
+    color: var(--login-white) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    border-radius: var(--login-radius) !important;
+    border: none !important;
+    cursor: pointer !important;
+    letter-spacing: 0.2px !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3) !important;
+    transition:
+        background 0.15s,
+        box-shadow 0.15s,
+        transform 0.1s !important;
+    margin-top: 6px !important;
+}
+
+.login-form-area button[type="submit"]:hover,
+.login-form-area .fi-btn-primary:hover {
+    background: var(--login-blue-hover) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+.login-form-area button[type="submit"]:active,
+.login-form-area .fi-btn-primary:active {
+    transform: translateY(0) !important;
+}
+
+/* ── Footer inside form column ── */
+.login-form-footer {
+    margin-top: auto;
+    padding-top: 28px;
+    text-align: center;
+}
+
+.login-form-footer-copy {
+    font-size: 0.72rem;
+    color: var(--login-gray-400);
+    margin-bottom: 4px;
+}
+
+.login-form-footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.login-form-footer-links a {
+    font-size: 0.7rem;
+    color: var(--login-gray-400);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.login-form-footer-links a:hover {
+    color: var(--login-blue);
+}
+
+.login-form-footer-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--login-gray-200);
+}
+
+/* ── RIGHT COLUMN: Illustration Panel ── */
+.login-illust-col {
+    background: linear-gradient(160deg, #4b8af0 0%, #2563eb 50%, #1d4ed8 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle floating shapes (decorative) */
+.illust-shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+.illust-shape--1 {
+    width: 200px;
+    height: 200px;
+    background: var(--login-white);
+    top: -40px;
+    right: -60px;
+}
+
+.illust-shape--2 {
+    width: 120px;
+    height: 120px;
+    background: var(--login-white);
+    bottom: 60px;
+    left: -40px;
+}
+
+.illust-shape--3 {
+    width: 80px;
+    height: 80px;
+    background: var(--login-white);
+    top: 40%;
+    right: 10%;
+    opacity: 0.05;
+}
+
+/* Decorative star/diamond shapes */
+.illust-star {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.15;
+    color: var(--login-white);
+    font-size: 24px;
+}
+
+.illust-star--1 {
+    top: 12%;
+    left: 15%;
+    font-size: 28px;
+}
+.illust-star--2 {
+    bottom: 18%;
+    left: 25%;
+    font-size: 20px;
+    opacity: 0.1;
+}
+.illust-star--3 {
+    top: 20%;
+    right: 20%;
+    font-size: 16px;
+    opacity: 0.12;
+}
+.illust-star--4 {
+    bottom: 30%;
+    right: 12%;
+    font-size: 22px;
+    opacity: 0.08;
+}
+
+/* Decorative check circles */
+.illust-check {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.illust-check svg {
+    width: 14px;
+    height: 14px;
+    stroke: rgba(255, 255, 255, 0.4);
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.illust-check--1 {
+    top: 18%;
+    right: 14%;
+}
+.illust-check--2 {
+    top: 30%;
+    right: 8%;
+}
+
+/* Main illustration (masjid icon) */
+.illust-main {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--login-white);
+}
+
+.illust-masjid-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+}
+
+.illust-masjid-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--login-white);
+}
+
+.illust-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.illust-subtitle {
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.85;
+    letter-spacing: 0.2px;
+}
+
+/* Masjid silhouette at bottom of illustration panel */
+.illust-masjid-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.illust-masjid-bottom svg {
+    width: 100%;
+    height: 100%;
+    fill: rgba(255, 255, 255, 0.06);
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════ */
+
+/* ── Desktop ≥ 768px (2-column layout) ── */
+@media (min-width: 768px) {
+    .login-container {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .login-form-col {
+        padding: 40px 40px 32px;
+    }
+}
+
+/* ── Tablet tweaks 768–1023px ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .login-container {
+        max-width: 760px;
+    }
+
+    .login-form-col {
+        padding: 36px 32px 28px;
+    }
+
+    .illust-masjid-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 16px;
+    }
+
+    .illust-title {
+        font-size: 1.35rem;
+    }
+    .illust-subtitle {
+        font-size: 0.82rem;
+    }
+}
+
+/* ── Mobile ≤ 767px ── */
+@media (max-width: 767px) {
+    .login-page {
+        padding: 12px;
+        align-items: flex-start;
+        padding-top: 24px;
+    }
+
+    .login-container {
+        grid-template-columns: 1fr;
+        border-radius: 16px;
+        max-width: 100%;
+        min-height: 0;
+    }
+
+    /* Illustration on top, compact */
+    .login-illust-col {
+        order: -1;
+        min-height: 0;
+        padding: 32px 24px 28px;
+    }
+
+    .illust-masjid-icon {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 12px;
+    }
+
+    .illust-title {
+        font-size: 1.15rem;
+        margin-bottom: 4px;
+    }
+    .illust-subtitle {
+        font-size: 0.78rem;
+    }
+
+    .illust-shape--1 {
+        width: 120px;
+        height: 120px;
+        top: -30px;
+        right: -30px;
+    }
+    .illust-shape--2 {
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        left: -20px;
+    }
+    .illust-shape--3 {
+        display: none;
+    }
+    .illust-star {
+        display: none;
+    }
+    .illust-check {
+        display: none;
+    }
+    .illust-masjid-bottom {
+        height: 50px;
+    }
+
+    /* Form column */
+    .login-form-col {
+        padding: 28px 22px 24px;
+    }
+
+    .login-header-top {
+        gap: 10px;
+    }
+    .login-logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+    }
+    .login-logo img {
+        width: 28px;
+        height: 28px;
+    }
+    .login-logo-icon {
+        font-size: 18px;
+    }
+    .login-brand-name {
+        font-size: 1.05rem;
+    }
+
+    .login-form-title {
+        font-size: 1.3rem;
+    }
+    .login-form-subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+    }
+}
+
+/* ── Very small screens ≤ 380px ── */
+@media (max-width: 380px) {
+    .login-form-col {
+        padding: 22px 16px 20px;
+    }
+    .login-form-title {
+        font-size: 1.15rem;
+    }
+    .login-badge {
+        font-size: 0.65rem;
+        padding: 3px 10px;
+    }
+}
+
+/* ═══════════════════════════════════
+   POPUP — Akun Aktif di Perangkat Lain
+   ═══════════════════════════════════ */
+.login-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-popup-card {
+    background: var(--login-white);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow:
+        0 20px 60px -12px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.login-popup-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    background: #fef2f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-popup-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #ef4444;
+}
+
+.login-popup-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--login-gray-900);
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+}
+
+.login-popup-message {
+    font-size: 0.85rem;
+    color: var(--login-gray-500);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.login-popup-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 44px;
+    background: var(--login-blue);
+    color: var(--login-white);
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--login-radius);
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        box-shadow 0.15s,
+        transform 0.1s;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+.login-popup-btn:hover {
+    background: var(--login-blue-hover);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.login-popup-btn:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+    .login-popup-card {
+        padding: 28px 24px 22px;
+        border-radius: 16px;
+    }
+    .login-popup-icon {
+        width: 52px;
+        height: 52px;
+        margin-bottom: 16px;
+    }
+    .login-popup-icon svg {
+        width: 26px;
+        height: 26px;
+    }
+    .login-popup-title {
+        font-size: 1.05rem;
+    }
+    .login-popup-message {
+        font-size: 0.8rem;
+    }
+}
+
+/* x-cloak: hide elements until Alpine initializes */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Popup transitions */
+.popup-enter {
+    transition: opacity 0.2s ease-out;
+}
+.popup-enter-start {
+    opacity: 0;
+}
+.popup-enter-end {
+    opacity: 1;
+}
+.popup-leave {
+    transition: opacity 0.15s ease-in;
+}
+.popup-leave-start {
+    opacity: 1;
+}
+.popup-leave-end {
+    opacity: 0;
+}
+
+.login-popup-card {
+    animation: popupCardIn 0.25s ease-out both;
+}
+
+@keyframes popupCardIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

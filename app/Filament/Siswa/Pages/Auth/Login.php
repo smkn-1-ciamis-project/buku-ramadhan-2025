@@ -12,6 +12,10 @@ use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 
 class Login extends BaseLogin
 {
+  protected static string $view = 'filament.siswa.pages.auth.login';
+
+  public bool $showDevicePopup = false;
+
   protected function getForms(): array
   {
     return [
@@ -36,9 +40,15 @@ class Login extends BaseLogin
       ->required()
       ->minLength(10)
       ->maxLength(10)
-      ->numeric()
+      ->regex('/^\d{10}$/')
       ->autofocus()
-      ->extraInputAttributes(['tabindex' => 1])
+      ->extraInputAttributes([
+        'tabindex' => 1,
+        'inputmode' => 'numeric',
+        'pattern' => '[0-9]*',
+        'maxlength' => 10,
+        'oninput' => "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)",
+      ])
       ->autocomplete('off');
   }
 
@@ -61,12 +71,34 @@ class Login extends BaseLogin
     }
 
     $data = $this->form->getState();
+    $credentials = $this->getCredentialsFromFormData($data);
 
-    if (! Auth::attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+    // Check if account is already logged in on another device
+    $user = \App\Models\User::where('nisn', $credentials['nisn'])->first();
+
+    if ($user && $user->active_session_id && $user->active_session_id !== session()->getId()) {
+      // Check if old session is still within 12 hours (still valid)
+      if ($user->session_login_at && now()->diffInHours($user->session_login_at, true) < 12) {
+        $this->showDevicePopup = true;
+
+        return null;
+      }
+    }
+
+    // Attempt login — don't use remember_token (we handle session duration ourselves)
+    if (! Auth::attempt($credentials, false)) {
       $this->throwFailureValidationException();
     }
 
     session()->regenerate();
+
+    // Save session tracking data
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $user->update([
+      'active_session_id' => session()->getId(),
+      'session_login_at' => now(),
+    ]);
 
     return app(LoginResponse::class);
   }

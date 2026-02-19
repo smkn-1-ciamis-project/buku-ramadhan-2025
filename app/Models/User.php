@@ -49,6 +49,8 @@ class User extends Authenticatable implements FilamentUser
         'agama',
         'password',
         'role_user_id',
+        'active_session_id',
+        'session_login_at',
     ];
 
     /**
@@ -69,6 +71,7 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'session_login_at' => 'datetime',
     ];
 
 
