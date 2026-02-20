@@ -275,7 +275,7 @@
                             <div class="card-header">
                                 <div>
                                     <h3 class="text-white font-bold text-sm lg:text-base">Kalender Ramadhan 1447 H</h3>
-                                    <p class="text-blue-100 text-[11px] mt-0.5" x-text="calendarMonthLabel"></p>
+                                    <p class="text-white/80 text-[11px] mt-0.5" x-text="calendarMonthLabel" style="color: rgba(255,255,255,0.8) !important;"></p>
                                 </div>
                                 <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-md" x-text="'Hari ke-' + ramadhanDay"></span>
                             </div>

@@ -6,6 +6,8 @@ use App\Models\User;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class Profil extends Page
 {
@@ -19,6 +21,10 @@ class Profil extends Page
   public ?string $name = '';
   public ?string $email = '';
   public ?string $no_hp = '';
+
+  public ?string $current_password = '';
+  public ?string $new_password = '';
+  public ?string $new_password_confirmation = '';
 
   public function mount(): void
   {
@@ -45,6 +51,34 @@ class Profil extends Page
 
     Notification::make()
       ->title('Profil berhasil diperbarui!')
+      ->success()
+      ->send();
+  }
+
+  public function ubahPassword(): void
+  {
+    $this->validate([
+      'current_password' => 'required|string',
+      'new_password' => 'required|string|min:8|confirmed',
+    ]);
+
+    /** @var User $guru */
+    $guru = Auth::user();
+
+    if (! Hash::check($this->current_password, $guru->password)) {
+      throw ValidationException::withMessages([
+        'current_password' => 'Password saat ini tidak sesuai.',
+      ]);
+    }
+
+    $guru->update([
+      'password' => Hash::make($this->new_password),
+    ]);
+
+    $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+
+    Notification::make()
+      ->title('Password berhasil diubah!')
       ->success()
       ->send();
   }

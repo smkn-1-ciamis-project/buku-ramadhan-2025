@@ -1,40 +1,45 @@
 <x-filament-panels::page>
-    {{-- Kill ALL Filament wrapper spacing --}}
-    <style>
-        html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-        html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page > section,
-        html.fi section.py-8,
-        html.fi section.gap-y-8 { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        html.fi .fi-page > section > div,
-        html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
-        *, *::before, *::after { box-sizing: border-box; }
-        .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    </style>
-    <div x-data="nonmuslimDashboard()" x-init="init()" class="ramadhan-app">
+    <div x-data="konghucuDashboard()" x-init="init()" class="ramadhan-app">
+        {{-- Kill ALL Filament wrapper spacing --}}
+        <style>
+            html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
+            html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
+            html.fi .fi-page > section,
+            html.fi section.py-8,
+            html.fi section.gap-y-8 { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+            html.fi .fi-page > section > div,
+            html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+            .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
+            *, *::before, *::after { box-sizing: border-box; }
+            .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        </style>
 
         {{-- ===== HERO HEADER ===== --}}
         <div class="hero-header">
-            {{-- Christian-themed decorations --}}
+            {{-- Konghucu-themed decorations --}}
             <div class="absolute inset-0 overflow-hidden pointer-events-none" style="border-radius: 0 0 2rem 2rem;">
 
-                {{-- ★ Cross ornament top-right --}}
+                {{-- ★ Yin-Yang symbol top-right --}}
                 <div class="islamic-deco islamic-deco-moon" style="top:6%; right:4%;">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {{-- Glowing halo --}}
+                        {{-- Outer glow rings --}}
                         <circle cx="32" cy="32" r="28" stroke="white" stroke-width="1" opacity="0.08"/>
                         <circle cx="32" cy="32" r="22" stroke="white" stroke-width="0.8" opacity="0.06"/>
-                        {{-- Cross --}}
-                        <rect x="28" y="10" width="8" height="44" rx="2" fill="white" opacity="0.15"/>
-                        <rect x="14" y="20" width="36" height="8" rx="2" fill="white" opacity="0.15"/>
-                        {{-- Light rays from cross --}}
-                        <line x1="32" y1="4" x2="32" y2="9" stroke="white" stroke-width="1" opacity="0.12"/>
-                        <line x1="9" y1="24" x2="13" y2="24" stroke="white" stroke-width="1" opacity="0.1"/>
-                        <line x1="51" y1="24" x2="55" y2="24" stroke="white" stroke-width="1" opacity="0.1"/>
-                        <line x1="16" y1="11" x2="19" y2="14" stroke="white" stroke-width="0.8" opacity="0.08"/>
-                        <line x1="48" y1="11" x2="45" y2="14" stroke="white" stroke-width="0.8" opacity="0.08"/>
+                        {{-- Yin-Yang circle --}}
+                        <circle cx="32" cy="32" r="18" stroke="white" stroke-width="1.2" fill="none" opacity="0.15"/>
+                        {{-- S-curve dividing line --}}
+                        <path d="M32 14 A9 9 0 0 1 32 32 A9 9 0 0 0 32 50" fill="white" opacity="0.12"/>
+                        {{-- Yang dot (white in dark) --}}
+                        <circle cx="32" cy="23" r="3" fill="white" opacity="0.08"/>
+                        {{-- Yin dot (dark in white) --}}
+                        <circle cx="32" cy="41" r="3" stroke="white" stroke-width="1" fill="none" opacity="0.1"/>
+                        {{-- Light rays --}}
+                        <line x1="32" y1="4" x2="32" y2="9" stroke="white" stroke-width="1" opacity="0.1"/>
+                        <line x1="9" y1="32" x2="13" y2="32" stroke="white" stroke-width="1" opacity="0.08"/>
+                        <line x1="51" y1="32" x2="55" y2="32" stroke="white" stroke-width="1" opacity="0.08"/>
+                        <line x1="16" y1="16" x2="19" y2="19" stroke="white" stroke-width="0.8" opacity="0.07"/>
+                        <line x1="48" y1="16" x2="45" y2="19" stroke="white" stroke-width="0.8" opacity="0.07"/>
                     </svg>
                 </div>
 
@@ -65,177 +70,210 @@
                     </svg>
                 </div>
 
-                {{-- ★ Church silhouette bottom-left --}}
+                {{-- ★ Klenteng (Chinese temple) silhouette bottom-left --}}
                 <div class="islamic-deco islamic-deco-mosque" style="bottom:0; left:0;">
                     <svg width="200" height="120" viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {{-- Bell tower (tall steeple) --}}
-                        <rect x="55" y="30" width="22" height="120" fill="white" opacity="0.07"/>
-                        <path d="M50 30 L66 5 L82 30Z" fill="white" opacity="0.09"/>
-                        {{-- Cross on top of steeple --}}
-                        <rect x="63" y="0" width="6" height="18" rx="1" fill="white" opacity="0.12"/>
-                        <rect x="57" y="5" width="18" height="5" rx="1" fill="white" opacity="0.12"/>
-                        {{-- Bell window --}}
-                        <path d="M60 45 Q66 38 72 45 L72 55 L60 55Z" fill="white" opacity="0.06"/>
-                        {{-- Main church body --}}
-                        <rect x="10" y="65" width="112" height="85" fill="white" opacity="0.06"/>
-                        {{-- Church roof (A-frame) --}}
-                        <path d="M5 65 L66 25 L127 65Z" fill="white" opacity="0.08"/>
-                        {{-- Small cross on roof peak --}}
-                        <rect x="63" y="18" width="6" height="12" fill="white" opacity="0.05"/>
-                        {{-- Main entrance (arched door) --}}
-                        <path d="M52 150 L52 110 Q66 98 80 110 L80 150Z" fill="white" opacity="0.09"/>
-                        {{-- Rose window (circular) --}}
-                        <circle cx="66" cy="82" r="12" stroke="white" stroke-width="1.2" fill="none" opacity="0.08"/>
-                        <circle cx="66" cy="82" r="8" stroke="white" stroke-width="0.8" fill="none" opacity="0.06"/>
-                        <line x1="66" y1="70" x2="66" y2="94" stroke="white" stroke-width="0.6" opacity="0.05"/>
-                        <line x1="54" y1="82" x2="78" y2="82" stroke="white" stroke-width="0.6" opacity="0.05"/>
-                        {{-- Side windows (arched) --}}
-                        <path d="M22 90 Q28 84 34 90 L34 115 L22 115Z" fill="white" opacity="0.05"/>
-                        <path d="M98 90 Q104 84 110 90 L110 115 L98 115Z" fill="white" opacity="0.05"/>
-                        {{-- Side chapel --}}
-                        <rect x="127" y="85" width="50" height="65" fill="white" opacity="0.05"/>
-                        <path d="M127 85 L152 68 L177 85Z" fill="white" opacity="0.06"/>
-                        {{-- Side chapel window --}}
-                        <path d="M142 100 Q148 94 154 100 L154 120 L142 120Z" fill="white" opacity="0.04"/>
-                        {{-- Stepping stones --}}
-                        <rect x="200" y="140" width="30" height="10" rx="2" fill="white" opacity="0.03"/>
-                        <rect x="220" y="135" width="25" height="15" rx="2" fill="white" opacity="0.03"/>
+                        {{-- Main temple roof (curved Chinese style) --}}
+                        <path d="M30 70 Q65 30 100 50 Q110 35 130 35 Q150 35 160 50 Q195 30 230 70" stroke="white" stroke-width="1.2" fill="white" fill-opacity="0.06" opacity="0.1"/>
+                        {{-- Roof edge curls (upswept eaves) --}}
+                        <path d="M30 70 Q20 65 15 58" stroke="white" stroke-width="1" fill="none" opacity="0.09"/>
+                        <path d="M230 70 Q240 65 245 58" stroke="white" stroke-width="1" fill="none" opacity="0.09"/>
+                        {{-- Second tier roof --}}
+                        <path d="M60 90 Q95 60 130 75 Q165 60 200 90" stroke="white" stroke-width="1" fill="white" fill-opacity="0.05" opacity="0.08"/>
+                        <path d="M60 90 Q50 85 45 80" stroke="white" stroke-width="0.8" fill="none" opacity="0.07"/>
+                        <path d="M200 90 Q210 85 215 80" stroke="white" stroke-width="0.8" fill="none" opacity="0.07"/>
+                        {{-- Temple body / pillars --}}
+                        <rect x="55" y="90" width="150" height="60" fill="white" opacity="0.05"/>
+                        {{-- Pillars --}}
+                        <rect x="70" y="90" width="8" height="60" fill="white" opacity="0.06"/>
+                        <rect x="110" y="90" width="8" height="60" fill="white" opacity="0.06"/>
+                        <rect x="142" y="90" width="8" height="60" fill="white" opacity="0.06"/>
+                        <rect x="182" y="90" width="8" height="60" fill="white" opacity="0.06"/>
+                        {{-- Central door (arched) --}}
+                        <path d="M115 150 L115 110 Q130 100 145 110 L145 150Z" fill="white" opacity="0.08"/>
+                        {{-- Roof ornament (treasure ball / pearl) --}}
+                        <circle cx="130" cy="30" r="5" fill="white" opacity="0.1"/>
+                        <line x1="130" y1="25" x2="130" y2="18" stroke="white" stroke-width="0.8" opacity="0.08"/>
+                        {{-- Incense smoke wisps --}}
+                        <path d="M130 105 Q128 95 132 88 Q128 82 131 75" stroke="white" stroke-width="0.5" fill="none" opacity="0.06"/>
                     </svg>
                 </div>
 
-                {{-- ★ Church silhouette bottom-right (smaller chapel) --}}
+                {{-- ★ Pagoda silhouette bottom-right --}}
                 <div class="islamic-deco islamic-deco-mosque2" style="bottom:0; right:0;">
                     <svg width="180" height="110" viewBox="0 0 220 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {{-- Main chapel body --}}
-                        <rect x="50" y="60" width="120" height="70" fill="white" opacity="0.06"/>
-                        {{-- A-frame roof --}}
-                        <path d="M45 60 L110 20 L175 60Z" fill="white" opacity="0.07"/>
-                        {{-- Steeple --}}
-                        <rect x="103" y="10" width="14" height="50" fill="white" opacity="0.06"/>
-                        <path d="M100 10 L110 -5 L120 10Z" fill="white" opacity="0.08"/>
-                        {{-- Cross on steeple --}}
-                        <rect x="107" y="-10" width="6" height="16" rx="1" fill="white" opacity="0.1"/>
-                        <rect x="101" y="-5" width="18" height="5" rx="1" fill="white" opacity="0.1"/>
-                        {{-- Arched door --}}
-                        <path d="M98 130 L98 95 Q110 85 122 95 L122 130Z" fill="white" opacity="0.08"/>
-                        {{-- Round window --}}
-                        <circle cx="110" cy="72" r="10" stroke="white" stroke-width="1" fill="none" opacity="0.07"/>
-                        <line x1="110" y1="62" x2="110" y2="82" stroke="white" stroke-width="0.5" opacity="0.05"/>
-                        <line x1="100" y1="72" x2="120" y2="72" stroke="white" stroke-width="0.5" opacity="0.05"/>
-                        {{-- Side windows --}}
-                        <path d="M62 78 Q68 72 74 78 L74 100 L62 100Z" fill="white" opacity="0.05"/>
-                        <path d="M146 78 Q152 72 158 78 L158 100 L146 100Z" fill="white" opacity="0.05"/>
-                        {{-- Trees beside chapel --}}
+                        {{-- Pagoda top spire --}}
+                        <line x1="110" y1="0" x2="110" y2="15" stroke="white" stroke-width="1" opacity="0.1"/>
+                        <circle cx="110" cy="3" r="3" fill="white" opacity="0.08"/>
+                        {{-- Tier 1 (top) --}}
+                        <path d="M90 25 Q100 15 110 18 Q120 15 130 25" stroke="white" stroke-width="0.8" fill="white" fill-opacity="0.06" opacity="0.09"/>
+                        <path d="M90 25 Q85 23 82 19" stroke="white" stroke-width="0.6" fill="none" opacity="0.07"/>
+                        <path d="M130 25 Q135 23 138 19" stroke="white" stroke-width="0.6" fill="none" opacity="0.07"/>
+                        <rect x="95" y="25" width="30" height="15" fill="white" opacity="0.05"/>
+                        {{-- Tier 2 --}}
+                        <path d="M80 45 Q95 32 110 37 Q125 32 140 45" stroke="white" stroke-width="0.8" fill="white" fill-opacity="0.05" opacity="0.08"/>
+                        <path d="M80 45 Q74 42 70 37" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                        <path d="M140 45 Q146 42 150 37" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                        <rect x="85" y="45" width="50" height="18" fill="white" opacity="0.04"/>
+                        {{-- Tier 3 --}}
+                        <path d="M70 68 Q90 52 110 58 Q130 52 150 68" stroke="white" stroke-width="0.8" fill="white" fill-opacity="0.05" opacity="0.07"/>
+                        <path d="M70 68 Q63 65 58 58" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                        <path d="M150 68 Q157 65 162 58" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                        <rect x="75" y="68" width="70" height="20" fill="white" opacity="0.04"/>
+                        {{-- Base tier --}}
+                        <path d="M60 92 Q85 75 110 82 Q135 75 160 92" stroke="white" stroke-width="1" fill="white" fill-opacity="0.05" opacity="0.07"/>
+                        <rect x="65" y="92" width="90" height="38" fill="white" opacity="0.05"/>
+                        {{-- Base door --}}
+                        <path d="M100 130 L100 105 Q110 98 120 105 L120 130Z" fill="white" opacity="0.06"/>
+                        {{-- Trees beside pagoda --}}
                         <path d="M25 100 L32 70 L39 100Z" fill="white" opacity="0.05"/>
-                        <path d="M28 110 L32 80 L36 110Z" fill="white" opacity="0.04"/>
                         <rect x="30" y="100" width="4" height="30" fill="white" opacity="0.04"/>
                         <path d="M190 95 L198 68 L206 95Z" fill="white" opacity="0.05"/>
                         <rect x="196" y="95" width="4" height="35" fill="white" opacity="0.04"/>
                     </svg>
                 </div>
 
-                {{-- ★ Ornate cross geometric pattern top-left --}}
+                {{-- ★ Bagua (八卦) octagonal pattern top-left --}}
                 <div class="islamic-deco islamic-deco-geo" style="top:-20px; left:-20px;">
                     <svg width="120" height="120" viewBox="0 0 100 100" fill="none" opacity="0.06">
-                        {{-- Circle frame --}}
-                        <circle cx="50" cy="50" r="40" stroke="white" stroke-width="1.5" fill="none"/>
-                        <circle cx="50" cy="50" r="32" stroke="white" stroke-width="0.8" fill="none"/>
-                        {{-- Celtic/ornate cross --}}
-                        <rect x="44" y="15" width="12" height="70" rx="2" fill="white"/>
-                        <rect x="20" y="35" width="60" height="12" rx="2" fill="white"/>
-                        {{-- Circle at cross intersection --}}
-                        <circle cx="50" cy="41" r="14" stroke="white" stroke-width="2" fill="none"/>
-                        {{-- Decorative endpoints --}}
-                        <circle cx="50" cy="15" r="3" fill="white" opacity="0.8"/>
-                        <circle cx="50" cy="85" r="3" fill="white" opacity="0.8"/>
-                        <circle cx="20" cy="41" r="3" fill="white" opacity="0.8"/>
-                        <circle cx="80" cy="41" r="3" fill="white" opacity="0.8"/>
+                        {{-- Outer octagon --}}
+                        <polygon points="50,10 75,18 90,38 90,62 75,82 50,90 25,82 10,62 10,38 25,18" stroke="white" stroke-width="1.5" fill="none"/>
+                        {{-- Inner octagon --}}
+                        <polygon points="50,22 68,28 78,42 78,58 68,72 50,78 32,72 22,58 22,42 32,28" stroke="white" stroke-width="0.8" fill="none"/>
+                        {{-- Trigram lines (Bagua representation) --}}
+                        {{-- Top trigram --}}
+                        <line x1="42" y1="16" x2="58" y2="16" stroke="white" stroke-width="2"/>
+                        <line x1="42" y1="20" x2="49" y2="20" stroke="white" stroke-width="2"/>
+                        <line x1="51" y1="20" x2="58" y2="20" stroke="white" stroke-width="2"/>
+                        {{-- Bottom trigram --}}
+                        <line x1="42" y1="80" x2="58" y2="80" stroke="white" stroke-width="2"/>
+                        <line x1="42" y1="84" x2="58" y2="84" stroke="white" stroke-width="2"/>
+                        {{-- Left trigram --}}
+                        <line x1="14" y1="44" x2="14" y2="56" stroke="white" stroke-width="2"/>
+                        <line x1="18" y1="44" x2="18" y2="49" stroke="white" stroke-width="2"/>
+                        <line x1="18" y1="51" x2="18" y2="56" stroke="white" stroke-width="2"/>
+                        {{-- Right trigram --}}
+                        <line x1="82" y1="44" x2="82" y2="56" stroke="white" stroke-width="2"/>
+                        <line x1="86" y1="44" x2="86" y2="56" stroke="white" stroke-width="2"/>
+                        {{-- Center yin-yang small --}}
+                        <circle cx="50" cy="50" r="10" stroke="white" stroke-width="1" fill="none"/>
+                        <path d="M50 40 A5 5 0 0 1 50 50 A5 5 0 0 0 50 60" fill="white" opacity="0.8"/>
+                        <circle cx="50" cy="45" r="2" fill="white" opacity="0.5"/>
+                        <circle cx="50" cy="55" r="2" stroke="white" stroke-width="0.8" fill="none"/>
                     </svg>
                 </div>
 
-                {{-- ★ Dove (peace / Holy Spirit) floating left --}}
+                {{-- ★ Phoenix / Crane bird floating left --}}
                 <div class="islamic-deco islamic-deco-lantern" style="top:8%; left:20%;">
                     <svg width="48" height="40" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Body --}}
-                        <ellipse cx="30" cy="28" rx="12" ry="9" fill="white" opacity="0.12"/>
+                        <ellipse cx="28" cy="28" rx="12" ry="8" fill="white" opacity="0.1"/>
+                        {{-- Neck (long, curved crane/phoenix neck) --}}
+                        <path d="M36 24 Q42 16 44 10 Q45 8 47 9" stroke="white" stroke-width="1" fill="none" opacity="0.12"/>
                         {{-- Head --}}
-                        <circle cx="40" cy="22" r="6" fill="white" opacity="0.1"/>
+                        <circle cx="47" cy="9" r="3.5" fill="white" opacity="0.1"/>
                         {{-- Beak --}}
-                        <path d="M46 22 L52 20 L46 24Z" fill="white" opacity="0.15"/>
+                        <path d="M50 8 L55 7 L50 10Z" fill="white" opacity="0.13"/>
+                        {{-- Crown / crest feathers --}}
+                        <path d="M46 6 Q44 2 47 3" stroke="white" stroke-width="0.6" fill="none" opacity="0.1"/>
+                        <path d="M48 6 Q47 1 50 3" stroke="white" stroke-width="0.6" fill="none" opacity="0.1"/>
                         {{-- Left wing (spread) --}}
-                        <path d="M28 25 Q10 10 5 18 Q8 22 18 24Z" fill="white" opacity="0.1" stroke="white" stroke-width="0.6" opacity="0.15"/>
-                        <path d="M18 24 Q6 14 2 22 Q5 25 12 26Z" fill="white" opacity="0.07"/>
+                        <path d="M24 24 Q10 12 5 18 Q10 22 18 25Z" fill="white" opacity="0.08" stroke="white" stroke-width="0.6"/>
+                        <path d="M18 25 Q6 16 2 24 Q6 26 14 27Z" fill="white" opacity="0.06"/>
                         {{-- Right wing --}}
-                        <path d="M32 25 Q38 12 48 15 Q42 20 38 24Z" fill="white" opacity="0.08"/>
-                        {{-- Tail --}}
-                        <path d="M18 28 Q10 32 8 38 Q14 34 20 32Z" fill="white" opacity="0.08"/>
+                        <path d="M32 24 Q38 15 46 18 Q40 22 36 25Z" fill="white" opacity="0.07"/>
+                        {{-- Long tail feathers (phoenix style) --}}
+                        <path d="M16 30 Q6 34 3 42 Q8 38 14 36" stroke="white" stroke-width="0.8" fill="none" opacity="0.08"/>
+                        <path d="M18 32 Q10 38 8 46 Q12 40 17 37" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                        <path d="M20 31 Q14 36 14 44 Q16 39 20 36" stroke="white" stroke-width="0.5" fill="none" opacity="0.05"/>
                         {{-- Eye --}}
-                        <circle cx="42" cy="21" r="1" fill="white" opacity="0.25"/>
-                        {{-- Olive branch --}}
-                        <path d="M50 22 Q54 26 58 24" stroke="white" stroke-width="0.6" fill="none" opacity="0.12"/>
-                        <ellipse cx="56" cy="23" rx="3" ry="1.5" fill="white" opacity="0.1" transform="rotate(-20 56 23)"/>
-                        <ellipse cx="53" cy="25" rx="2.5" ry="1.2" fill="white" opacity="0.08" transform="rotate(10 53 25)"/>
+                        <circle cx="48" cy="8" r="0.8" fill="white" opacity="0.25"/>
                     </svg>
                 </div>
 
-                {{-- ★ Bible / open book floating right-center --}}
+                {{-- ★ Incense burner (Hio/Dupa) floating left-mid --}}
+                <div style="position:absolute; bottom:30%; left:8%; animation: float-slow 5s ease-in-out infinite; animation-delay: 1.5s;">
+                    <svg width="28" height="48" viewBox="0 0 34 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {{-- Smoke wisps --}}
+                        <path d="M17 18 Q14 12 17 6 Q20 0 17 -4" stroke="white" stroke-width="0.8" fill="none" opacity="0.1"/>
+                        <path d="M12 16 Q10 10 12 5 Q14 0 11 -3" stroke="white" stroke-width="0.6" fill="none" opacity="0.07"/>
+                        <path d="M22 16 Q24 10 22 4 Q20 -1 23 -4" stroke="white" stroke-width="0.6" fill="none" opacity="0.07"/>
+                        {{-- Incense sticks --}}
+                        <line x1="14" y1="20" x2="14" y2="6" stroke="white" stroke-width="0.8" opacity="0.12"/>
+                        <line x1="17" y1="20" x2="17" y2="4" stroke="white" stroke-width="0.8" opacity="0.12"/>
+                        <line x1="20" y1="20" x2="20" y2="6" stroke="white" stroke-width="0.8" opacity="0.12"/>
+                        {{-- Glowing tips --}}
+                        <circle cx="14" cy="6" r="1.2" fill="white" opacity="0.15"/>
+                        <circle cx="17" cy="4" r="1.2" fill="white" opacity="0.15"/>
+                        <circle cx="20" cy="6" r="1.2" fill="white" opacity="0.15"/>
+                        {{-- Burner bowl --}}
+                        <path d="M6 22 Q6 18 10 18 L24 18 Q28 18 28 22 L26 32 Q25 36 22 36 L12 36 Q9 36 8 32Z" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.12"/>
+                        {{-- Decorative band --}}
+                        <line x1="8" y1="24" x2="26" y2="24" stroke="white" stroke-width="0.6" opacity="0.08"/>
+                        {{-- Legs / stand --}}
+                        <rect x="11" y="36" width="12" height="3" rx="1" fill="white" opacity="0.1"/>
+                        <rect x="10" y="39" width="14" height="4" rx="2" fill="white" opacity="0.08"/>
+                        <rect x="12" y="43" width="10" height="3" rx="1" fill="white" opacity="0.06"/>
+                        {{-- Glow around tips --}}
+                        <circle cx="17" cy="8" r="6" fill="white" opacity="0.03"/>
+                    </svg>
+                </div>
+
+                {{-- ★ Chinese lantern floating --}}
+                <div style="position:absolute; top:25%; left:35%; animation: float-slow 7s ease-in-out infinite; animation-delay: 2s;">
+                    <svg width="28" height="38" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {{-- Hanging string --}}
+                        <line x1="16" y1="0" x2="16" y2="6" stroke="white" stroke-width="0.8" opacity="0.1"/>
+                        {{-- Top cap --}}
+                        <rect x="10" y="6" width="12" height="3" rx="1" fill="white" opacity="0.12"/>
+                        {{-- Lantern body (oval) --}}
+                        <ellipse cx="16" cy="22" rx="12" ry="13" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.12"/>
+                        {{-- Vertical ribs --}}
+                        <line x1="16" y1="9" x2="16" y2="35" stroke="white" stroke-width="0.5" opacity="0.06"/>
+                        <path d="M10 10 Q4 22 10 34" stroke="white" stroke-width="0.4" fill="none" opacity="0.05"/>
+                        <path d="M22 10 Q28 22 22 34" stroke="white" stroke-width="0.4" fill="none" opacity="0.05"/>
+                        {{-- Horizontal bands --}}
+                        <line x1="5" y1="18" x2="27" y2="18" stroke="white" stroke-width="0.4" opacity="0.05"/>
+                        <line x1="5" y1="26" x2="27" y2="26" stroke="white" stroke-width="0.4" opacity="0.05"/>
+                        {{-- Bottom cap --}}
+                        <rect x="10" y="35" width="12" height="3" rx="1" fill="white" opacity="0.12"/>
+                        {{-- Tassel --}}
+                        <line x1="16" y1="38" x2="16" y2="44" stroke="white" stroke-width="0.8" opacity="0.08"/>
+                        <line x1="14" y1="40" x2="14" y2="43" stroke="white" stroke-width="0.5" opacity="0.06"/>
+                        <line x1="18" y1="40" x2="18" y2="43" stroke="white" stroke-width="0.5" opacity="0.06"/>
+                        {{-- Glow --}}
+                        <ellipse cx="16" cy="22" rx="8" ry="9" fill="white" opacity="0.03"/>
+                    </svg>
+                </div>
+
+                {{-- ★ Small Yin-Yang accent mid-right --}}
+                <div style="position:absolute; top:45%; right:16%; animation: float-slow 5.5s ease-in-out infinite; animation-delay: 0.8s;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="0.8" fill="none" opacity="0.1"/>
+                        <path d="M12 2 A5 5 0 0 1 12 12 A5 5 0 0 0 12 22" fill="white" opacity="0.08"/>
+                        <circle cx="12" cy="7" r="1.5" fill="white" opacity="0.06"/>
+                        <circle cx="12" cy="17" r="1.5" stroke="white" stroke-width="0.6" fill="none" opacity="0.06"/>
+                    </svg>
+                </div>
+
+                {{-- ★ Scroll / Book of wisdom floating right-center --}}
                 <div style="position:absolute; top:35%; right:6%; animation: float-slow 6s ease-in-out infinite;">
                     <svg width="44" height="36" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {{-- Left page --}}
-                        <path d="M28 6 L28 40 L4 38 L4 4Z" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.12"/>
-                        {{-- Right page --}}
-                        <path d="M28 6 L28 40 L52 38 L52 4Z" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.12"/>
-                        {{-- Spine --}}
-                        <line x1="28" y1="4" x2="28" y2="40" stroke="white" stroke-width="1.2" opacity="0.15"/>
-                        {{-- Cross on cover --}}
-                        <rect x="35" y="14" width="2" height="14" fill="white" opacity="0.12"/>
-                        <rect x="30" y="18" width="12" height="2" fill="white" opacity="0.12"/>
-                        {{-- Text lines left --}}
-                        <line x1="10" y1="14" x2="24" y2="14" stroke="white" stroke-width="0.5" opacity="0.06"/>
-                        <line x1="10" y1="18" x2="22" y2="18" stroke="white" stroke-width="0.5" opacity="0.06"/>
-                        <line x1="10" y1="22" x2="24" y2="22" stroke="white" stroke-width="0.5" opacity="0.06"/>
-                        <line x1="10" y1="26" x2="20" y2="26" stroke="white" stroke-width="0.5" opacity="0.06"/>
-                        <line x1="10" y1="30" x2="23" y2="30" stroke="white" stroke-width="0.5" opacity="0.06"/>
+                        {{-- Scroll body --}}
+                        <rect x="8" y="6" width="40" height="32" rx="2" fill="white" opacity="0.07" stroke="white" stroke-width="0.8" opacity="0.1"/>
+                        {{-- Scroll rolls (top and bottom) --}}
+                        <ellipse cx="8" cy="22" rx="3" ry="16" fill="white" opacity="0.06" stroke="white" stroke-width="0.6" opacity="0.08"/>
+                        <ellipse cx="48" cy="22" rx="3" ry="16" fill="white" opacity="0.06" stroke="white" stroke-width="0.6" opacity="0.08"/>
+                        {{-- Chinese character hint (仁 - Ren / Benevolence) --}}
+                        <line x1="22" y1="14" x2="34" y2="14" stroke="white" stroke-width="1" opacity="0.1"/>
+                        <line x1="28" y1="14" x2="28" y2="30" stroke="white" stroke-width="1" opacity="0.1"/>
+                        <line x1="22" y1="22" x2="28" y2="22" stroke="white" stroke-width="0.8" opacity="0.08"/>
+                        <line x1="24" y1="22" x2="22" y2="30" stroke="white" stroke-width="0.8" opacity="0.08"/>
+                        <line x1="28" y1="30" x2="34" y2="28" stroke="white" stroke-width="0.8" opacity="0.08"/>
                     </svg>
                 </div>
 
-                {{-- ★ Candle with flame (left-mid) --}}
-                <div style="position:absolute; bottom:30%; left:8%; animation: float-slow 5s ease-in-out infinite; animation-delay: 1.5s;">
-                    <svg width="24" height="44" viewBox="0 0 30 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {{-- Flame --}}
-                        <path d="M15 4 Q11 12 12 18 Q15 14 15 10 Q15 14 18 18 Q19 12 15 4Z" fill="white" opacity="0.15"/>
-                        <path d="M15 8 Q13 13 13.5 16 Q15 13 16.5 16 Q17 13 15 8Z" fill="white" opacity="0.1"/>
-                        {{-- Candle body --}}
-                        <rect x="10" y="18" width="10" height="30" rx="2" fill="white" opacity="0.08" stroke="white" stroke-width="0.8" opacity="0.12"/>
-                        {{-- Wax drip --}}
-                        <path d="M10 22 Q8 26 10 28" stroke="white" stroke-width="0.6" fill="white" opacity="0.06"/>
-                        {{-- Holder --}}
-                        <rect x="6" y="48" width="18" height="4" rx="2" fill="white" opacity="0.1"/>
-                        <rect x="8" y="52" width="14" height="4" rx="2" fill="white" opacity="0.08"/>
-                        {{-- Glow around flame --}}
-                        <circle cx="15" cy="14" r="8" fill="white" opacity="0.04"/>
-                    </svg>
-                </div>
-
-                {{-- ★ Music notes (worship) floating --}}
-                <div style="position:absolute; top:25%; left:35%; animation: float-slow 7s ease-in-out infinite; animation-delay: 2s;">
-                    <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 28 L12 10 L28 6 L28 24" stroke="white" stroke-width="1.2" fill="none" opacity="0.1"/>
-                        <circle cx="9" cy="28" r="4" fill="white" opacity="0.1"/>
-                        <circle cx="25" cy="24" r="4" fill="white" opacity="0.1"/>
-                        <path d="M12 14 L28 10" stroke="white" stroke-width="1" opacity="0.08"/>
-                    </svg>
-                </div>
-
-                {{-- ★ Small cross accent mid-right --}}
-                <div style="position:absolute; top:45%; right:16%; animation: float-slow 5.5s ease-in-out infinite; animation-delay: 0.8s;">
-                    <svg width="16" height="20" viewBox="0 0 20 26" fill="none">
-                        <rect x="8" y="0" width="4" height="26" rx="1" fill="white" opacity="0.1"/>
-                        <rect x="2" y="6" width="16" height="4" rx="1" fill="white" opacity="0.1"/>
-                    </svg>
-                </div>
-
-                {{-- ★ Heart (God's love) --}}
+                {{-- ★ Heart (Ren / benevolence) --}}
                 <div style="position:absolute; top:50%; left:28%; animation: float-slow 6.5s ease-in-out infinite; animation-delay: 3s;">
                     <svg width="16" height="15" viewBox="0 0 24 22" fill="white" opacity="0.08">
                         <path d="M12 21 C5 14 0 10 0 6 C0 2.7 2.7 0 6 0 C8.2 0 10.3 1.2 12 3 C13.7 1.2 15.8 0 18 0 C21.3 0 24 2.7 24 6 C24 10 19 14 12 21Z"/>
@@ -286,12 +324,12 @@
                     </div>
                 </div>
 
-                {{-- Sunday church reminder (replaces prayer times bar) --}}
+                {{-- Konghucu sembahyang reminder --}}
                 <template x-if="isSunday">
                     <div class="prayer-row-section">
                         <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding:0.75rem 1rem; background:rgba(255,255,255,0.15); border-radius:0.75rem; backdrop-filter:blur(8px);">
                             <svg style="width:1.25rem;height:1.25rem;color:#fbbf24;flex-shrink:0;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                            <span style="color:#fff; font-size:0.75rem; font-weight:600;">Hari Minggu — Jangan lupa ibadah ke gereja!</span>
+                            <span style="color:#fff; font-size:0.75rem; font-weight:600;">Hari Minggu — Waktunya sembahyang ke Klenteng!</span>
                         </div>
                     </div>
                 </template>
@@ -321,7 +359,7 @@
                         </button>
 
                         {{-- Formulir (link to separate page) --}}
-                        <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\FormulirHarian::getUrl() }}" class="center-menu-btn" style="text-decoration:none;" target="_blank" rel="noopener noreferrer">
+                        <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\Konghucu\FormulirHarian::getUrl() }}" class="center-menu-btn" style="text-decoration:none;" target="_blank" rel="noopener noreferrer">
                             <div class="center-menu-icon">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
                             </div>
@@ -355,7 +393,7 @@
                             <div class="card-header">
                                 <div>
                                     <h3 class="text-white font-bold text-sm lg:text-base">Kalender Kegiatan Positif</h3>
-                                    <p class="text-blue-100 text-[11px] mt-0.5" x-text="calendarMonthLabel"></p>
+                                    <p class="text-white/80 text-[11px] mt-0.5" x-text="calendarMonthLabel" style="color: rgba(255,255,255,0.8) !important;"></p>
                                 </div>
                                 <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-md" x-text="'Hari ke-' + ramadhanDay"></span>
                             </div>
@@ -370,7 +408,7 @@
                                         <p class="cal-alert-title">Ada hari yang belum diisi!</p>
                                         <p class="cal-alert-sub" x-text="calendarDays.filter(d => d.isPastUnfilled).length + ' hari lalu belum mengisi formulir'"></p>
                                     </div>
-                                    <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;">
+                                    <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\Konghucu\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;">
                                         Isi Sekarang
                                     </a>
                                 </div>
@@ -477,7 +515,7 @@
                         </div>
                     </div>
 
-                    {{-- DOA & RENUNGAN KRISTEN --}}
+                    {{-- DOA & AJARAN KONGHUCU --}}
                     <div x-show="activeTab === 'dua'" x-transition.opacity.duration.200ms>
                         <div class="doa-card">
                             {{-- Header --}}
@@ -491,9 +529,9 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <h3 class="doa-header-title-text">Koleksi Doa & Renungan</h3>
+                                            <h3 class="doa-header-title-text">Doa & Ajaran Konghucu</h3>
                                             <p class="doa-header-sub">
-                                                <span x-text="filteredDuas.length"></span> doa Kristiani
+                                                <span x-text="filteredDuas.length"></span> doa & ajaran Konghucu
                                             </p>
                                         </div>
                                     </div>
@@ -515,7 +553,7 @@
                                     <input type="text"
                                            x-model="doaSearch"
                                            @input.debounce.200ms="filterDuas()"
-                                           placeholder="Cari doa... (contoh: syukur, pengampunan, keluarga)"
+                                           placeholder="Cari doa... (contoh: kebajikan, sembahyang, keluarga)"
                                            class="doa-search-input">
                                     <button x-show="doaSearch.length > 0"
                                             @click="doaSearch = ''; filterDuas()"
@@ -575,12 +613,12 @@
                                              class="doa-item-content">
                                             {{-- Prayer text --}}
                                             <div class="doa-translation-wrap">
-                                                <span class="doa-label">Doa</span>
+                                                <span class="doa-label">Doa / Ajaran</span>
                                                 <p class="doa-translation" x-text="dua.text" style="white-space:pre-line;"></p>
                                             </div>
-                                            {{-- Bible reference --}}
+                                            {{-- Source reference --}}
                                             <div x-show="dua.verse" class="doa-latin-wrap">
-                                                <span class="doa-label">Ayat Alkitab</span>
+                                                <span class="doa-label">Sumber Ajaran</span>
                                                 <p class="doa-latin" x-text="dua.verse" style="font-style:italic;"></p>
                                             </div>
                                         </div>
@@ -757,20 +795,26 @@
                         </div>
                     </div>
 
-                    {{-- AYAT ALKITAB / MOTIVASI --}}
+                    {{-- AJARAN KONGHUCU HARI INI --}}
                     <div class="verse-card">
                         <div class="verse-card-bg"></div>
                         <div class="verse-card-content">
                             <div class="verse-badge">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-                                <span>Ayat Alkitab Hari Ini</span>
+                                {{-- Yin-Yang icon instead of cross/book --}}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M12 2 A5 5 0 0 1 12 12 A5 5 0 0 0 12 22" fill="currentColor" opacity="0.3"/>
+                                    <circle cx="12" cy="7" r="1.5" fill="currentColor" opacity="0.2"/>
+                                    <circle cx="12" cy="17" r="1.5" stroke="currentColor" stroke-width="1" fill="none"/>
+                                </svg>
+                                <span>Ajaran Konghucu Hari Ini</span>
                             </div>
                             <div class="verse-text" x-text="dailyVerse.text"></div>
                             <div class="verse-source" x-text="dailyVerse.source"></div>
                             <div class="verse-footer">
                                 <button class="verse-refresh-btn" @click="refreshVerse()">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.182-3.182"/></svg>
-                                    <span>Ayat Lain</span>
+                                    <span>Ajaran Lain</span>
                                 </button>
                             </div>
                         </div>
@@ -788,5 +832,5 @@
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/nonmuslim/dashboard.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/nonmuslim/konghucu/dashboard.js') }}?v={{ time() }}"></script>
 @endpush

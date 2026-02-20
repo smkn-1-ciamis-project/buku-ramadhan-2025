@@ -2,8 +2,12 @@
 
 namespace App\Filament\Siswa\Pages\Muslim;
 
-use App\Filament\Siswa\Pages\NonMuslim\Dashboard as NonMuslimDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Kristen\Dashboard as KristenDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Hindu\Dashboard as HinduDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Buddha\Dashboard as BuddhaDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Konghucu\Dashboard as KonghucuDashboard;
 use Filament\Pages\Page;
+use App\Models\User;
 
 class Dashboard extends Page
 {
@@ -15,11 +19,23 @@ class Dashboard extends Page
 
     public function mount(): void
     {
-        $agama = strtolower(auth()->user()->agama ?? '');
+        /** @var User $user */
+        $user = auth()->user();
+        $agama = strtolower($user->agama ?? '');
 
-        // Non-Muslim students get redirected to their own dashboard
-        if ($agama !== '' && $agama !== 'islam') {
-            redirect()->to(NonMuslimDashboard::getUrl());
+        $redirectMap = [
+            'kristen' => KristenDashboard::getUrl(),
+            'katolik' => KristenDashboard::getUrl(),
+            'kristen katolik' => KristenDashboard::getUrl(),
+            'hindu' => HinduDashboard::getUrl(),
+            'buddha' => BuddhaDashboard::getUrl(),
+            'budha' => BuddhaDashboard::getUrl(),
+            'konghucu' => KonghucuDashboard::getUrl(),
+            'khonghucu' => KonghucuDashboard::getUrl(),
+        ];
+
+        if (isset($redirectMap[$agama])) {
+            redirect()->to($redirectMap[$agama]);
         }
     }
 

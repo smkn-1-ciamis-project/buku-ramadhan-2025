@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
                 'nisn' => '0012345679',
                 'role' => 'Siswa',
                 'password' => 'siswa123',
-                'agama' => 'Islam',
+                'agama' => 'Kristen',
             ],
             [
                 'name' => 'Siswa Demo 3',
@@ -64,6 +64,38 @@ class UserSeeder extends Seeder
                 'role' => 'Siswa',
                 'password' => 'siswa123',
                 'agama' => 'Kristen',
+            ],
+            [
+                'name' => 'Siswa Demo 4',
+                'email' => 'siswa4@smkn1ciamis.sch.id',
+                'nisn' => '0012345681',
+                'role' => 'Siswa',
+                'password' => 'siswa123',
+                'agama' => 'Katolik',
+            ],
+            [
+                'name' => 'Siswa Demo 5',
+                'email' => 'siswa5@smkn1ciamis.sch.id',
+                'nisn' => '0012345682',
+                'role' => 'Siswa',
+                'password' => 'siswa123',
+                'agama' => 'Hindu',
+            ],
+            [
+                'name' => 'Siswa Demo 6',
+                'email' => 'siswa6@smkn1ciamis.sch.id',
+                'nisn' => '0012345683',
+                'role' => 'Siswa',
+                'password' => 'siswa123',
+                'agama' => 'Buddha',
+            ],
+            [
+                'name' => 'Siswa Demo 7',
+                'email' => 'siswa7@smkn1ciamis.sch.id',
+                'nisn' => '0012345684',
+                'role' => 'Siswa',
+                'password' => 'siswa123',
+                'agama' => 'Konghucu',
             ],
         ];
 

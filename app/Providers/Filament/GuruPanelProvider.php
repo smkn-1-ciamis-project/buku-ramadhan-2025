@@ -29,7 +29,7 @@ class GuruPanelProvider extends PanelProvider
             ->login()
             ->brandName('Panel Guru - Buku Ramadhan')
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Guru/Resources'), for: 'App\\Filament\\Guru\\Resources')
             ->discoverPages(in: app_path('Filament/Guru/Pages'), for: 'App\\Filament\\Guru\\Pages')

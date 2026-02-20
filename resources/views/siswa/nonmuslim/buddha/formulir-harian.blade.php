@@ -1,23 +1,22 @@
 <x-filament-panels::page>
-    <style>
-        html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-        html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
-        html.fi .fi-page > section,
-        html.fi section.py-8,
-        html.fi section.gap-y-8 { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        html.fi .fi-page > section > div,
-        html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
-        .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
-        *, *::before, *::after { box-sizing: border-box; }
-        .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    </style>
-
-    <div x-data="formulirNonMuslim()" x-init="init()" class="formulir-page">
+    <div x-data="formulirBuddha()" x-init="init()" class="formulir-page">
+        <style>
+            html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
+            html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
+            html.fi .fi-page > section,
+            html.fi section.py-8,
+            html.fi section.gap-y-8 { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+            html.fi .fi-page > section > div,
+            html.fi .fi-page > section > div > div { padding: 0 !important; margin: 0 !important; gap: 0 !important; }
+            .fi-topbar, .fi-page-header, .fi-sidebar, .fi-sidebar-close-overlay { display: none !important; height: 0 !important; overflow: hidden !important; }
+            *, *::before, *::after { box-sizing: border-box; }
+            .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        </style>
 
         {{-- Top bar --}}
         <div class="formulir-topbar">
-            <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\Dashboard::getUrl() }}" class="formulir-back-btn">
+            <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\Buddha\Dashboard::getUrl() }}" class="formulir-back-btn">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             </a>
             <div class="formulir-topbar-center">
@@ -31,7 +30,7 @@
         <div class="formulir-body">
             <div class="formulir-content">
 
-                {{-- ── Backfill warning (shown when filling a past day) ── --}}
+                {{-- Backfill warning --}}
                 <div x-show="formDay < currentDay" x-cloak
                      class="f-backfill-banner">
                     <div class="f-backfill-icon">
@@ -46,16 +45,16 @@
                     <div class="f-backfill-badge" x-text="getMissedCount() + ' hari lagi'"></div>
                 </div>
 
-                {{-- Sunday church reminder --}}
-                <div x-show="isSunday" x-cloak class="f-church-reminder">
+                {{-- Worship reminder --}}
+                <div x-show="showWorshipReminder" x-cloak class="f-church-reminder">
                     <div class="f-church-icon">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 0v4m0-4h4m-4 0H8m4 6v8m-5 0h10a1 1 0 001-1v-3a5 5 0 00-5-5h-2a5 5 0 00-5 5v3a1 1 0 001 1z"/>
                         </svg>
                     </div>
                     <div class="f-church-body">
-                        <p class="f-church-title">🙏 Pengingat Hari Minggu</p>
-                        <p class="f-church-sub">Jangan lupa untuk mengikuti ibadah di gereja hari ini!</p>
+                        <p class="f-church-title">🙏 Pengingat Ibadah</p>
+                        <p class="f-church-sub">Jangan lupa untuk bermeditasi dan beribadah di vihara atau di rumah!</p>
                     </div>
                 </div>
 
@@ -73,7 +72,7 @@
 
                 <fieldset :disabled="formSubmitted" class="f-fieldset">
 
-                {{-- ═══ 1. PEMBIASAAN PENGENDALIAN DIRI ═══ --}}
+                {{-- Section 1 --}}
                 <div class="f-section">
                     <h4 class="f-section-title">
                         <span class="f-section-num">1</span> Pembiasaan Pengendalian Diri
@@ -100,13 +99,12 @@
                     </div>
                 </div>
 
-                {{-- ═══ 2. KEGIATAN HARIAN (PEMBIASAAN POSITIF) ═══ --}}
+                {{-- Section 2 --}}
                 <div class="f-section">
                     <h4 class="f-section-title">
                         <span class="f-section-num">2</span> Kegiatan Harian (Pembiasaan Positif)
                     </h4>
 
-                    {{-- Group A: Karakter "Sehat, Baik, Benar" --}}
                     <p class="f-group-label">A. Karakter "Sehat, Baik, Benar"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupA" :key="item.key">
@@ -129,7 +127,6 @@
                         </template>
                     </div>
 
-                    {{-- Group B: Pengembangan Diri "Pinter" --}}
                     <p class="f-group-label">B. Pengembangan Diri "Pinter"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupB" :key="item.key">
@@ -152,7 +149,6 @@
                         </template>
                     </div>
 
-                    {{-- Group C: Kemandirian "Mandiri & Disiplin" --}}
                     <p class="f-group-label">C. Kemandirian "Mandiri & Disiplin"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupC" :key="item.key">
@@ -176,7 +172,7 @@
                     </div>
                 </div>
 
-                {{-- ═══ 3. CATATAN HARIAN ═══ --}}
+                {{-- Section 3 --}}
                 <div class="f-section f-section-last">
                     <h4 class="f-section-title">
                         <span class="f-section-num">3</span> Catatan Harian
@@ -234,5 +230,5 @@
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/nonmuslim/formulir.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/formulir.js') }}?v={{ time() }}"></script>
 @endpush

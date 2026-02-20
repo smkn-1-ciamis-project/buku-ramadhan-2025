@@ -1,8 +1,17 @@
 <x-filament-panels::page>
     <style>
         .gd-profil-container {
-            max-width: 600px;
+            max-width: 1100px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .gd-profil-container {
+                grid-template-columns: 1fr;
+            }
         }
         .gd-profil-card {
             background: #fff;
@@ -11,59 +20,59 @@
             overflow: hidden;
         }
         .gd-profil-header {
-            background: linear-gradient(135deg, #166534 0%, #15803d 50%, #22c55e 100%);
-            padding: 32px 24px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
+            padding: 20px 20px;
             text-align: center;
             position: relative;
         }
         .gd-profil-avatar {
-            width: 72px;
-            height: 72px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
-            border: 3px solid rgba(255,255,255,0.4);
+            margin: 0 auto 8px;
+            border: 2px solid rgba(255,255,255,0.4);
         }
         .gd-profil-avatar span {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
             color: #fff;
         }
         .gd-profil-header h3 {
             color: #fff;
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
-            margin: 0 0 4px;
+            margin: 0 0 2px;
         }
         .gd-profil-header p {
             color: rgba(255,255,255,0.8);
-            font-size: 13px;
+            font-size: 12px;
             margin: 0;
         }
         .gd-profil-body {
-            padding: 24px;
+            padding: 16px 20px;
         }
         .gd-profil-field {
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
         .gd-profil-label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .gd-profil-input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13px;
             color: #1e293b;
             background: #f8fafc;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -71,8 +80,8 @@
             box-sizing: border-box;
         }
         .gd-profil-input:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
             background: #fff;
         }
         .gd-profil-hint {
@@ -82,16 +91,16 @@
         }
         .gd-profil-btn {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+            padding: 10px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
             color: #fff;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: opacity 0.2s, transform 0.1s;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         .gd-profil-btn:hover {
             opacity: 0.9;
@@ -100,27 +109,27 @@
             transform: scale(0.98);
         }
         .gd-profil-kelas {
-            padding: 16px 24px;
-            background: #f0fdf4;
-            border-top: 1px solid #dcfce7;
+            padding: 10px 20px;
+            background: #eff6ff;
+            border-top: 1px solid #bfdbfe;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .gd-profil-kelas-icon {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #bbf7d0, #86efac);
+            background: linear-gradient(135deg, #bfdbfe, #93c5fd);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
         .gd-profil-kelas-icon svg {
-            width: 18px;
-            height: 18px;
-            color: #166534;
+            width: 16px;
+            height: 16px;
+            color: #1e3a8a;
         }
         .gd-profil-kelas-text {
             flex: 1;
@@ -133,18 +142,75 @@
             letter-spacing: 0.04em;
         }
         .gd-profil-kelas-value {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: #166534;
+            color: #1e3a8a;
+        }
+        /* Password section */
+        .gd-profil-pw-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .gd-profil-pw-header-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .gd-profil-pw-header-icon svg {
+            width: 20px;
+            height: 20px;
+            color: #fff;
+        }
+        .gd-profil-pw-header-text h4 {
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 2px;
+        }
+        .gd-profil-pw-header-text p {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            margin: 0;
+        }
+        .gd-profil-pw-toggle {
+            position: relative;
+        }
+        .gd-profil-pw-toggle .gd-profil-pw-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .gd-profil-pw-toggle .gd-profil-pw-eye:hover {
+            color: #3b82f6;
+        }
+        .gd-profil-pw-toggle .gd-profil-input {
+            padding-right: 40px;
         }
     </style>
 
     @php
         $guru = auth()->user();
-        $kelasList = \App\Models\Kelas::where('wali_id', $guru->id)->pluck('nama')->toArray();
+        $kelasList = \App\Models\Kelas::where('wali_id', $guru->id)->pluck('nama')->map(fn($n) => preg_replace('/\s*KLOTER\s*\d*/i', '', $n))->toArray();
     @endphp
 
     <div class="gd-profil-container">
+        {{-- Profil Card --}}
         <div class="gd-profil-card">
             <div class="gd-profil-header">
                 <div class="gd-profil-avatar">
@@ -188,6 +254,62 @@
 
                 <button type="submit" class="gd-profil-btn">
                     Simpan Perubahan
+                </button>
+            </form>
+        </div>
+
+        {{-- Ubah Password Card --}}
+        <div class="gd-profil-card" x-data="{ showCurrent: false, showNew: false, showConfirm: false }">
+            <div class="gd-profil-pw-header">
+                <div class="gd-profil-pw-header-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+                </div>
+                <div class="gd-profil-pw-header-text">
+                    <h4>Ubah Password</h4>
+                    <p>Perbarui kata sandi akun Anda</p>
+                </div>
+            </div>
+
+            <form wire:submit="ubahPassword" class="gd-profil-body">
+                <div class="gd-profil-field">
+                    <label class="gd-profil-label">Password Saat Ini</label>
+                    <div class="gd-profil-pw-toggle">
+                        <input :type="showCurrent ? 'text' : 'password'" wire:model="current_password" class="gd-profil-input" placeholder="Masukkan password saat ini">
+                        <button type="button" class="gd-profil-pw-eye" @click="showCurrent = !showCurrent">
+                            <svg x-show="!showCurrent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                            <svg x-show="showCurrent" x-cloak fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                        </button>
+                    </div>
+                    @error('current_password') <div style="color:#dc2626;font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="gd-profil-field">
+                    <label class="gd-profil-label">Password Baru</label>
+                    <div class="gd-profil-pw-toggle">
+                        <input :type="showNew ? 'text' : 'password'" wire:model="new_password" class="gd-profil-input" placeholder="Masukkan password baru">
+                        <button type="button" class="gd-profil-pw-eye" @click="showNew = !showNew">
+                            <svg x-show="!showNew" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                            <svg x-show="showNew" x-cloak fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                        </button>
+                    </div>
+                    <div class="gd-profil-hint">Minimal 8 karakter</div>
+                    @error('new_password') <div style="color:#dc2626;font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="gd-profil-field">
+                    <label class="gd-profil-label">Konfirmasi Password Baru</label>
+                    <div class="gd-profil-pw-toggle">
+                        <input :type="showConfirm ? 'text' : 'password'" wire:model="new_password_confirmation" class="gd-profil-input" placeholder="Ulangi password baru">
+                        <button type="button" class="gd-profil-pw-eye" @click="showConfirm = !showConfirm">
+                            <svg x-show="!showConfirm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                            <svg x-show="showConfirm" x-cloak fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                        </button>
+                    </div>
+                    @error('new_password_confirmation') <div style="color:#dc2626;font-size:12px;margin-top:4px;">{{ $message }}</div> @enderror
+                </div>
+
+                <button type="submit" class="gd-profil-btn">
+                    Ubah Password
                 </button>
             </form>
         </div>
