@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\FormSubmissionController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,7 +22,7 @@ Route::get('/', function () {
 
 // Siswa Dashboard — standalone (no Filament template)
 Route::get('/siswa', function () {
-    if (!auth()->check()) {
+    if (!Auth::check()) {
         return redirect('/siswa/login');
     }
     return view('siswa.dashboard');

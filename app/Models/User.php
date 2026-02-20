@@ -48,6 +48,7 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'nisn',
         'agama',
+        'no_hp',
         'password',
         'role_user_id',
         'kelas_id',

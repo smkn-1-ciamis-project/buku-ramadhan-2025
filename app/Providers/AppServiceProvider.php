@@ -23,28 +23,25 @@ class AppServiceProvider extends ServiceProvider
     {
         // Clear session tracking when user logs out.
         //
-        // IMPORTANT: Auth::logout() is also called inside EnsureSingleSession when
-        // an OLD device is kicked (session mismatch). At that point session()->getId()
-        // equals the OLD device's session — NOT the DB's active_session_id (which
-        // already holds the NEW device's session). We MUST only wipe the DB when the
-        // device doing the logout is the one that actually owns the active session,
-        // otherwise we break the new device's 12-hour timer and single-session guard.
+        // Jika logout dipicu oleh EnsureSingleSession (perangkat LAMA ditendang),
+        // flag 'logout_kicked_by_single_session' sudah di-set → JANGAN hapus
+        // active_session_id karena milik perangkat BARU.
+        //
+        // Jika user logout secara eksplisit (klik tombol logout), SELALU hapus
+        // active_session_id agar user bisa login lagi di perangkat manapun.
         Event::listen(Logout::class, function (Logout $event) {
             if ($event->user) {
+                // Jangan hapus jika ini adalah tendangan dari EnsureSingleSession
+                if (app()->bound('logout_kicked_by_single_session')) {
+                    return;
+                }
+
                 /** @var \App\Models\User $user */
                 $user = $event->user;
-
-                // session()->getId() at this point is still the session of the device
-                // being logged out (before session()->invalidate() is called).
-                if (
-                    $user->active_session_id !== null &&
-                    $user->active_session_id === session()->getId()
-                ) {
-                    $user->update([
-                        'active_session_id' => null,
-                        'session_login_at'  => null,
-                    ]);
-                }
+                $user->update([
+                    'active_session_id' => null,
+                    'session_login_at'  => null,
+                ]);
             }
         });
     }

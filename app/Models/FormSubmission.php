@@ -15,15 +15,25 @@ class FormSubmission extends Model
     'user_id',
     'hari_ke',
     'data',
+    'status',
+    'verified_by',
+    'verified_at',
+    'catatan_guru',
   ];
 
   protected $casts = [
     'data' => 'array',
     'hari_ke' => 'integer',
+    'verified_at' => 'datetime',
   ];
 
   public function user(): BelongsTo
   {
     return $this->belongsTo(User::class);
+  }
+
+  public function verifier(): BelongsTo
+  {
+    return $this->belongsTo(User::class, 'verified_by');
   }
 }

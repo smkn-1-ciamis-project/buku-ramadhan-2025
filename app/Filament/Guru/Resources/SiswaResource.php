@@ -7,11 +7,13 @@ use App\Models\Kelas;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class SiswaResource extends Resource
 {
@@ -41,9 +43,6 @@ class SiswaResource extends Resource
 
   public static function form(Form $form): Form
   {
-    $guru = Auth::user();
-    $kelasIds = Kelas::where('wali_id', $guru->id)->pluck('id');
-
     return $form
       ->schema([
         Forms\Components\Section::make('Data Siswa')
@@ -59,7 +58,7 @@ class SiswaResource extends Resource
             Forms\Components\TextInput::make('email')
               ->label('Email')
               ->email()
-              ->required(),
+              ->helperText('Opsional. Jika dikosongkan, akan otomatis digenerate dari NISN (nisn@siswa.buku-ramadhan.id).'),
             Forms\Components\Select::make('jenis_kelamin')
               ->label('Jenis Kelamin')
               ->options([
@@ -78,10 +77,12 @@ class SiswaResource extends Resource
                 'Konghucu'  => 'Konghucu',
               ])
               ->required(),
-            Forms\Components\Select::make('kelas_id')
-              ->label('Kelas')
-              ->options(Kelas::whereIn('id', $kelasIds)->pluck('nama', 'id'))
-              ->required(),
+            Forms\Components\TextInput::make('password')
+              ->label('Password')
+              ->password()
+              ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
+              ->dehydrated(fn($state) => filled($state))
+              ->helperText('Kosongkan jika tidak ingin mengubah. Default: NISN siswa.'),
           ])
           ->columns(2),
       ]);
@@ -89,9 +90,6 @@ class SiswaResource extends Resource
 
   public static function table(Table $table): Table
   {
-    $guru = Auth::user();
-    $kelasOptions = Kelas::where('wali_id', $guru->id)->pluck('nama', 'id')->toArray();
-
     return $table
       ->columns([
         Tables\Columns\TextColumn::make('nisn')
@@ -120,15 +118,9 @@ class SiswaResource extends Resource
           ->badge()
           ->color('success')
           ->sortable(),
-        Tables\Columns\TextColumn::make('kelas.nama')
-          ->label('Kelas')
-          ->sortable(),
       ])
       ->defaultSort('name')
       ->filters([
-        Tables\Filters\SelectFilter::make('kelas_id')
-          ->label('Kelas')
-          ->options($kelasOptions),
         Tables\Filters\SelectFilter::make('jenis_kelamin')
           ->label('Jenis Kelamin')
           ->options([
@@ -147,9 +139,45 @@ class SiswaResource extends Resource
           ]),
       ])
       ->actions([
-        Tables\Actions\EditAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\Action::make('resetPassword')
+            ->label('Reset Password')
+            ->icon('heroicon-o-key')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Password Siswa')
+            ->modalDescription(fn(User $record) => "Password siswa {$record->name} akan direset ke NISN ({$record->nisn}). Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Reset')
+            ->action(function (User $record) {
+              $record->update([
+                'password' => Hash::make($record->nisn),
+              ]);
+              Notification::make()
+                ->title('Password berhasil direset')
+                ->body("Password {$record->name} direset ke NISN: {$record->nisn}")
+                ->success()
+                ->send();
+            }),
+          Tables\Actions\DeleteAction::make()
+            ->requiresConfirmation()
+            ->modalHeading('Hapus Siswa')
+            ->modalDescription('Apakah Anda yakin ingin menghapus siswa ini? Data yang sudah dihapus tidak dapat dikembalikan.')
+            ->modalSubmitActionLabel('Ya, Hapus'),
+        ])
+          ->icon('heroicon-m-ellipsis-vertical')
+          ->tooltip('Aksi'),
       ])
-      ->bulkActions([]);
+      ->bulkActions([
+        Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\DeleteBulkAction::make()
+            ->requiresConfirmation()
+            ->modalHeading('Hapus Siswa Terpilih')
+            ->modalDescription('Apakah Anda yakin ingin menghapus semua siswa yang dipilih?')
+            ->modalSubmitActionLabel('Ya, Hapus Semua'),
+        ]),
+      ]);
   }
 
   public static function getRelations(): array
@@ -161,6 +189,7 @@ class SiswaResource extends Resource
   {
     return [
       'index'  => Pages\ListSiswa::route('/'),
+      'create' => Pages\CreateSiswa::route('/create'),
       'edit'   => Pages\EditSiswa::route('/{record}/edit'),
     ];
   }

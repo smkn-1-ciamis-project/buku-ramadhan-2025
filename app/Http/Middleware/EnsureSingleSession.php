@@ -32,6 +32,10 @@ class EnsureSingleSession
                 $user->active_session_id &&
                 $user->active_session_id !== session()->getId()
             ) {
+                // Flag agar Logout event listener TIDAK menghapus active_session_id
+                // (karena session yang aktif milik perangkat BARU, bukan yang ini)
+                app()->instance('logout_kicked_by_single_session', true);
+
                 Auth::logout();
                 session()->invalidate();
                 session()->regenerateToken();
