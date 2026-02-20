@@ -17,7 +17,7 @@
 
         {{-- Top bar --}}
         <div class="formulir-topbar">
-            <a href="{{ \App\Filament\Siswa\Pages\Dashboard::getUrl() }}" class="formulir-back-btn">
+            <a href="{{ \App\Filament\Siswa\Pages\Muslim\Dashboard::getUrl() }}" class="formulir-back-btn">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             </a>
             <div class="formulir-topbar-center">
@@ -358,5 +358,5 @@
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/formulir.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/muslim/formulir.js') }}?v={{ time() }}"></script>
 @endpush

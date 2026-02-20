@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
                 'nisn' => null,
                 'role' => 'Super Admin',
                 'password' => 'superadmin123',
+                'agama' => 'Islam',
             ],
             [
                 'name' => 'Guru Demo',
@@ -30,6 +31,7 @@ class UserSeeder extends Seeder
                 'nisn' => null,
                 'role' => 'Guru',
                 'password' => 'guru123',
+                'agama' => 'Islam',
             ],
             [
                 'name' => 'Kesiswaan Demo',
@@ -37,6 +39,7 @@ class UserSeeder extends Seeder
                 'nisn' => null,
                 'role' => 'Kesiswaan',
                 'password' => 'kesiswaan123',
+                'agama' => 'Islam',
             ],
             [
                 'name' => 'Siswa Demo 1',
@@ -44,6 +47,7 @@ class UserSeeder extends Seeder
                 'nisn' => '0012345678',
                 'role' => 'Siswa',
                 'password' => 'siswa123',
+                'agama' => 'Islam',
             ],
             [
                 'name' => 'Siswa Demo 2',
@@ -51,6 +55,7 @@ class UserSeeder extends Seeder
                 'nisn' => '0012345679',
                 'role' => 'Siswa',
                 'password' => 'siswa123',
+                'agama' => 'Islam',
             ],
             [
                 'name' => 'Siswa Demo 3',
@@ -58,6 +63,7 @@ class UserSeeder extends Seeder
                 'nisn' => '0012345680',
                 'role' => 'Siswa',
                 'password' => 'siswa123',
+                'agama' => 'Kristen',
             ],
         ];
 
@@ -77,6 +83,7 @@ class UserSeeder extends Seeder
                         'name' => $userData['name'],
                         'email' => $userData['email'],
                         'nisn' => $userData['nisn'],
+                        'agama' => $userData['agama'] ?? null,
                         'role_user_id'  => $roleId,
                         'email_verified_at' => Carbon::now()->format('Y-m-d H:i:s'),
                         'password' => Hash::make($userData['password']),
