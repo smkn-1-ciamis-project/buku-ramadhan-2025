@@ -226,8 +226,10 @@ function formulirHarian() {
         /* ── Lifecycle ── */
         init() {
             this.calculateRamadhanDay();
-            this.formDay = this.ramadhanDay;
             this.loadSubmittedDays();
+            this.syncFromServer();
+            // Always open the oldest unfilled day first (sequential enforcement)
+            this.formDay = this.getFirstUnfilledDay();
             this.checkFormSubmitted();
             this.filteredSurahs = this.allSurahs.slice(0, 15);
         },
@@ -244,6 +246,66 @@ function formulirHarian() {
             );
             const diff = Math.floor((today - ramadhanStart) / 86400000) + 1;
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
+        },
+
+        /* Return the earliest unfilled day (1..ramadhanDay) */
+        getFirstUnfilledDay() {
+            for (var d = 1; d <= this.ramadhanDay; d++) {
+                if (!this.submittedDays.includes(d)) return d;
+            }
+            return this.ramadhanDay;
+        },
+
+        /* Count how many days before today are still unfilled */
+        getMissedCount() {
+            var count = 0;
+            for (var d = 1; d < this.ramadhanDay; d++) {
+                if (!this.submittedDays.includes(d)) count++;
+            }
+            return count;
+        },
+
+        /* Reset form fields (used when advancing to the next day) */
+        resetFormData() {
+            this.formData = {
+                puasa: "",
+                puasa_alasan: "",
+                sholat: {
+                    subuh: "",
+                    dzuhur: "",
+                    ashar: "",
+                    maghrib: "",
+                    isya: "",
+                },
+                tarawih: "",
+                sunat: { rowatib: "", tahajud: "", dhuha: "" },
+                tadarus_surat: "",
+                tadarus_ayat: "",
+                kegiatan: {
+                    dzikir_pagi: false,
+                    olahraga: false,
+                    membantu_ortu: false,
+                    membersihkan_kamar: false,
+                    membersihkan_rumah: false,
+                    membersihkan_halaman: false,
+                    merawat_lingkungan: false,
+                    dzikir_petang: false,
+                    sedekah: false,
+                    buka_keluarga: false,
+                    literasi: false,
+                    kajian: false,
+                    menabung: false,
+                    tidur_cepat: false,
+                    bangun_pagi: false,
+                },
+                ceramah_mode: "",
+                ceramah_tema: "",
+                ringkasan_ceramah: "",
+            };
+            this.selectedSurahAyat = 0;
+            this.ayatError = "";
+            if (this.$refs.ceramahEditor)
+                this.$refs.ceramahEditor.innerHTML = "";
         },
 
         /* ── Surah search / filter ── */
@@ -394,14 +456,91 @@ function formulirHarian() {
                 );
             }
             this.formSubmitted = true;
+
+            // POST to backend
             var self = this;
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            fetch("/api/formulir", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                        ? csrfToken.getAttribute("content")
+                        : "",
+                },
+                body: JSON.stringify({
+                    hari_ke: self.formDay,
+                    data: self.formData,
+                }),
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .catch(function (e) {
+                    console.warn("Formulir gagal disimpan ke server:", e);
+                });
+
             setTimeout(function () {
                 self.formSaving = false;
-            }, 500);
+
+                // Auto-advance to the next unfilled day (sequential enforcement)
+                var next = self.getFirstUnfilledDay();
+                if (next !== self.formDay) {
+                    // There is still a day that needs filling
+                    self.formDay = next;
+                    self.formSubmitted = false;
+                    self.resetFormData();
+                    self.checkFormSubmitted(); // loads saved data if any
+                }
+            }, 600);
         },
 
         editForm() {
             this.formSubmitted = false;
+        },
+
+        /* ── Sync submitted days from server ── */
+        syncFromServer() {
+            var self = this;
+            fetch("/api/formulir", {
+                headers: { Accept: "application/json" },
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (data.success && data.submitted_days) {
+                        // Merge server submitted days into local
+                        data.submitted_days.forEach(function (day) {
+                            if (!self.submittedDays.includes(day)) {
+                                self.submittedDays.push(day);
+                            }
+                        });
+                        localStorage.setItem(
+                            "ramadhan_submitted_days",
+                            JSON.stringify(self.submittedDays),
+                        );
+                        // Also save form data from server
+                        if (data.submissions) {
+                            data.submissions.forEach(function (sub) {
+                                var key = "ramadhan_form_day_" + sub.hari_ke;
+                                if (!localStorage.getItem(key) && sub.data) {
+                                    localStorage.setItem(
+                                        key,
+                                        JSON.stringify(sub.data),
+                                    );
+                                }
+                            });
+                        }
+                        // Re-evaluate current day
+                        self.formDay = self.getFirstUnfilledDay();
+                        self.checkFormSubmitted();
+                    }
+                })
+                .catch(function (e) {
+                    console.warn("Gagal sync dari server:", e);
+                });
         },
     };
 }

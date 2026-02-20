@@ -17,15 +17,18 @@ Aplikasi ini memiliki **4 halaman login terpisah** untuk setiap role:
 
 ### 2. 👨‍🏫 Login Guru
 
-- **URL**: `http://localhost:8000/guru/login`
+- **URL**: `http://localhost:8000/portal-guru-smkn1/login`
 - **Warna**: Hijau (Green)
 - **Credentials**:
+    - Email: `irma.sukmarini@smkn1ciamis.sch.id`
+    - Password: `guru123`
+- **Credentials Lama (Demo)**:
     - Email: `guru@smkn1ciamis.sch.id`
     - Password: `guru123`
 
 ### 3. 🔧 Login Superadmin
 
-- **URL**: `http://localhost:8000/superadmin/login`
+- **URL**: `http://localhost:8000/portal-admin-smkn1/login`
 - **Warna**: Ungu (Purple)
 - **Credentials**:
     - Email: `superadmin@smkn1ciamis.sch.id`
@@ -33,7 +36,7 @@ Aplikasi ini memiliki **4 halaman login terpisah** untuk setiap role:
 
 ### 4. 🏫 Login Kesiswaan/Kepala Sekolah
 
-- **URL**: `http://localhost:8000/kesiswaan/login`
+- **URL**: `http://localhost:8000/portal-kesiswaan-smkn1/login`
 - **Warna**: Oranye (Orange)
 - **Credentials**:
     - Email: `kesiswaan@smkn1ciamis.sch.id`

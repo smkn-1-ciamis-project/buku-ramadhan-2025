@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FormSubmissionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,3 +26,10 @@ Route::get('/siswa', function () {
     }
     return view('siswa.dashboard');
 })->name('siswa.dashboard');
+
+// API Formulir Harian (session-auth)
+Route::middleware('auth')->prefix('api/formulir')->group(function () {
+    Route::get('/', [FormSubmissionController::class, 'index']);
+    Route::post('/', [FormSubmissionController::class, 'store']);
+    Route::get('/{hariKe}', [FormSubmissionController::class, 'show']);
+});

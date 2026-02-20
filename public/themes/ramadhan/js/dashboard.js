@@ -132,7 +132,10 @@ function ramadhanDashboard() {
             this.buildCalendar();
             this.loadDoas();
             this.setDailyVerse();
-            this.getLocation();
+            // Restore saved location first; only fall back to GPS if none
+            if (!this.loadSavedLocation()) {
+                this.getLocation();
+            }
             this.startCountdown();
             this.startClock();
             this.initCompass();
@@ -1244,6 +1247,7 @@ function ramadhanDashboard() {
                             this.locationText =
                                 this.locationCity +
                                 (provinsi ? ", " + provinsi : "");
+                            this.saveLocation();
                         })
                         .catch(() => {
                             // Fallback: nearest from JSON if Nominatim fails
@@ -1262,6 +1266,7 @@ function ramadhanDashboard() {
                             } else {
                                 this.locationCity = this.locationCoords;
                             }
+                            this.saveLocation();
                         });
                 },
                 () => {
@@ -1281,10 +1286,13 @@ function ramadhanDashboard() {
             this.selectedTz = "WIB";
             this.calculateQibla();
             this.calculatePrayerTimes();
+            this.saveLocation();
         },
 
         useGPS() {
             this.showLocationPicker = false;
+            // Clear saved location so fresh GPS result is persisted
+            localStorage.removeItem("ramadhan_location");
             this.getLocation();
         },
 
@@ -1328,9 +1336,50 @@ function ramadhanDashboard() {
             this.selectedTz = tzInfo.tz;
             this.calculateQibla();
             this.calculatePrayerTimes();
+            this.saveLocation();
             this.showLocationPicker = false;
             this.locationSearch = "";
             this.filteredLocations = this.indonesiaLocations;
+        },
+
+        // ── Location persistence ────────────────────────────────────────
+        saveLocation() {
+            try {
+                localStorage.setItem(
+                    "ramadhan_location",
+                    JSON.stringify({
+                        lat: this.userLat,
+                        lng: this.userLng,
+                        city: this.locationCity,
+                        coords: this.locationCoords,
+                        name: this.cityName,
+                        text: this.locationText,
+                        tz: this.selectedTz,
+                    }),
+                );
+            } catch (e) {}
+        },
+
+        // Returns true if a saved location was successfully restored
+        loadSavedLocation() {
+            try {
+                const raw = localStorage.getItem("ramadhan_location");
+                if (!raw) return false;
+                const s = JSON.parse(raw);
+                if (!s || !s.lat || !s.lng) return false;
+                this.userLat = s.lat;
+                this.userLng = s.lng;
+                this.locationCity = s.city || "";
+                this.locationCoords = s.coords || "";
+                this.cityName = s.name || "";
+                this.locationText = s.text || "";
+                this.selectedTz = s.tz || "WIB";
+                this.calculateQibla();
+                this.calculatePrayerTimes();
+                return true;
+            } catch (e) {
+                return false;
+            }
         },
 
         // ── Qibla ──────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Guru\Pages\Dashboard as GuruDashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -24,16 +25,16 @@ class GuruPanelProvider extends PanelProvider
     {
         return $panel
             ->id('guru')
-            ->path('guru')
+            ->path('portal-guru-smkn1')
             ->login()
             ->brandName('Panel Guru - Buku Ramadhan')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::Green,
             ])
             ->discoverResources(in: app_path('Filament/Guru/Resources'), for: 'App\\Filament\\Guru\\Resources')
             ->discoverPages(in: app_path('Filament/Guru/Pages'), for: 'App\\Filament\\Guru\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                GuruDashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Guru/Widgets'), for: 'App\\Filament\\Guru\\Widgets')
             ->widgets([

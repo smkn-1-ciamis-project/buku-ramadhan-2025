@@ -24,7 +24,7 @@ class SuperadminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('superadmin')
-            ->path('superadmin')
+            ->path('portal-admin-smkn1')
             ->login()
             ->brandName('Panel Superadmin - Buku Ramadhan')
             ->colors([

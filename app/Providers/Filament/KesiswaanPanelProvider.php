@@ -24,7 +24,7 @@ class KesiswaanPanelProvider extends PanelProvider
     {
         return $panel
             ->id('kesiswaan')
-            ->path('kesiswaan')
+            ->path('portal-kesiswaan-smkn1')
             ->login()
             ->brandName('Panel Kesiswaan - Buku Ramadhan')
             ->colors([

@@ -73,16 +73,25 @@ class Login extends BaseLogin
     $data = $this->form->getState();
     $credentials = $this->getCredentialsFromFormData($data);
 
-    // Check if account is already logged in on another device
-    $user = \App\Models\User::where('nisn', $credentials['nisn'])->first();
+    // ── Single-session pre-check ───────────────────────────────────────
+    // Load the user BEFORE Auth::attempt so we can inspect the existing
+    // session without side-effects.
+    $existingUser = \App\Models\User::where('nisn', $credentials['nisn'])->first();
 
-    if ($user && $user->active_session_id && $user->active_session_id !== session()->getId()) {
-      // Check if old session is still within 12 hours (still valid)
-      if ($user->session_login_at && now()->diffInHours($user->session_login_at, true) < 12) {
+    if ($existingUser) {
+      $hasActiveSession  = !empty($existingUser->active_session_id);
+      $isDifferentDevice = $existingUser->active_session_id !== session()->getId();
+      $sessionStillValid = $existingUser->session_login_at &&
+        $existingUser->session_login_at->addHours(12)->isFuture();
+
+      // Block new login if another device holds a valid (< 12 h) active session.
+      if ($hasActiveSession && $isDifferentDevice && $sessionStillValid) {
         $this->showDevicePopup = true;
 
         return null;
       }
+      // If session is >= 12 hours old, fall through — the old session is expired
+      // and EnsureSingleSession will kick the old device on its next request.
     }
 
     // Attempt login — don't use remember_token (we handle session duration ourselves)
@@ -90,14 +99,15 @@ class Login extends BaseLogin
       $this->throwFailureValidationException();
     }
 
+    // Regenerate session to prevent session-fixation attacks
     session()->regenerate();
 
-    // Save session tracking data
+        // Save session tracking data (session ID reflects the NEW ID after regenerate)
     /** @var \App\Models\User $user */
     $user = Auth::user();
     $user->update([
       'active_session_id' => session()->getId(),
-      'session_login_at' => now(),
+      'session_login_at'  => now(),
     ]);
 
     return app(LoginResponse::class);

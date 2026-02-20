@@ -11,9 +11,15 @@ class EnsureSingleSession
 {
     /**
      * Hanya izinkan satu sesi aktif per akun.
-     * Jika session ID tidak cocok, user akan di-logout (perangkat lama ditendang).
      *
-     * Juga cek auto-logout setelah 12 jam jika "Ingat Saya" dicentang.
+     * Urutan pemeriksaan per request:
+     *  1. Single-session check  — jika session ID tidak cocok, perangkat LAMA dikeluarkan.
+     *  2. 12-hour expiry check  — jika sudah 12 jam sejak login, paksa login ulang.
+     *
+     * Catatan penting:
+     *  Ketika perangkat LAMA ditendang (case 1), Auth::logout() tetap dipanggil agar
+     *  guard Laravel bersih. Listener di AppServiceProvider sudah aman karena hanya
+     *  menghapus DB jika session()->getId() == active_session_id (tidak berlaku di sini).
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -21,40 +27,59 @@ class EnsureSingleSession
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            // 1. Single session check: kick old device if session mismatch
-            if ($user->active_session_id && $user->active_session_id !== session()->getId()) {
+            // ── 1. Single-session: tendang perangkat LAMA ─────────────────────
+            if (
+                $user->active_session_id &&
+                $user->active_session_id !== session()->getId()
+            ) {
                 Auth::logout();
                 session()->invalidate();
                 session()->regenerateToken();
 
-                return redirect()->to(
-                    filament()->getCurrentPanel()?->getLoginUrl() ?? '/siswa/login'
-                )->with('session_expired', 'Sesi Anda telah berakhir karena akun ini login dari perangkat lain.');
+                return redirect()->to($this->loginUrl($request))
+                    ->with('session_expired', 'Sesi Anda telah berakhir karena akun ini login dari perangkat lain.');
             }
 
-            // 2. Auto-logout after 12 hours from login time
-            if ($user->session_login_at) {
-                $maxHours = 12;
-                $loginAt = $user->session_login_at;
+            // ── 2. 12-hour expiry: paksa login ulang setelah 12 jam ────────────
+            if (
+                $user->session_login_at &&
+                $user->session_login_at->addHours(12)->isPast()
+            ) {
+                // Hapus tracking terlebih dahulu, BARU logout
+                // (supaya Logout event listener tidak mencoba menghapus lagi)
+                $user->updateQuietly([
+                    'active_session_id' => null,
+                    'session_login_at'  => null,
+                ]);
 
-                if (now()->diffInHours($loginAt, true) >= $maxHours) {
-                    // Clear session tracking on user
-                    $user->update([
-                        'active_session_id' => null,
-                        'session_login_at' => null,
-                    ]);
+                Auth::logout();
+                session()->invalidate();
+                session()->regenerateToken();
 
-                    Auth::logout();
-                    session()->invalidate();
-                    session()->regenerateToken();
-
-                    return redirect()->to(
-                        filament()->getCurrentPanel()?->getLoginUrl() ?? '/siswa/login'
-                    )->with('session_expired', 'Sesi Anda telah berakhir setelah 12 jam. Silakan login kembali.');
-                }
+                return redirect()->to($this->loginUrl($request))
+                    ->with('session_expired', 'Sesi Anda telah berakhir setelah 12 jam. Silakan login kembali.');
             }
         }
 
         return $next($request);
+    }
+
+    /** Resolve login URL safely regardless of panel context. */
+    private function loginUrl(Request $request): string
+    {
+        try {
+            $panel = filament()->getCurrentPanel();
+            if ($panel) {
+                return $panel->getLoginUrl();
+            }
+        } catch (\Throwable) {
+            // Fall through to path-based detection
+        }
+
+        // Detect panel from request path prefix
+        $path = ltrim($request->getPathInfo(), '/');
+        $prefix = explode('/', $path)[0] ?? 'siswa';
+
+        return '/' . $prefix . '/login';
     }
 }

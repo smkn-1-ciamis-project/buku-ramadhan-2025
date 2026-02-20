@@ -9,6 +9,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -49,6 +50,8 @@ class User extends Authenticatable implements FilamentUser
         'agama',
         'password',
         'role_user_id',
+        'kelas_id',
+        'jenis_kelamin',
         'active_session_id',
         'session_login_at',
     ];
@@ -78,5 +81,21 @@ class User extends Authenticatable implements FilamentUser
     public function role_user(): BelongsTo
     {
         return $this->belongsTo(RoleUser::class);
+    }
+
+    /**
+     * Kelas tempat siswa ini terdaftar.
+     */
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
+    /**
+     * Kelas-kelas yang diwalikan guru ini.
+     */
+    public function kelasWali(): HasMany
+    {
+        return $this->hasMany(Kelas::class, 'wali_id');
     }
 }

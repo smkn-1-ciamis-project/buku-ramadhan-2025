@@ -31,6 +31,21 @@
         <div class="formulir-body">
             <div class="formulir-content">
 
+                {{-- ── Backfill warning (shown when filling a past day) ── --}}
+                <div x-show="formDay < ramadhanDay" x-cloak
+                     class="f-backfill-banner">
+                    <div class="f-backfill-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <div class="f-backfill-body">
+                        <p class="f-backfill-title">Isi hari yang tertunggak dulu</p>
+                        <p class="f-backfill-sub" x-text="'Kamu sedang mengisi Hari ke-' + formDay + '. Setelah ini, kamu akan diarahkan ke hari berikutnya yang belum diisi.'"></p>
+                    </div>
+                    <div class="f-backfill-badge" x-text="getMissedCount() + ' hari lagi'"></div>
+                </div>
+
                 {{-- Status badge --}}
                 <div x-show="formSubmitted" class="f-status-banner">
                     <div class="f-status-icon">

@@ -290,9 +290,9 @@
                                         <p class="cal-alert-title">Ada hari yang belum diisi!</p>
                                         <p class="cal-alert-sub" x-text="calendarDays.filter(d => d.isPastUnfilled).length + ' hari lalu belum mengisi buku Ramadhan'"></p>
                                     </div>
-                                    <button class="cal-alert-btn" @click="activeTab = 'form'">
+                                    <a href="{{ \App\Filament\Siswa\Pages\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;">
                                         Isi Sekarang
-                                    </button>
+                                    </a>
                                 </div>
                             </template>
 

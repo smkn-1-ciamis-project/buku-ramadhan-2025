@@ -91,6 +91,54 @@
     }
 }
 
+/* ── Backfill Warning Banner ── */
+.f-backfill-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.f-backfill-icon {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: #d97706;
+}
+.f-backfill-icon svg {
+    width: 100%;
+    height: 100%;
+}
+.f-backfill-body {
+    flex: 1;
+    min-width: 0;
+}
+.f-backfill-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 2px;
+}
+.f-backfill-sub {
+    font-size: 0.73rem;
+    color: #b45309;
+    margin: 0;
+    line-height: 1.4;
+}
+.f-backfill-badge {
+    flex-shrink: 0;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    background: #d97706;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 /* ── Status Banner (submitted) ── */
 .f-status-banner {
     display: flex;
@@ -753,4 +801,9 @@ html.fi .fi-page > section > * {
 }
 .fi-layout {
     min-height: 100vh;
+}
+
+/* Hide Alpine x-cloak elements until initialised */
+[x-cloak] {
+    display: none !important;
 }
