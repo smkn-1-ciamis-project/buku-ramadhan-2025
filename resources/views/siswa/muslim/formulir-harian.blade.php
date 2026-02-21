@@ -61,9 +61,9 @@
                 <fieldset :disabled="formSubmitted" class="f-fieldset">
 
                 {{-- ═══ 1. PUASA ═══ --}}
-                <div class="f-section">
+                <div class="f-section" x-show="isSectionEnabled('puasa')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">1</span> Puasa
+                        <span class="f-section-num">1</span> <span x-text="sectionTitles.puasa">Puasa</span>
                     </h4>
                     <div class="f-radio-row">
                         <label class="f-radio-card" :class="formData.puasa === 'ya' && 'f-radio-card-active f-radio-card-green'">
@@ -100,30 +100,22 @@
                 </div>
 
                 {{-- ═══ 2. SHOLAT FARDU ═══ --}}
-                <div class="f-section" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
+                <div class="f-section" x-show="isSectionEnabled('sholat_fardu') && !(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">2</span> Sholat Fardu
+                        <span class="f-section-num">2</span> <span x-text="sectionTitles.sholat_fardu">Sholat Fardu</span>
                     </h4>
                     <div class="f-sholat-list">
-                        <template x-for="waktu in ['subuh','dzuhur','ashar','maghrib','isya']" :key="waktu">
+                        <template x-for="item in sholatFarduItems" :key="item.key">
                             <div class="f-sholat-row">
-                                <span class="f-sholat-name" x-text="waktu.charAt(0).toUpperCase() + waktu.slice(1)"></span>
+                                <span class="f-sholat-name" x-text="item.label"></span>
                                 <div class="f-sholat-options">
-                                    <button type="button" class="f-chip"
-                                            :class="formData.sholat[waktu] === 'jamaah' && 'f-chip-active f-chip-blue'"
-                                            @click="formData.sholat[waktu] = formData.sholat[waktu] === 'jamaah' ? '' : 'jamaah'">
-                                        Jamaah
-                                    </button>
-                                    <button type="button" class="f-chip"
-                                            :class="formData.sholat[waktu] === 'munfarid' && 'f-chip-active f-chip-teal'"
-                                            @click="formData.sholat[waktu] = formData.sholat[waktu] === 'munfarid' ? '' : 'munfarid'">
-                                        Munfarid
-                                    </button>
-                                    <button type="button" class="f-chip"
-                                            :class="formData.sholat[waktu] === 'tidak' && 'f-chip-active f-chip-gray'"
-                                            @click="formData.sholat[waktu] = formData.sholat[waktu] === 'tidak' ? '' : 'tidak'">
-                                        Tidak
-                                    </button>
+                                    <template x-for="opt in sholatFarduOptions" :key="opt">
+                                        <button type="button" class="f-chip"
+                                                :class="formData.sholat[item.key] === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-blue' : opt === 'munfarid' ? 'f-chip-teal' : 'f-chip-gray'))"
+                                                @click="formData.sholat[item.key] = formData.sholat[item.key] === opt ? '' : opt"
+                                                x-text="opt.charAt(0).toUpperCase() + opt.slice(1)">
+                                        </button>
+                                    </template>
                                 </div>
                             </div>
                         </template>
@@ -131,49 +123,45 @@
                 </div>
 
                 {{-- ═══ 3. SHOLAT TARAWIH ═══ --}}
-                <div class="f-section" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
+                <div class="f-section" x-show="isSectionEnabled('tarawih') && !(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">3</span> Sholat Tarawih
+                        <span class="f-section-num">3</span> <span x-text="sectionTitles.tarawih">Sholat Tarawih</span>
                     </h4>
                     <div class="f-sholat-list">
-                        <div class="f-sholat-row">
-                            <span class="f-sholat-name">Tarawih</span>
-                            <div class="f-sholat-options">
-                                <button type="button" class="f-chip" :class="formData.tarawih === 'jamaah' && 'f-chip-active f-chip-blue'"
-                                        @click="formData.tarawih = formData.tarawih === 'jamaah' ? '' : 'jamaah'">
-                                    Jamaah
-                                </button>
-                                <button type="button" class="f-chip" :class="formData.tarawih === 'munfarid' && 'f-chip-active f-chip-teal'"
-                                        @click="formData.tarawih = formData.tarawih === 'munfarid' ? '' : 'munfarid'">
-                                    Munfarid
-                                </button>
-                                <button type="button" class="f-chip" :class="formData.tarawih === 'tidak' && 'f-chip-active f-chip-gray'"
-                                        @click="formData.tarawih = formData.tarawih === 'tidak' ? '' : 'tidak'">
-                                    Tidak
-                                </button>
+                        <template x-for="item in tarawihItems" :key="item.key">
+                            <div class="f-sholat-row">
+                                <span class="f-sholat-name" x-text="item.label"></span>
+                                <div class="f-sholat-options">
+                                    <template x-for="opt in tarawihOptions" :key="opt">
+                                        <button type="button" class="f-chip"
+                                                :class="formData.tarawih === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-blue' : opt === 'munfarid' ? 'f-chip-teal' : 'f-chip-gray'))"
+                                                @click="formData.tarawih = formData.tarawih === opt ? '' : opt"
+                                                x-text="opt.charAt(0).toUpperCase() + opt.slice(1)">
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
-                        </div>
+                        </template>
                     </div>
                 </div>
 
                 {{-- ═══ 4. SHOLAT SUNAT ═══ --}}
-                <div class="f-section" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
+                <div class="f-section" x-show="isSectionEnabled('sholat_sunat') && !(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">4</span> Sholat Sunat
+                        <span class="f-section-num">4</span> <span x-text="sectionTitles.sholat_sunat">Sholat Sunat</span>
                     </h4>
                     <div class="f-sholat-list">
-                        <template x-for="sn in [{key:'rowatib',label:'Rowatib'},{key:'tahajud',label:'Tahajud'},{key:'dhuha',label:'Dhuha'}]" :key="sn.key">
+                        <template x-for="sn in sholatSunatItems" :key="sn.key">
                             <div class="f-sholat-row">
                                 <span class="f-sholat-name" x-text="sn.label"></span>
                                 <div class="f-sholat-options">
-                                    <button type="button" class="f-chip" :class="formData.sunat[sn.key] === 'ya' && 'f-chip-active f-chip-green'"
-                                            @click="formData.sunat[sn.key] = formData.sunat[sn.key] === 'ya' ? '' : 'ya'">
-                                        Ya
-                                    </button>
-                                    <button type="button" class="f-chip" :class="formData.sunat[sn.key] === 'tidak' && 'f-chip-active f-chip-gray'"
-                                            @click="formData.sunat[sn.key] = formData.sunat[sn.key] === 'tidak' ? '' : 'tidak'">
-                                        Tidak
-                                    </button>
+                                    <template x-for="opt in sholatSunatOptions" :key="opt">
+                                        <button type="button" class="f-chip"
+                                                :class="formData.sunat[sn.key] === opt && ('f-chip-active ' + (opt === 'ya' ? 'f-chip-green' : 'f-chip-gray'))"
+                                                @click="formData.sunat[sn.key] = formData.sunat[sn.key] === opt ? '' : opt"
+                                                x-text="opt.charAt(0).toUpperCase() + opt.slice(1)">
+                                        </button>
+                                    </template>
                                 </div>
                             </div>
                         </template>
@@ -181,9 +169,9 @@
                 </div>
 
                 {{-- ═══ 5. TADARUS AL-QURAN ═══ --}}
-                <div class="f-section" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
+                <div class="f-section" x-show="isSectionEnabled('tadarus') && !(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">5</span> Tadarus Al-Quran
+                        <span class="f-section-num">5</span> <span x-text="sectionTitles.tadarus">Tadarus Al-Quran</span>
                     </h4>
                     <div class="f-tadarus-grid">
                         <div class="f-field">
@@ -220,13 +208,13 @@
                 </div>
 
                 {{-- ═══ 6. KEGIATAN HARIAN ═══ --}}
-                <div class="f-section">
+                <div class="f-section" x-show="isSectionEnabled('kegiatan')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">6</span> Kegiatan Harian
+                        <span class="f-section-num">6</span> <span x-text="sectionTitles.kegiatan">Kegiatan Harian</span>
                     </h4>
 
-                    {{-- Group A: Amaliyah Cageur, Bageur dan Bener --}}
-                    <p class="f-group-label">Amaliyah Cageur, Bageur dan Bener</p>
+                    {{-- Group A --}}
+                    <p class="f-group-label" x-text="groupTitles[0]">Amaliyah Cageur, Bageur dan Bener</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupA" :key="kg.key">
                             <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'">
@@ -239,8 +227,8 @@
                         </template>
                     </div>
 
-                    {{-- Group B: Amaliyah Pancawaluya Pinter --}}
-                    <p class="f-group-label">Amaliyah Pancawaluya Pinter</p>
+                    {{-- Group B --}}
+                    <p class="f-group-label" x-text="groupTitles[1]">Amaliyah Pancawaluya Pinter</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupB" :key="kg.key">
                             <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'">
@@ -253,8 +241,8 @@
                         </template>
                     </div>
 
-                    {{-- Group C: Amaliyah Pancawaluya Singer --}}
-                    <p class="f-group-label">Amaliyah Pancawaluya Singer</p>
+                    {{-- Group C --}}
+                    <p class="f-group-label" x-text="groupTitles[2]">Amaliyah Pancawaluya Singer</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupC" :key="kg.key">
                             <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'">
@@ -269,9 +257,9 @@
                 </div>
 
                 {{-- ═══ 7. RINGKASAN CERAMAH ═══ --}}
-                <div class="f-section f-section-last">
+                <div class="f-section f-section-last" x-show="isSectionEnabled('ceramah')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">7</span> Ringkasan Ceramah
+                        <span class="f-section-num">7</span> <span x-text="sectionTitles.ceramah">Ringkasan Ceramah</span>
                     </h4>
                     {{-- Online / Offline / Tidak ada --}}
                     <div class="f-radio-row" style="margin-bottom:0.875rem;">

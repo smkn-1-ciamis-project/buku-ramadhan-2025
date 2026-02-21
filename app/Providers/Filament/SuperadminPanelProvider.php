@@ -2,10 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Superadmin\Pages\Dashboard as SuperadminDashboard;
+use App\Http\Middleware\EnsureSingleSession;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -30,16 +33,20 @@ class SuperadminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->navigationGroups([
+                NavigationGroup::make('Utama'),
+                NavigationGroup::make('Pengguna'),
+                NavigationGroup::make('Akademik'),
+                NavigationGroup::make('Pengaturan')
+                    ->collapsed(),
+            ])
             ->discoverResources(in: app_path('Filament/Superadmin/Resources'), for: 'App\\Filament\\Superadmin\\Resources')
             ->discoverPages(in: app_path('Filament/Superadmin/Pages'), for: 'App\\Filament\\Superadmin\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                SuperadminDashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Superadmin/Widgets'), for: 'App\\Filament\\Superadmin\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,6 +60,7 @@ class SuperadminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureSingleSession::class,
             ]);
     }
 }

@@ -2,10 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Kesiswaan\Pages\Dashboard as KesiswaanDashboard;
+use App\Http\Middleware\EnsureSingleSession;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -30,15 +33,21 @@ class KesiswaanPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->navigationGroups([
+                NavigationGroup::make('Utama'),
+                NavigationGroup::make('Validasi'),
+                NavigationGroup::make('Data & Rekap'),
+                NavigationGroup::make('Pengaturan')
+                    ->collapsed(),
+            ])
             ->discoverResources(in: app_path('Filament/Kesiswaan/Resources'), for: 'App\\Filament\\Kesiswaan\\Resources')
             ->discoverPages(in: app_path('Filament/Kesiswaan/Pages'), for: 'App\\Filament\\Kesiswaan\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                KesiswaanDashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Kesiswaan/Widgets'), for: 'App\\Filament\\Kesiswaan\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -53,6 +62,7 @@ class KesiswaanPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureSingleSession::class,
             ]);
     }
 }

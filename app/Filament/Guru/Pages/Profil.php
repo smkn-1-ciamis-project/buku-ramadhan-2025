@@ -13,6 +13,7 @@ class Profil extends Page
 {
   protected static ?string $navigationIcon = 'heroicon-o-user-circle';
   protected static ?string $navigationLabel = 'Profil Saya';
+  protected static ?string $navigationGroup = 'Akun';
   protected static ?string $title = 'Profil Guru';
   protected static ?string $slug = 'profil';
   protected static ?int $navigationSort = 4;

@@ -11,6 +11,11 @@ function formulirHindu() {
         submittedDays: [],
         currentDay: 1,
         showWorshipReminder: true,
+        configLoaded: false,
+
+        /* ── Dynamic config from server ── */
+        sectionConfig: [],
+        enabledSections: {},
 
         editorFormats: {
             bold: false,
@@ -87,6 +92,18 @@ function formulirHindu() {
             },
         ],
 
+        /* ── Section titles (dynamic from config) ── */
+        sectionTitles: {
+            pengendalian_diri: "Pembiasaan Pengendalian Diri",
+            kegiatan: "Kegiatan Harian (Pembiasaan Positif)",
+            catatan: "Catatan Harian",
+        },
+        groupTitles: [
+            'A. Karakter "Sehat, Baik, Benar"',
+            'B. Pengembangan Diri "Pinter"',
+            'C. Kemandirian "Mandiri & Disiplin"',
+        ],
+
         formData: {
             pengendalian: {
                 pengendalian_diri: "",
@@ -116,9 +133,90 @@ function formulirHindu() {
         init() {
             this.calculateCurrentDay();
             this.loadSubmittedDays();
+            this.loadFormConfig();
             this.syncFromServer();
             this.formDay = this.getFirstUnfilledDay();
             this.checkFormSubmitted();
+        },
+
+        /* ── Load dynamic form config from server ── */
+        loadFormConfig() {
+            var self = this;
+            fetch("/api/form-settings/Hindu", {
+                headers: { Accept: "application/json" },
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data.sections) return;
+                    self.sectionConfig = data.sections;
+
+                    var enabled = {};
+                    data.sections.forEach(function (s) {
+                        enabled[s.key] = s.enabled !== false;
+                    });
+                    self.enabledSections = enabled;
+
+                    data.sections.forEach(function (section) {
+                        if (section.title) {
+                            self.sectionTitles[section.key] = section.title;
+                        }
+
+                        if (
+                            section.key === "pengendalian_diri" &&
+                            section.items
+                        ) {
+                            self.pengendalianDiri = section.items;
+                            var newPengendalian = {};
+                            section.items.forEach(function (item) {
+                                newPengendalian[item.key] =
+                                    self.formData.pengendalian[item.key] || "";
+                            });
+                            self.formData.pengendalian = newPengendalian;
+                        }
+
+                        if (section.key === "kegiatan" && section.groups) {
+                            var allGroups = section.groups;
+                            if (allGroups[0]) {
+                                self.kegiatanGroupA = allGroups[0].items || [];
+                                self.groupTitles[0] =
+                                    allGroups[0].title || self.groupTitles[0];
+                            }
+                            if (allGroups[1]) {
+                                self.kegiatanGroupB = allGroups[1].items || [];
+                                self.groupTitles[1] =
+                                    allGroups[1].title || self.groupTitles[1];
+                            }
+                            if (allGroups[2]) {
+                                self.kegiatanGroupC = allGroups[2].items || [];
+                                self.groupTitles[2] =
+                                    allGroups[2].title || self.groupTitles[2];
+                            }
+                            var newKegiatan = {};
+                            allGroups.forEach(function (group) {
+                                (group.items || []).forEach(function (item) {
+                                    newKegiatan[item.key] =
+                                        self.formData.kegiatan[item.key] || "";
+                                });
+                            });
+                            self.formData.kegiatan = newKegiatan;
+                        }
+                    });
+
+                    self.configLoaded = true;
+                    self.checkFormSubmitted();
+                })
+                .catch(function (e) {
+                    console.warn("Gagal memuat konfigurasi formulir:", e);
+                    self.configLoaded = true;
+                });
+        },
+
+        /* Check if a section is enabled by key */
+        isSectionEnabled(key) {
+            if (Object.keys(this.enabledSections).length === 0) return true;
+            return this.enabledSections[key] !== false;
         },
 
         calculateCurrentDay() {
@@ -149,29 +247,24 @@ function formulirHindu() {
         },
 
         resetFormData() {
+            var pengendalian = {};
+            this.pengendalianDiri.forEach(function (item) {
+                pengendalian[item.key] = "";
+            });
+            var kegiatan = {};
+            this.kegiatanGroupA.forEach(function (item) {
+                kegiatan[item.key] = "";
+            });
+            this.kegiatanGroupB.forEach(function (item) {
+                kegiatan[item.key] = "";
+            });
+            this.kegiatanGroupC.forEach(function (item) {
+                kegiatan[item.key] = "";
+            });
+
             this.formData = {
-                pengendalian: {
-                    pengendalian_diri: "",
-                    refleksi_doa: "",
-                    baca_inspiratif: "",
-                },
-                kegiatan: {
-                    refleksi_pagi: "",
-                    olahraga: "",
-                    membantu_ortu: "",
-                    membersihkan_kamar: "",
-                    membersihkan_rumah: "",
-                    merawat_lingkungan: "",
-                    refleksi_sore: "",
-                    sedekah: "",
-                    makan_keluarga: "",
-                    literasi: "",
-                    menulis_ringkasan: "",
-                    menabung: "",
-                    tidur_lebih_awal: "",
-                    bangun_pagi: "",
-                    target_kebaikan: "",
-                },
+                pengendalian: pengendalian,
+                kegiatan: kegiatan,
                 catatan: "",
             };
             if (this.$refs.catatanEditor)

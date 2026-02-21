@@ -34,3 +34,17 @@ Route::middleware('auth')->prefix('api/formulir')->group(function () {
     Route::post('/', [FormSubmissionController::class, 'store']);
     Route::get('/{hariKe}', [FormSubmissionController::class, 'show']);
 });
+
+// API Form Settings — serve dynamic form config per agama
+Route::middleware('auth')->get('/api/form-settings/{agama}', function (string $agama) {
+    $setting = \App\Models\FormSetting::getForAgama($agama);
+
+    if (!$setting) {
+        return response()->json(['message' => 'Setting formulir belum dikonfigurasi untuk agama ini.'], 404);
+    }
+
+    return response()->json([
+        'agama' => $setting->agama,
+        'sections' => collect($setting->sections)->filter(fn($s) => $s['enabled'] ?? true)->values()->toArray(),
+    ]);
+});

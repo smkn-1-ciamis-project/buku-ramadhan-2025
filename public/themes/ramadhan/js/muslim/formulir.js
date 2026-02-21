@@ -126,6 +126,11 @@ function formulirHarian() {
         formSubmitted: false,
         formSaving: false,
         submittedDays: [],
+        configLoaded: false,
+
+        /* ── Dynamic config from server ── */
+        sectionConfig: [],
+        enabledSections: {},
 
         /* ── Surah autocomplete ── */
         allSurahs: QURAN_SURAHS,
@@ -166,6 +171,24 @@ function formulirHarian() {
             "Izin orang tua",
         ],
 
+        /* ── Dynamic item arrays (populated from config) ── */
+        sholatFarduItems: [
+            { key: "subuh", label: "Subuh" },
+            { key: "dzuhur", label: "Dzuhur" },
+            { key: "ashar", label: "Ashar" },
+            { key: "maghrib", label: "Maghrib" },
+            { key: "isya", label: "Isya" },
+        ],
+        sholatFarduOptions: ["jamaah", "munfarid", "tidak"],
+        tarawihItems: [{ key: "tarawih", label: "Tarawih" }],
+        tarawihOptions: ["jamaah", "munfarid", "tidak"],
+        sholatSunatItems: [
+            { key: "rowatib", label: "Rowatib" },
+            { key: "tahajud", label: "Tahajud" },
+            { key: "dhuha", label: "Dhuha" },
+        ],
+        sholatSunatOptions: ["ya", "tidak"],
+
         /* ── Kegiatan groups (matches paper form) ── */
         kegiatanGroupA: [
             { key: "dzikir_pagi", label: "Dzikir Pagi" },
@@ -186,6 +209,22 @@ function formulirHarian() {
             { key: "menabung", label: "Menabung" },
             { key: "tidur_cepat", label: "Tidur Cepat" },
             { key: "bangun_pagi", label: "Bangun Pagi / Sahur" },
+        ],
+
+        /* ── Section titles (dynamic from config) ── */
+        sectionTitles: {
+            puasa: "Puasa",
+            sholat_fardu: "Sholat Fardu",
+            tarawih: "Sholat Tarawih",
+            sholat_sunat: "Sholat Sunat",
+            tadarus: "Tadarus Al-Quran",
+            kegiatan: "Kegiatan Harian",
+            ceramah: "Ringkasan Ceramah",
+        },
+        groupTitles: [
+            "Amaliyah Cageur, Bageur dan Bener",
+            "Amaliyah Pancawaluya Pinter",
+            "Amaliyah Pancawaluya Singer",
         ],
 
         /* ── Form data ── */
@@ -223,10 +262,129 @@ function formulirHarian() {
             ringkasan_ceramah: "",
         },
 
+        /* ── Load dynamic form config from server ── */
+        loadFormConfig() {
+            var self = this;
+            fetch("/api/form-settings/Islam", {
+                headers: { Accept: "application/json" },
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data.sections) return;
+                    self.sectionConfig = data.sections;
+
+                    // Build enabled sections map
+                    var enabled = {};
+                    data.sections.forEach(function (s) {
+                        enabled[s.key] = s.enabled !== false;
+                    });
+                    self.enabledSections = enabled;
+
+                    // Apply config to each section
+                    data.sections.forEach(function (section) {
+                        // Update section titles
+                        if (section.title) {
+                            self.sectionTitles[section.key] = section.title;
+                        }
+
+                        if (
+                            section.key === "puasa" &&
+                            section.type === "ya_tidak"
+                        ) {
+                            if (
+                                section.reason_suggestions &&
+                                section.reason_suggestions.length > 0
+                            ) {
+                                self.puasaSuggestions =
+                                    section.reason_suggestions;
+                            }
+                        }
+
+                        if (section.key === "sholat_fardu" && section.items) {
+                            self.sholatFarduItems = section.items;
+                            if (section.options)
+                                self.sholatFarduOptions = section.options;
+                            // Rebuild sholat formData
+                            var newSholat = {};
+                            section.items.forEach(function (item) {
+                                newSholat[item.key] =
+                                    self.formData.sholat[item.key] || "";
+                            });
+                            self.formData.sholat = newSholat;
+                        }
+
+                        if (section.key === "tarawih" && section.items) {
+                            self.tarawihItems = section.items;
+                            if (section.options)
+                                self.tarawihOptions = section.options;
+                        }
+
+                        if (section.key === "sholat_sunat" && section.items) {
+                            self.sholatSunatItems = section.items;
+                            if (section.options)
+                                self.sholatSunatOptions = section.options;
+                            // Rebuild sunat formData
+                            var newSunat = {};
+                            section.items.forEach(function (item) {
+                                newSunat[item.key] =
+                                    self.formData.sunat[item.key] || "";
+                            });
+                            self.formData.sunat = newSunat;
+                        }
+
+                        if (section.key === "kegiatan" && section.groups) {
+                            var allGroups = section.groups;
+                            if (allGroups[0]) {
+                                self.kegiatanGroupA = allGroups[0].items || [];
+                                self.groupTitles[0] =
+                                    allGroups[0].title || self.groupTitles[0];
+                            }
+                            if (allGroups[1]) {
+                                self.kegiatanGroupB = allGroups[1].items || [];
+                                self.groupTitles[1] =
+                                    allGroups[1].title || self.groupTitles[1];
+                            }
+                            if (allGroups[2]) {
+                                self.kegiatanGroupC = allGroups[2].items || [];
+                                self.groupTitles[2] =
+                                    allGroups[2].title || self.groupTitles[2];
+                            }
+                            // Rebuild kegiatan formData
+                            var newKegiatan = {};
+                            allGroups.forEach(function (group) {
+                                (group.items || []).forEach(function (item) {
+                                    newKegiatan[item.key] =
+                                        self.formData.kegiatan[item.key] ||
+                                        false;
+                                });
+                            });
+                            self.formData.kegiatan = newKegiatan;
+                        }
+                    });
+
+                    self.configLoaded = true;
+                    // Re-check form submitted after config loaded (restores saved data properly)
+                    self.checkFormSubmitted();
+                })
+                .catch(function (e) {
+                    console.warn("Gagal memuat konfigurasi formulir:", e);
+                    self.configLoaded = true; // Use defaults
+                });
+        },
+
+        /* Check if a section is enabled by key */
+        isSectionEnabled(key) {
+            if (Object.keys(this.enabledSections).length === 0) return true; // defaults before config loads
+            return this.enabledSections[key] !== false;
+        },
+
         /* ── Lifecycle ── */
         init() {
             this.calculateRamadhanDay();
             this.loadSubmittedDays();
+            this.loadFormConfig();
             this.syncFromServer();
             // Always open the oldest unfilled day first (sequential enforcement)
             this.formDay = this.getFirstUnfilledDay();
@@ -267,37 +425,37 @@ function formulirHarian() {
 
         /* Reset form fields (used when advancing to the next day) */
         resetFormData() {
+            // Build sholat object from dynamic items
+            var sholat = {};
+            this.sholatFarduItems.forEach(function (item) {
+                sholat[item.key] = "";
+            });
+            // Build sunat object from dynamic items
+            var sunat = {};
+            this.sholatSunatItems.forEach(function (item) {
+                sunat[item.key] = "";
+            });
+            // Build kegiatan object from dynamic groups
+            var kegiatan = {};
+            this.kegiatanGroupA.forEach(function (item) {
+                kegiatan[item.key] = false;
+            });
+            this.kegiatanGroupB.forEach(function (item) {
+                kegiatan[item.key] = false;
+            });
+            this.kegiatanGroupC.forEach(function (item) {
+                kegiatan[item.key] = false;
+            });
+
             this.formData = {
                 puasa: "",
                 puasa_alasan: "",
-                sholat: {
-                    subuh: "",
-                    dzuhur: "",
-                    ashar: "",
-                    maghrib: "",
-                    isya: "",
-                },
+                sholat: sholat,
                 tarawih: "",
-                sunat: { rowatib: "", tahajud: "", dhuha: "" },
+                sunat: sunat,
                 tadarus_surat: "",
                 tadarus_ayat: "",
-                kegiatan: {
-                    dzikir_pagi: false,
-                    olahraga: false,
-                    membantu_ortu: false,
-                    membersihkan_kamar: false,
-                    membersihkan_rumah: false,
-                    membersihkan_halaman: false,
-                    merawat_lingkungan: false,
-                    dzikir_petang: false,
-                    sedekah: false,
-                    buka_keluarga: false,
-                    literasi: false,
-                    kajian: false,
-                    menabung: false,
-                    tidur_cepat: false,
-                    bangun_pagi: false,
-                },
+                kegiatan: kegiatan,
                 ceramah_mode: "",
                 ceramah_tema: "",
                 ringkasan_ceramah: "",

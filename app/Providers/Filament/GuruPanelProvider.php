@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Guru\Pages\Dashboard as GuruDashboard;
+use App\Http\Middleware\EnsureSingleSession;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,6 +11,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Navigation\NavigationGroup;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -30,6 +32,12 @@ class GuruPanelProvider extends PanelProvider
             ->brandName('Panel Guru - Buku Ramadhan')
             ->colors([
                 'primary' => Color::Blue,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make('Utama'),
+                NavigationGroup::make('Kelola Data'),
+                NavigationGroup::make('Akun')
+                    ->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Guru/Resources'), for: 'App\\Filament\\Guru\\Resources')
             ->discoverPages(in: app_path('Filament/Guru/Pages'), for: 'App\\Filament\\Guru\\Pages')
@@ -54,6 +62,7 @@ class GuruPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureSingleSession::class,
             ]);
     }
 }

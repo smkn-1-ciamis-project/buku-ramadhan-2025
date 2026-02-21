@@ -17,6 +17,7 @@ class VerifikasiResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
   protected static ?string $navigationLabel = 'Verifikasi Formulir';
+  protected static ?string $navigationGroup = 'Kelola Data';
   protected static ?string $modelLabel = 'Formulir';
   protected static ?string $pluralModelLabel = 'Formulir';
   protected static ?string $slug = 'verifikasi';
@@ -70,11 +71,15 @@ class VerifikasiResource extends Resource
           ->sortable(),
         Tables\Columns\TextColumn::make('created_at')
           ->label('Dikirim')
-          ->dateTime('d M Y, H:i')
+          ->since()
+          ->tooltip(fn($record) => $record->created_at->translatedFormat('d M Y, H:i'))
+          ->color('gray')
           ->sortable(),
         Tables\Columns\TextColumn::make('verified_at')
           ->label('Diverifikasi')
-          ->dateTime('d M Y, H:i')
+          ->since()
+          ->tooltip(fn($record) => $record->verified_at?->translatedFormat('d M Y, H:i'))
+          ->color('gray')
           ->sortable()
           ->placeholder('-'),
       ])

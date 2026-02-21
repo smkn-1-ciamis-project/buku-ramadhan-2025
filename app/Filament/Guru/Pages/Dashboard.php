@@ -15,6 +15,8 @@ class Dashboard extends Page
 {
   protected static ?string $navigationIcon = 'heroicon-o-home';
   protected static ?string $navigationLabel = 'Dashboard';
+  protected static ?string $navigationGroup = 'Utama';
+  protected static ?int $navigationSort = 1;
   protected static ?string $title = 'Dashboard Guru';
   protected static ?string $slug = '/';
   protected static string $view = 'filament.guru.pages.dashboard';
@@ -24,12 +26,33 @@ class Dashboard extends Page
     $guru = Auth::user();
     $kelasList = Kelas::where('wali_id', $guru->id)->with('siswa')->get();
 
-    // Hitung hari Ramadhan dari kalender Hijriah riil (Um Al-Qura)
+    // Hitung hari Ramadhan berdasarkan tanggal resmi Kemenag RI
+    // 1 Ramadhan 1447H Indonesia = 19 Februari 2026
+    $indonesiaRamadhanStart = Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
+    $indonesiaRamadhanEnd   = Carbon::create(2026, 3, 20, 23, 59, 59, 'Asia/Jakarta'); // 30 Ramadhan
+    $now = now('Asia/Jakarta');
+
+    $isRamadhan = $now->gte($indonesiaRamadhanStart) && $now->lte($indonesiaRamadhanEnd);
+    $hariKe = 0;
+    $hijriDay = 0;
+
+    if ($isRamadhan) {
+      $hariKe = (int) $indonesiaRamadhanStart->diffInDays($now) + 1;
+      $hariKe = min($hariKe, 30);
+      $hijriDay = $hariKe; // Sinkron: hari ke = tanggal Ramadhan
+    }
+
+    // Gunakan IntlCalendar hanya untuk bulan non-Ramadhan
     $hijriCal = IntlCalendar::createInstance(null, 'en_US@calendar=islamic-umalqura');
-    $hijriCal->setTime(now()->getTimestamp() * 1000);
-    $hijriDay   = $hijriCal->get(IntlCalendar::FIELD_DAY_OF_MONTH);
-    $hijriMonth = $hijriCal->get(IntlCalendar::FIELD_MONTH) + 1; // 0-indexed
-    $hijriYear  = $hijriCal->get(IntlCalendar::FIELD_YEAR);
+    $hijriCal->setTime($now->getTimestamp() * 1000);
+    $hijriYear = $hijriCal->get(IntlCalendar::FIELD_YEAR);
+
+    if (!$isRamadhan) {
+      $hijriDay   = $hijriCal->get(IntlCalendar::FIELD_DAY_OF_MONTH);
+      $hijriMonth = $hijriCal->get(IntlCalendar::FIELD_MONTH) + 1; // 0-indexed
+    } else {
+      $hijriMonth = 9; // Ramadhan
+    }
 
     $hijriMonthNames = [
       1 => 'Muharram',
@@ -47,17 +70,6 @@ class Dashboard extends Page
     ];
     $hijriMonthName = $hijriMonthNames[$hijriMonth] ?? '';
     $hijriDateFormatted = $hijriDay . ' ' . $hijriMonthName . ' ' . $hijriYear . ' H';
-
-    $isRamadhan = ($hijriMonth === 9);
-
-    // Hitung hari ke puasa berdasarkan tanggal resmi Kemenag RI
-    // 1 Ramadhan 1447H Indonesia = 19 Februari 2026
-    $indonesiaRamadhanStart = Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
-    $hariKe = 0;
-    if ($isRamadhan && now('Asia/Jakarta')->gte($indonesiaRamadhanStart)) {
-      $hariKe = (int) $indonesiaRamadhanStart->diffInDays(now('Asia/Jakarta')) + 1;
-      $hariKe = min($hariKe, 30);
-    }
 
     $totalSiswa = 0;
     $allSiswaIds = [];

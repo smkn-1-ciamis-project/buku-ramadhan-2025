@@ -73,9 +73,9 @@
                 <fieldset :disabled="formSubmitted" class="f-fieldset">
 
                 {{-- ═══ 1. PEMBIASAAN PENGENDALIAN DIRI ═══ --}}
-                <div class="f-section">
+                <div class="f-section" x-show="isSectionEnabled('pengendalian_diri')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">1</span> Pembiasaan Pengendalian Diri
+                        <span class="f-section-num">1</span> <span x-text="sectionTitles.pengendalian_diri">Pembiasaan Pengendalian Diri</span>
                     </h4>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in pengendalianDiri" :key="item.key">
@@ -100,13 +100,13 @@
                 </div>
 
                 {{-- ═══ 2. KEGIATAN HARIAN (PEMBIASAAN POSITIF) ═══ --}}
-                <div class="f-section">
+                <div class="f-section" x-show="isSectionEnabled('kegiatan')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">2</span> Kegiatan Harian (Pembiasaan Positif)
+                        <span class="f-section-num">2</span> <span x-text="sectionTitles.kegiatan">Kegiatan Harian (Pembiasaan Positif)</span>
                     </h4>
 
-                    {{-- Group A: Karakter "Sehat, Baik, Benar" --}}
-                    <p class="f-group-label">A. Karakter "Sehat, Baik, Benar"</p>
+                    {{-- Group A --}}
+                    <p class="f-group-label" x-text="groupTitles[0]">A. Karakter "Sehat, Baik, Benar"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupA" :key="item.key">
                             <div class="f-yatidak-row">
@@ -128,8 +128,8 @@
                         </template>
                     </div>
 
-                    {{-- Group B: Pengembangan Diri "Pinter" --}}
-                    <p class="f-group-label">B. Pengembangan Diri "Pinter"</p>
+                    {{-- Group B --}}
+                    <p class="f-group-label" x-text="groupTitles[1]">B. Pengembangan Diri "Pinter"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupB" :key="item.key">
                             <div class="f-yatidak-row">
@@ -151,8 +151,8 @@
                         </template>
                     </div>
 
-                    {{-- Group C: Kemandirian "Mandiri & Disiplin" --}}
-                    <p class="f-group-label">C. Kemandirian "Mandiri & Disiplin"</p>
+                    {{-- Group C --}}
+                    <p class="f-group-label" x-text="groupTitles[2]">C. Kemandirian "Mandiri & Disiplin"</p>
                     <div class="f-kegiatan-list-yatidak">
                         <template x-for="(item, idx) in kegiatanGroupC" :key="item.key">
                             <div class="f-yatidak-row">
@@ -176,9 +176,9 @@
                 </div>
 
                 {{-- ═══ 3. CATATAN HARIAN ═══ --}}
-                <div class="f-section f-section-last">
+                <div class="f-section f-section-last" x-show="isSectionEnabled('catatan')" x-transition>
                     <h4 class="f-section-title">
-                        <span class="f-section-num">3</span> Catatan Harian
+                        <span class="f-section-num">3</span> <span x-text="sectionTitles.catatan">Catatan Harian</span>
                     </h4>
                     <div class="f-field">
                         <label class="f-label">Catatan / refleksi hari ini (opsional)</label>

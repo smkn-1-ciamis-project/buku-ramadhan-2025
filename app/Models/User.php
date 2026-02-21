@@ -99,4 +99,12 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Kelas::class, 'wali_id');
     }
+
+    /**
+     * Formulir yang disubmit siswa ini.
+     */
+    public function formSubmissions(): HasMany
+    {
+        return $this->hasMany(FormSubmission::class, 'user_id');
+    }
 }
