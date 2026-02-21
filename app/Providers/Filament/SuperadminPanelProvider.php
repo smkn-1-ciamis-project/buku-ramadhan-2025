@@ -39,6 +39,8 @@ class SuperadminPanelProvider extends PanelProvider
                 NavigationGroup::make('Akademik'),
                 NavigationGroup::make('Pengaturan')
                     ->collapsed(),
+                NavigationGroup::make('Akun')
+                    ->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Superadmin/Resources'), for: 'App\\Filament\\Superadmin\\Resources')
             ->discoverPages(in: app_path('Filament/Superadmin/Pages'), for: 'App\\Filament\\Superadmin\\Pages')
