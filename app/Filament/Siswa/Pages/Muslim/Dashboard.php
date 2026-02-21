@@ -8,9 +8,12 @@ use App\Filament\Siswa\Pages\NonMuslim\Buddha\Dashboard as BuddhaDashboard;
 use App\Filament\Siswa\Pages\NonMuslim\Konghucu\Dashboard as KonghucuDashboard;
 use Filament\Pages\Page;
 use App\Models\User;
+use App\Traits\HasPasswordChangeModal;
 
 class Dashboard extends Page
 {
+    use HasPasswordChangeModal;
+
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static ?string $navigationLabel = 'Dashboard';
     protected static ?string $title = '';

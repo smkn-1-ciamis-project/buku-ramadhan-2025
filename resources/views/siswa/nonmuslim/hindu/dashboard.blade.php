@@ -758,6 +758,8 @@
         </div>
 
     </div>
+
+    @include('components.password-change-modal')
 </x-filament-panels::page>
 
 @push('styles')

@@ -119,6 +119,7 @@ class UserSeeder extends Seeder
                         'role_user_id'  => $roleId,
                         'email_verified_at' => Carbon::now()->format('Y-m-d H:i:s'),
                         'password' => Hash::make($userData['password']),
+                        'must_change_password' => $userData['role'] === 'Siswa',
                         'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     ]);
                 }

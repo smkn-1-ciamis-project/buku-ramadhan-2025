@@ -50,6 +50,7 @@ class User extends Authenticatable implements FilamentUser
         'agama',
         'no_hp',
         'password',
+        'must_change_password',
         'role_user_id',
         'kelas_id',
         'jenis_kelamin',
@@ -75,6 +76,7 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'must_change_password' => 'boolean',
         'session_login_at' => 'datetime',
     ];
 

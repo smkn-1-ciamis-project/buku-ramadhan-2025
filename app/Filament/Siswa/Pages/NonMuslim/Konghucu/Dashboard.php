@@ -5,9 +5,12 @@ namespace App\Filament\Siswa\Pages\NonMuslim\Konghucu;
 use App\Filament\Siswa\Pages\Muslim\Dashboard as MuslimDashboard;
 use Filament\Pages\Page;
 use App\Models\User;
+use App\Traits\HasPasswordChangeModal;
 
 class Dashboard extends Page
 {
+    use HasPasswordChangeModal;
+
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static ?string $navigationLabel = 'Dashboard Konghucu';
     protected static ?string $title = '';

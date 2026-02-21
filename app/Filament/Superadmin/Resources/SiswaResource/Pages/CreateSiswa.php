@@ -14,6 +14,7 @@ class CreateSiswa extends CreateRecord
   {
     $data['role_user_id'] = RoleUser::where('name', 'Siswa')->first()?->id;
     $data['email_verified_at'] = now();
+    $data['must_change_password'] = true;
     return $data;
   }
 
