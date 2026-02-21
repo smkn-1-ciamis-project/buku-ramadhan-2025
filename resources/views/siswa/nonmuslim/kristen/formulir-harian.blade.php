@@ -26,8 +26,24 @@
             <span class="formulir-topbar-badge" x-text="'Hari ke-' + formDay"></span>
         </div>
 
+        {{-- Disabled overlay when form is inactive --}}
+        <template x-if="formDisabled">
+            <div class="formulir-disabled-overlay">
+                <div class="formulir-disabled-card">
+                    <div class="formulir-disabled-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                        </svg>
+                    </div>
+                    <h2 class="formulir-disabled-title">Formulir Tidak Aktif</h2>
+                    <p class="formulir-disabled-text" x-text="formDisabledMessage"></p>
+                    <a href="{{ \App\Filament\Siswa\Pages\NonMuslim\Kristen\Dashboard::getUrl() }}" class="formulir-disabled-btn">Kembali ke Dashboard</a>
+                </div>
+            </div>
+        </template>
+
         {{-- Form body --}}
-        <div class="formulir-body">
+        <div class="formulir-body" x-show="!formDisabled">
             <div class="formulir-content">
 
                 {{-- ── Backfill warning (shown when filling a past day) ── --}}
@@ -221,6 +237,137 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- ═══ DYNAMIC EXTRA SECTIONS ═══ --}}
+                <template x-for="(es, esIdx) in extraSections" :key="es.key">
+                    <div class="f-section" x-transition>
+                        <h4 class="f-section-title">
+                            <span class="f-section-num" x-text="4 + esIdx"></span>
+                            <span x-text="es.title"></span>
+                        </h4>
+
+                        {{-- ya_tidak type --}}
+                        <template x-if="es.type === 'ya_tidak'">
+                            <div>
+                                <div class="f-radio-row">
+                                    <label class="f-radio-card" :class="formData[es.key] === 'ya' && 'f-radio-card-active f-radio-card-green'">
+                                        <input type="radio" :name="es.key" value="ya" x-model="formData[es.key]" class="f-hidden">
+                                        <div class="f-radio-card-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        </div>
+                                        <span class="f-radio-card-label">Ya</span>
+                                    </label>
+                                    <label class="f-radio-card" :class="formData[es.key] === 'tidak' && 'f-radio-card-active f-radio-card-red'">
+                                        <input type="radio" :name="es.key" value="tidak" x-model="formData[es.key]" class="f-hidden">
+                                        <div class="f-radio-card-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        </div>
+                                        <span class="f-radio-card-label">Tidak</span>
+                                    </label>
+                                </div>
+                                <div x-show="es.has_reason && formData[es.key] === 'tidak'" x-transition class="f-reason-wrap">
+                                    <label class="f-label">Alasan</label>
+                                    <input type="text" x-model="formData[es.key + '_alasan']" placeholder="Masukkan alasan..." class="f-input">
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- ya_tidak_list type --}}
+                        <template x-if="es.type === 'ya_tidak_list'">
+                            <div class="f-kegiatan-list-yatidak">
+                                <template x-for="(item, idx) in (es.items || [])" :key="item.key">
+                                    <div class="f-yatidak-row">
+                                        <span class="f-yatidak-num" x-text="idx + 1"></span>
+                                        <span class="f-yatidak-label" x-text="item.label"></span>
+                                        <div class="f-yatidak-options">
+                                            <button type="button" class="f-chip"
+                                                    :class="formData[es.key] && formData[es.key][item.key] === 'ya' && 'f-chip-active f-chip-green'"
+                                                    @click="if(!formData[es.key])formData[es.key]={};formData[es.key][item.key]=formData[es.key][item.key]==='ya'?'':'ya'">Ya</button>
+                                            <button type="button" class="f-chip"
+                                                    :class="formData[es.key] && formData[es.key][item.key] === 'tidak' && 'f-chip-active f-chip-gray'"
+                                                    @click="if(!formData[es.key])formData[es.key]={};formData[es.key][item.key]=formData[es.key][item.key]==='tidak'?'':'tidak'">Tidak</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- multi_option type --}}
+                        <template x-if="es.type === 'multi_option'">
+                            <div class="f-sholat-list">
+                                <template x-for="item in (es.items || [])" :key="item.key">
+                                    <div class="f-sholat-row">
+                                        <span class="f-sholat-name" x-text="item.label"></span>
+                                        <div class="f-sholat-options">
+                                            <template x-for="opt in (es.options || [])" :key="opt">
+                                                <button type="button" class="f-chip"
+                                                        :class="formData[es.key] && formData[es.key][item.key] === opt && 'f-chip-active f-chip-blue'"
+                                                        @click="if(!formData[es.key])formData[es.key]={};formData[es.key][item.key]=formData[es.key][item.key]===opt?'':opt"
+                                                        x-text="opt.charAt(0).toUpperCase() + opt.slice(1)"></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- checklist_groups type --}}
+                        <template x-if="es.type === 'checklist_groups'">
+                            <div>
+                                <template x-for="(group, gIdx) in (es.groups || [])" :key="gIdx">
+                                    <div>
+                                        <p class="f-group-label" x-text="group.title"></p>
+                                        <div class="f-kegiatan-grid">
+                                            <template x-for="item in (group.items || [])" :key="item.key">
+                                                <label class="f-kegiatan-item" :class="formData[es.key] && formData[es.key][item.key] && 'f-kegiatan-active'">
+                                                    <input type="checkbox" x-model="formData[es.key][item.key]" class="f-hidden">
+                                                    <div class="f-kegiatan-check">
+                                                        <svg x-show="formData[es.key] && formData[es.key][item.key]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                    </div>
+                                                    <span class="f-kegiatan-label" x-text="item.label"></span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- ya_tidak_groups type --}}
+                        <template x-if="es.type === 'ya_tidak_groups'">
+                            <div>
+                                <template x-for="(group, gIdx) in (es.groups || [])" :key="gIdx">
+                                    <div>
+                                        <p class="f-group-label" x-text="group.title"></p>
+                                        <div class="f-kegiatan-list-yatidak">
+                                            <template x-for="(item, idx) in (group.items || [])" :key="item.key">
+                                                <div class="f-yatidak-row">
+                                                    <span class="f-yatidak-num" x-text="idx + 1"></span>
+                                                    <span class="f-yatidak-label" x-text="item.label"></span>
+                                                    <div class="f-yatidak-options">
+                                                        <button type="button" class="f-chip"
+                                                                :class="formData[es.key] && formData[es.key][item.key] === 'ya' && 'f-chip-active f-chip-green'"
+                                                                @click="if(!formData[es.key])formData[es.key]={};formData[es.key][item.key]=formData[es.key][item.key]==='ya'?'':'ya'">Ya</button>
+                                                        <button type="button" class="f-chip"
+                                                                :class="formData[es.key] && formData[es.key][item.key] === 'tidak' && 'f-chip-active f-chip-gray'"
+                                                                @click="if(!formData[es.key])formData[es.key]={};formData[es.key][item.key]=formData[es.key][item.key]==='tidak'?'':'tidak'">Tidak</button>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- catatan type --}}
+                        <template x-if="es.type === 'catatan'">
+                            <div class="f-field">
+                                <textarea x-model="formData[es.key]" placeholder="Tulis catatan..." class="f-input" rows="4" style="resize:vertical;min-height:100px;"></textarea>
+                            </div>
+                        </template>
+                    </div>
+                </template>
 
                 </fieldset>
 

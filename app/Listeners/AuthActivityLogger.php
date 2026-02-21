@@ -12,11 +12,20 @@ class AuthActivityLogger
 {
   /**
    * Handle Login event.
+   * Prevents duplicate log within 30 seconds for the same user.
    */
   public function handleLogin(Login $event): void
   {
     if ($event->user instanceof User) {
-      ActivityLog::log('login', $event->user);
+      // Check if a login was already logged for this user within the last 30 seconds
+      $recent = ActivityLog::where('user_id', $event->user->id)
+        ->where('activity', 'login')
+        ->where('created_at', '>=', now()->subSeconds(30))
+        ->exists();
+
+      if (!$recent) {
+        ActivityLog::log('login', $event->user);
+      }
     }
   }
 

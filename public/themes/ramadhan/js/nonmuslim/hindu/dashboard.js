@@ -9,6 +9,13 @@ function hinduDashboard() {
         // ── State ──────────────────────────────────────────────────────
         activeTab: "calendar",
         showChangePassword: false,
+        showLogoutConfirm: false,
+        pwOld: "",
+        pwNew: "",
+        pwConfirm: "",
+        pwLoading: false,
+        pwMessage: "",
+        pwSuccess: false,
         calendarDays: [],
         allDuas: [],
         filteredDuas: [],
@@ -722,6 +729,72 @@ function hinduDashboard() {
         refreshVerse() {
             var idx = Math.floor(Math.random() * this.holyVerses.length);
             this.dailyVerse = this.holyVerses[idx];
+        },
+
+        changePassword() {
+            var self = this;
+            self.pwMessage = "";
+            self.pwSuccess = false;
+
+            if (!self.pwOld || !self.pwNew || !self.pwConfirm) {
+                self.pwMessage = "Semua field harus diisi.";
+                return;
+            }
+            if (self.pwNew.length < 8) {
+                self.pwMessage = "Password baru minimal 8 karakter.";
+                return;
+            }
+            if (self.pwNew !== self.pwConfirm) {
+                self.pwMessage = "Konfirmasi password tidak cocok.";
+                return;
+            }
+
+            self.pwLoading = true;
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+            fetch("/api/change-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                        ? csrfToken.getAttribute("content")
+                        : "",
+                },
+                body: JSON.stringify({
+                    current_password: self.pwOld,
+                    new_password: self.pwNew,
+                    new_password_confirmation: self.pwConfirm,
+                }),
+            })
+                .then(function (r) {
+                    return r.json().then(function (d) {
+                        return { ok: r.ok, data: d };
+                    });
+                })
+                .then(function (res) {
+                    self.pwLoading = false;
+                    if (res.ok && res.data.success) {
+                        self.pwSuccess = true;
+                        self.pwMessage =
+                            res.data.message || "Password berhasil diubah.";
+                        self.pwOld = "";
+                        self.pwNew = "";
+                        self.pwConfirm = "";
+                        setTimeout(function () {
+                            self.showChangePassword = false;
+                            self.pwMessage = "";
+                            self.pwSuccess = false;
+                        }, 2000);
+                    } else {
+                        self.pwMessage =
+                            res.data.message || "Gagal mengubah password.";
+                    }
+                })
+                .catch(function () {
+                    self.pwLoading = false;
+                    self.pwMessage = "Terjadi kesalahan. Coba lagi.";
+                });
         },
     };
 }

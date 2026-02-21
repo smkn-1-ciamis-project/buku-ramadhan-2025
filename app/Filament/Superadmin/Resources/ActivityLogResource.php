@@ -143,14 +143,9 @@ class ActivityLogResource extends Resource
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\ViewAction::make(),
-          Tables\Actions\DeleteAction::make(),
         ]),
       ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-        ]),
-      ])
+      ->bulkActions([])
       ->poll('30s');
   }
 

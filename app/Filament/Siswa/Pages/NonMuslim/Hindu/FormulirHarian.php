@@ -2,7 +2,9 @@
 
 namespace App\Filament\Siswa\Pages\NonMuslim\Hindu;
 
+use App\Models\FormSetting;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 
 class FormulirHarian extends Page
 {
@@ -12,6 +14,17 @@ class FormulirHarian extends Page
     protected static ?string $slug = 'formulir-harian-hindu';
     protected static string $view = 'siswa.nonmuslim.hindu.formulir-harian';
     protected static bool $shouldRegisterNavigation = false;
+
+    public function mount(): void
+    {
+        $user = Auth::user();
+        $agama = $user->agama ?? 'Hindu';
+        $setting = FormSetting::where('agama', $agama)->first();
+
+        if ($setting && !$setting->is_active) {
+            abort(403, 'Formulir untuk agama ' . $agama . ' sedang dinonaktifkan oleh kesiswaan.');
+        }
+    }
 
     public function getHeading(): string
     {

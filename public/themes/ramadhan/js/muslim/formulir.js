@@ -133,10 +133,13 @@ function formulirHarian() {
         currentDayStatus: "",
         currentDayNote: "",
         configLoaded: false,
+        formDisabled: false,
+        formDisabledMessage: "",
 
         /* ── Dynamic config from server ── */
         sectionConfig: [],
         enabledSections: {},
+        extraSections: [],
 
         /* ── Surah autocomplete ── */
         allSurahs: QURAN_SURAHS,
@@ -275,10 +278,19 @@ function formulirHarian() {
                 headers: { Accept: "application/json" },
             })
                 .then(function (r) {
+                    if (r.status === 403) {
+                        return r.json().then(function (d) {
+                            self.formDisabled = true;
+                            self.formDisabledMessage =
+                                d.message || "Formulir sedang dinonaktifkan.";
+                            self.configLoaded = true;
+                            return null;
+                        });
+                    }
                     return r.json();
                 })
                 .then(function (data) {
-                    if (!data.sections) return;
+                    if (!data || !data.sections) return;
                     self.sectionConfig = data.sections;
 
                     // Build enabled sections map
@@ -370,6 +382,101 @@ function formulirHarian() {
                         }
                     });
 
+                    // Collect extra (dynamic) sections not handled by hardcoded keys
+                    var knownKeys = [
+                        "puasa",
+                        "sholat_fardu",
+                        "tarawih",
+                        "sholat_sunat",
+                        "tadarus",
+                        "kegiatan",
+                        "ceramah",
+                    ];
+                    var extras = [];
+                    data.sections.forEach(function (section) {
+                        if (
+                            knownKeys.indexOf(section.key) === -1 &&
+                            section.enabled !== false
+                        ) {
+                            extras.push(section);
+                            if (section.type === "ya_tidak") {
+                                self.formData[section.key] =
+                                    self.formData[section.key] || "";
+                                if (section.has_reason) {
+                                    self.formData[section.key + "_alasan"] =
+                                        self.formData[
+                                            section.key + "_alasan"
+                                        ] || "";
+                                }
+                            } else if (
+                                section.type === "ya_tidak_list" &&
+                                section.items
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.items.forEach(function (item) {
+                                    self.formData[section.key][item.key] =
+                                        self.formData[section.key][item.key] ||
+                                        "";
+                                });
+                            } else if (
+                                section.type === "multi_option" &&
+                                section.items
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.items.forEach(function (item) {
+                                    self.formData[section.key][item.key] =
+                                        self.formData[section.key][item.key] ||
+                                        "";
+                                });
+                            } else if (
+                                (section.type === "checklist_groups" ||
+                                    section.type === "ya_tidak_groups") &&
+                                section.groups
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.groups.forEach(function (group) {
+                                    (group.items || []).forEach(
+                                        function (item) {
+                                            self.formData[section.key][
+                                                item.key
+                                            ] =
+                                                section.type ===
+                                                "checklist_groups"
+                                                    ? self.formData[
+                                                          section.key
+                                                      ][item.key] || false
+                                                    : self.formData[
+                                                          section.key
+                                                      ][item.key] || "";
+                                        },
+                                    );
+                                });
+                            } else if (section.type === "catatan") {
+                                self.formData[section.key] =
+                                    self.formData[section.key] || "";
+                            }
+                        }
+                    });
+                    self.extraSections = extras;
+
                     self.configLoaded = true;
                     // Re-check form submitted after config loaded (restores saved data properly)
                     self.checkFormSubmitted();
@@ -395,7 +502,7 @@ function formulirHarian() {
             // Always open the oldest unfilled day first (sequential enforcement)
             this.formDay = this.getFirstUnfilledDay();
             this.checkFormSubmitted();
-            this.filteredSurahs = this.allSurahs.slice(0, 15);
+            this.filteredSurahs = this.allSurahs;
         },
 
         ramadhanDay: 1,
@@ -466,6 +573,40 @@ function formulirHarian() {
                 ceramah_tema: "",
                 ringkasan_ceramah: "",
             };
+            // Reset extra (dynamic) section formData
+            var self = this;
+            this.extraSections.forEach(function (section) {
+                if (section.type === "ya_tidak") {
+                    self.formData[section.key] = "";
+                    if (section.has_reason)
+                        self.formData[section.key + "_alasan"] = "";
+                } else if (
+                    section.type === "ya_tidak_list" ||
+                    section.type === "multi_option"
+                ) {
+                    var obj = {};
+                    (section.items || []).forEach(function (item) {
+                        obj[item.key] = "";
+                    });
+                    self.formData[section.key] = obj;
+                } else if (
+                    section.type === "checklist_groups" ||
+                    section.type === "ya_tidak_groups"
+                ) {
+                    var obj = {};
+                    (section.groups || []).forEach(function (g) {
+                        (g.items || []).forEach(function (item) {
+                            obj[item.key] =
+                                section.type === "checklist_groups"
+                                    ? false
+                                    : "";
+                        });
+                    });
+                    self.formData[section.key] = obj;
+                } else if (section.type === "catatan") {
+                    self.formData[section.key] = "";
+                }
+            });
             this.selectedSurahAyat = 0;
             this.ayatError = "";
             if (this.$refs.ceramahEditor)
@@ -475,18 +616,16 @@ function formulirHarian() {
         /* ── Surah search / filter ── */
         filterSurah(query) {
             if (!query || query.length === 0) {
-                this.filteredSurahs = this.allSurahs.slice(0, 15);
+                this.filteredSurahs = this.allSurahs;
                 return;
             }
             var q = query.toLowerCase();
-            this.filteredSurahs = this.allSurahs
-                .filter(function (s) {
-                    return (
-                        s.name.toLowerCase().indexOf(q) !== -1 ||
-                        String(s.number).indexOf(q) !== -1
-                    );
-                })
-                .slice(0, 20);
+            this.filteredSurahs = this.allSurahs.filter(function (s) {
+                return (
+                    s.name.toLowerCase().indexOf(q) !== -1 ||
+                    String(s.number).indexOf(q) !== -1
+                );
+            });
         },
 
         selectSurah(s) {
@@ -634,6 +773,15 @@ function formulirHarian() {
         },
 
         submitForm() {
+            if (this.formDisabled) {
+                this.validationMessage = this.formDisabledMessage;
+                this.showValidationError = true;
+                var self = this;
+                setTimeout(function () {
+                    self.showValidationError = false;
+                }, 4000);
+                return;
+            }
             // Validate first
             var errors = this.validateForm();
             if (errors.length > 0) {

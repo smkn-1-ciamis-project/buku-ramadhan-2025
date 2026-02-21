@@ -18,10 +18,13 @@ function formulirHindu() {
         currentDay: 1,
         showWorshipReminder: true,
         configLoaded: false,
+        formDisabled: false,
+        formDisabledMessage: "",
 
         /* ── Dynamic config from server ── */
         sectionConfig: [],
         enabledSections: {},
+        extraSections: [],
 
         editorFormats: {
             bold: false,
@@ -152,10 +155,19 @@ function formulirHindu() {
                 headers: { Accept: "application/json" },
             })
                 .then(function (r) {
+                    if (r.status === 403) {
+                        return r.json().then(function (d) {
+                            self.formDisabled = true;
+                            self.formDisabledMessage =
+                                d.message || "Formulir sedang dinonaktifkan.";
+                            self.configLoaded = true;
+                            return null;
+                        });
+                    }
                     return r.json();
                 })
                 .then(function (data) {
-                    if (!data.sections) return;
+                    if (!data || !data.sections) return;
                     self.sectionConfig = data.sections;
 
                     var enabled = {};
@@ -209,6 +221,97 @@ function formulirHindu() {
                             self.formData.kegiatan = newKegiatan;
                         }
                     });
+
+                    // Collect extra (dynamic) sections not handled by hardcoded keys
+                    var knownKeys = [
+                        "pengendalian_diri",
+                        "kegiatan",
+                        "catatan",
+                    ];
+                    var extras = [];
+                    data.sections.forEach(function (section) {
+                        if (
+                            knownKeys.indexOf(section.key) === -1 &&
+                            section.enabled !== false
+                        ) {
+                            extras.push(section);
+                            if (section.type === "ya_tidak") {
+                                self.formData[section.key] =
+                                    self.formData[section.key] || "";
+                                if (section.has_reason) {
+                                    self.formData[section.key + "_alasan"] =
+                                        self.formData[
+                                            section.key + "_alasan"
+                                        ] || "";
+                                }
+                            } else if (
+                                section.type === "ya_tidak_list" &&
+                                section.items
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.items.forEach(function (item) {
+                                    self.formData[section.key][item.key] =
+                                        self.formData[section.key][item.key] ||
+                                        "";
+                                });
+                            } else if (
+                                section.type === "multi_option" &&
+                                section.items
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.items.forEach(function (item) {
+                                    self.formData[section.key][item.key] =
+                                        self.formData[section.key][item.key] ||
+                                        "";
+                                });
+                            } else if (
+                                (section.type === "checklist_groups" ||
+                                    section.type === "ya_tidak_groups") &&
+                                section.groups
+                            ) {
+                                if (
+                                    !self.formData[section.key] ||
+                                    typeof self.formData[section.key] !==
+                                        "object"
+                                ) {
+                                    self.formData[section.key] = {};
+                                }
+                                section.groups.forEach(function (group) {
+                                    (group.items || []).forEach(
+                                        function (item) {
+                                            self.formData[section.key][
+                                                item.key
+                                            ] =
+                                                section.type ===
+                                                "checklist_groups"
+                                                    ? self.formData[
+                                                          section.key
+                                                      ][item.key] || false
+                                                    : self.formData[
+                                                          section.key
+                                                      ][item.key] || "";
+                                        },
+                                    );
+                                });
+                            } else if (section.type === "catatan") {
+                                self.formData[section.key] =
+                                    self.formData[section.key] || "";
+                            }
+                        }
+                    });
+                    self.extraSections = extras;
 
                     self.configLoaded = true;
                     self.checkFormSubmitted();
@@ -273,6 +376,40 @@ function formulirHindu() {
                 kegiatan: kegiatan,
                 catatan: "",
             };
+            // Reset extra (dynamic) section formData
+            var self = this;
+            this.extraSections.forEach(function (section) {
+                if (section.type === "ya_tidak") {
+                    self.formData[section.key] = "";
+                    if (section.has_reason)
+                        self.formData[section.key + "_alasan"] = "";
+                } else if (
+                    section.type === "ya_tidak_list" ||
+                    section.type === "multi_option"
+                ) {
+                    var obj = {};
+                    (section.items || []).forEach(function (item) {
+                        obj[item.key] = "";
+                    });
+                    self.formData[section.key] = obj;
+                } else if (
+                    section.type === "checklist_groups" ||
+                    section.type === "ya_tidak_groups"
+                ) {
+                    var obj = {};
+                    (section.groups || []).forEach(function (g) {
+                        (g.items || []).forEach(function (item) {
+                            obj[item.key] =
+                                section.type === "checklist_groups"
+                                    ? false
+                                    : "";
+                        });
+                    });
+                    self.formData[section.key] = obj;
+                } else if (section.type === "catatan") {
+                    self.formData[section.key] = "";
+                }
+            });
             if (this.$refs.catatanEditor)
                 this.$refs.catatanEditor.innerHTML = "";
         },
@@ -364,6 +501,15 @@ function formulirHindu() {
         },
 
         submitForm() {
+            if (this.formDisabled) {
+                this.validationMessage = this.formDisabledMessage;
+                this.showValidationError = true;
+                var self = this;
+                setTimeout(function () {
+                    self.showValidationError = false;
+                }, 4000);
+                return;
+            }
             var errors = this.validateForm();
             if (errors.length > 0) {
                 this.validationMessage = errors.join(", ");

@@ -1203,6 +1203,120 @@
 .akun-pw-btn:active {
     transform: scale(0.97);
 }
+.akun-pw-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Password change feedback message */
+.akun-pw-message {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 2px;
+}
+.akun-pw-error {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+.akun-pw-success {
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.08);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+/* Logout confirmation overlay & modal */
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+.logout-modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 24px 22px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+.logout-modal-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    background: rgba(220, 38, 38, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+}
+.logout-modal-icon svg {
+    width: 26px;
+    height: 26px;
+}
+.logout-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+.logout-modal-text {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.logout-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.logout-btn-cancel {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.logout-btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.logout-btn-confirm {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+.logout-btn-confirm:hover {
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.35);
+    transform: translateY(-1px);
+}
+.logout-btn-confirm:active {
+    transform: scale(0.97);
+}
 
 @media (max-width: 380px) {
     .akun-bio-grid {

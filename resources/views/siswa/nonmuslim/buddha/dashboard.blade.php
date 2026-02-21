@@ -756,17 +756,18 @@
                                 <div x-show="showChangePassword" x-collapse class="akun-pw-form">
                                     <div>
                                         <label class="akun-pw-label">Password Lama</label>
-                                        <input type="password" class="akun-pw-input" placeholder="Masukkan password lama">
+                                        <input type="password" x-model="pwOld" class="akun-pw-input" placeholder="Masukkan password lama">
                                     </div>
                                     <div>
                                         <label class="akun-pw-label">Password Baru</label>
-                                        <input type="password" class="akun-pw-input" placeholder="Masukkan password baru">
+                                        <input type="password" x-model="pwNew" class="akun-pw-input" placeholder="Masukkan password baru">
                                     </div>
                                     <div>
                                         <label class="akun-pw-label">Konfirmasi Password</label>
-                                        <input type="password" class="akun-pw-input" placeholder="Ulangi password baru">
+                                        <input type="password" x-model="pwConfirm" class="akun-pw-input" placeholder="Ulangi password baru">
                                     </div>
-                                    <button class="akun-pw-btn">Simpan Password</button>
+                                    <div x-show="pwMessage" x-transition class="akun-pw-message" :class="pwSuccess ? 'akun-pw-success' : 'akun-pw-error'" x-text="pwMessage"></div>
+                                    <button class="akun-pw-btn" @click="changePassword()" :disabled="pwLoading" x-text="pwLoading ? 'Menyimpan...' : 'Simpan Password'"></button>
                                 </div>
 
                                 <div class="akun-menu-item">
@@ -779,18 +780,33 @@
                                     </div>
                                 </div>
 
-                                <form method="POST" action="{{ route('filament.siswa.auth.logout') }}">
-                                    @csrf
-                                    <button type="submit" class="akun-menu-item akun-menu-logout w-full">
-                                        <div class="akun-menu-icon akun-menu-icon-red">
+                                <button type="button" @click="showLogoutConfirm = true" class="akun-menu-item akun-menu-logout w-full">
+                                    <div class="akun-menu-icon akun-menu-icon-red">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+                                    </div>
+                                    <div class="flex-1 text-left">
+                                        <p class="akun-menu-title" style="color: #dc2626;">Keluar</p>
+                                        <p class="akun-menu-sub">Logout dari akun</p>
+                                    </div>
+                                </button>
+
+                                {{-- Logout Confirmation Popup --}}
+                                <div x-show="showLogoutConfirm" x-transition.opacity class="logout-overlay" @click.self="showLogoutConfirm = false" style="display:none;">
+                                    <div class="logout-modal" x-show="showLogoutConfirm" x-transition.scale.90>
+                                        <div class="logout-modal-icon">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
                                         </div>
-                                        <div class="flex-1 text-left">
-                                            <p class="akun-menu-title" style="color: #dc2626;">Keluar</p>
-                                            <p class="akun-menu-sub">Logout dari akun</p>
+                                        <h3 class="logout-modal-title">Konfirmasi Logout</h3>
+                                        <p class="logout-modal-text">Apakah Anda yakin ingin keluar dari akun?</p>
+                                        <div class="logout-modal-actions">
+                                            <button type="button" @click="showLogoutConfirm = false" class="logout-btn-cancel">Batal</button>
+                                            <form method="POST" action="{{ route('filament.siswa.auth.logout') }}" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="logout-btn-confirm">Ya, Keluar</button>
+                                            </form>
                                         </div>
-                                    </button>
-                                </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

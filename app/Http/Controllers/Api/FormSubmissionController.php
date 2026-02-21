@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\FormSetting;
 use App\Models\FormSubmission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,17 @@ class FormSubmissionController extends Controller
     ]);
 
     $user = Auth::user();
+
+    // Check if form is active for user's religion
+    $agama = $user->agama ?? 'Islam';
+    $setting = FormSetting::where('agama', $agama)->first();
+
+    if ($setting && !$setting->is_active) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Formulir untuk agama ' . $agama . ' sedang dinonaktifkan oleh kesiswaan.',
+      ], 403);
+    }
 
     $submission = FormSubmission::updateOrCreate(
       [

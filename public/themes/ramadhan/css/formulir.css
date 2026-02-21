@@ -69,6 +69,67 @@
     white-space: nowrap;
 }
 
+/* ── Formulir Disabled Overlay ── */
+.formulir-disabled-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 60px);
+    padding: 2rem 1rem;
+}
+.formulir-disabled-card {
+    background: #fff;
+    border-radius: 1.25rem;
+    padding: 2.5rem 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+.formulir-disabled-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    background: rgba(220, 38, 38, 0.08);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+}
+.formulir-disabled-icon svg {
+    width: 32px;
+    height: 32px;
+}
+.formulir-disabled-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+.formulir-disabled-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+.formulir-disabled-btn {
+    display: inline-block;
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+.formulir-disabled-btn:hover {
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
 /* ── Body & Card ── */
 .formulir-body {
     max-width: 640px;
