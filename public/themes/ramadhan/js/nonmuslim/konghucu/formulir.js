@@ -8,7 +8,13 @@ function formulirKonghucu() {
         formDay: 1,
         formSubmitted: false,
         formSaving: false,
+        showSuccessPopup: false,
+        showValidationError: false,
+        validationMessage: "",
         submittedDays: [],
+        submissionStatuses: {},
+        currentDayStatus: "",
+        currentDayNote: "",
         currentDay: 1,
         showWorshipReminder: true,
         configLoaded: false,
@@ -288,6 +294,12 @@ function formulirKonghucu() {
 
         checkFormSubmitted() {
             this.formSubmitted = this.submittedDays.includes(this.formDay);
+            var dayStatus = this.submissionStatuses[this.formDay];
+            this.currentDayStatus = dayStatus ? dayStatus.status : "";
+            this.currentDayNote = dayStatus ? dayStatus.catatan_guru || "" : "";
+            if (this.currentDayStatus === "rejected") {
+                this.formSubmitted = false;
+            }
             try {
                 var savedForm = localStorage.getItem(
                     "konghucu_form_day_" + this.formDay,
@@ -328,7 +340,41 @@ function formulirKonghucu() {
             return result;
         },
 
+        validateForm() {
+            var errors = [];
+            var anyPengendalian = false;
+            for (var key in this.formData.pengendalian) {
+                if (this.formData.pengendalian[key]) {
+                    anyPengendalian = true;
+                    break;
+                }
+            }
+            if (!anyPengendalian)
+                errors.push("Pembiasaan pengendalian diri belum diisi");
+            var anyKegiatan = false;
+            for (var key in this.formData.kegiatan) {
+                if (this.formData.kegiatan[key]) {
+                    anyKegiatan = true;
+                    break;
+                }
+            }
+            if (!anyKegiatan)
+                errors.push("Kegiatan harian belum diisi satupun");
+            return errors;
+        },
+
         submitForm() {
+            var errors = this.validateForm();
+            if (errors.length > 0) {
+                this.validationMessage = errors.join(", ");
+                this.showValidationError = true;
+                var self = this;
+                setTimeout(function () {
+                    self.showValidationError = false;
+                }, 4000);
+                return;
+            }
+
             this.formSaving = true;
             if (this.$refs.catatanEditor) {
                 this.formData.catatan = this.$refs.catatanEditor.innerHTML;
@@ -371,12 +417,19 @@ function formulirKonghucu() {
 
             setTimeout(function () {
                 self.formSaving = false;
+                self.showSuccessPopup = true;
+                setTimeout(function () {
+                    self.showSuccessPopup = false;
+                }, 3000);
+
                 var next = self.getFirstUnfilledDay();
                 if (next !== self.formDay) {
-                    self.formDay = next;
-                    self.formSubmitted = false;
-                    self.resetFormData();
-                    self.checkFormSubmitted();
+                    setTimeout(function () {
+                        self.formDay = next;
+                        self.formSubmitted = false;
+                        self.resetFormData();
+                        self.checkFormSubmitted();
+                    }, 2000);
                 }
             }, 600);
         },
@@ -404,6 +457,10 @@ function formulirKonghucu() {
                         );
                         if (data.submissions) {
                             data.submissions.forEach(function (sub) {
+                                self.submissionStatuses[sub.hari_ke] = {
+                                    status: sub.status || "pending",
+                                    catatan_guru: sub.catatan_guru || "",
+                                };
                                 var key = "konghucu_form_day_" + sub.hari_ke;
                                 if (!localStorage.getItem(key) && sub.data) {
                                     localStorage.setItem(

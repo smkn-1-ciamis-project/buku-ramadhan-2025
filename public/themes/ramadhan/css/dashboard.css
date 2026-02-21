@@ -1757,6 +1757,34 @@
     color: #059669;
 }
 
+.cal-cell-pending {
+    background: #fefce8;
+    border: 1.5px solid #fde68a;
+    color: #854d0e;
+}
+
+.cal-cell-pending .cal-day-num {
+    color: #854d0e;
+}
+
+.cal-cell-pending .cal-hijri-num {
+    color: #ca8a04;
+}
+
+.cal-cell-rejected {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    color: #991b1b;
+}
+
+.cal-cell-rejected .cal-day-num {
+    color: #991b1b;
+}
+
+.cal-cell-rejected .cal-hijri-num {
+    color: #dc2626;
+}
+
 .cal-cell-missed {
     background: #fff7ed;
     border: 1.5px solid #fed7aa;
@@ -1815,6 +1843,14 @@
 .cal-legend-dot-done {
     background: #059669;
     border: 1.5px solid #a7f3d0;
+}
+.cal-legend-dot-pending {
+    background: #eab308;
+    border: 1.5px solid #fde68a;
+}
+.cal-legend-dot-rejected {
+    background: #dc2626;
+    border: 1.5px solid #fecaca;
 }
 .cal-legend-dot-missed {
     background: #f97316;

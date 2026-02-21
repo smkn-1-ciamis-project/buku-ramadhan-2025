@@ -396,8 +396,15 @@ class SiswaRelationManager extends RelationManager
       Forms\Components\TextInput::make('nisn')
         ->label('NISN')
         ->required()
-        ->maxLength(20)
-        ->unique(ignoreRecord: true),
+        ->regex('/^\d{10}$/')
+        ->maxLength(10)
+        ->unique(ignoreRecord: true)
+        ->extraInputAttributes([
+          'maxlength' => 10,
+          'inputmode' => 'numeric',
+          'pattern' => '[0-9]*',
+          'oninput' => "this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)",
+        ]),
       Forms\Components\Select::make('jenis_kelamin')
         ->label('Jenis Kelamin')
         ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])

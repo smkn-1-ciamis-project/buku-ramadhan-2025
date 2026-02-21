@@ -125,7 +125,13 @@ function formulirHarian() {
         formDay: 1,
         formSubmitted: false,
         formSaving: false,
+        showSuccessPopup: false,
+        showValidationError: false,
+        validationMessage: "",
         submittedDays: [],
+        submissionStatuses: {},
+        currentDayStatus: "",
+        currentDayNote: "",
         configLoaded: false,
 
         /* ── Dynamic config from server ── */
@@ -547,6 +553,14 @@ function formulirHarian() {
 
         checkFormSubmitted() {
             this.formSubmitted = this.submittedDays.includes(this.formDay);
+            // Set current day verification status
+            var dayStatus = this.submissionStatuses[this.formDay];
+            this.currentDayStatus = dayStatus ? dayStatus.status : "";
+            this.currentDayNote = dayStatus ? dayStatus.catatan_guru || "" : "";
+            // If rejected, allow re-edit
+            if (this.currentDayStatus === "rejected") {
+                this.formSubmitted = false;
+            }
             try {
                 var savedForm = localStorage.getItem(
                     "ramadhan_form_day_" + this.formDay,
@@ -595,7 +609,43 @@ function formulirHarian() {
             return result;
         },
 
+        validateForm() {
+            var errors = [];
+            // Puasa wajib diisi
+            if (!this.formData.puasa) {
+                errors.push("Puasa belum diisi");
+            }
+            // Minimal 1 sholat wajib diisi
+            if (this.isSectionEnabled("sholat")) {
+                var anySholat = false;
+                for (var key in this.formData.sholat) {
+                    if (this.formData.sholat[key]) {
+                        anySholat = true;
+                        break;
+                    }
+                }
+                if (!anySholat) errors.push("Sholat fardhu belum diisi");
+            }
+            // Validasi ayat tadarus
+            if (this.ayatError) {
+                errors.push(this.ayatError);
+            }
+            return errors;
+        },
+
         submitForm() {
+            // Validate first
+            var errors = this.validateForm();
+            if (errors.length > 0) {
+                this.validationMessage = errors.join(", ");
+                this.showValidationError = true;
+                var self = this;
+                setTimeout(function () {
+                    self.showValidationError = false;
+                }, 4000);
+                return;
+            }
+
             this.formSaving = true;
             // Capture editor content before saving
             if (this.$refs.ceramahEditor) {
@@ -641,15 +691,21 @@ function formulirHarian() {
 
             setTimeout(function () {
                 self.formSaving = false;
+                self.showSuccessPopup = true;
+                setTimeout(function () {
+                    self.showSuccessPopup = false;
+                }, 3000);
 
                 // Auto-advance to the next unfilled day (sequential enforcement)
                 var next = self.getFirstUnfilledDay();
                 if (next !== self.formDay) {
-                    // There is still a day that needs filling
-                    self.formDay = next;
-                    self.formSubmitted = false;
-                    self.resetFormData();
-                    self.checkFormSubmitted(); // loads saved data if any
+                    setTimeout(function () {
+                        // There is still a day that needs filling
+                        self.formDay = next;
+                        self.formSubmitted = false;
+                        self.resetFormData();
+                        self.checkFormSubmitted(); // loads saved data if any
+                    }, 2000);
                 }
             }, 600);
         },
@@ -679,9 +735,13 @@ function formulirHarian() {
                             "ramadhan_submitted_days",
                             JSON.stringify(self.submittedDays),
                         );
-                        // Also save form data from server
+                        // Track submission statuses
                         if (data.submissions) {
                             data.submissions.forEach(function (sub) {
+                                self.submissionStatuses[sub.hari_ke] = {
+                                    status: sub.status || "pending",
+                                    catatan_guru: sub.catatan_guru || "",
+                                };
                                 var key = "ramadhan_form_day_" + sub.hari_ke;
                                 if (!localStorage.getItem(key) && sub.data) {
                                     localStorage.setItem(

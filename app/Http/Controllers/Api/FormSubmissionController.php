@@ -29,6 +29,10 @@ class FormSubmissionController extends Controller
       ],
       [
         'data' => $request->data,
+        'status' => 'pending',
+        'verified_by' => null,
+        'verified_at' => null,
+        'catatan_guru' => null,
       ]
     );
 

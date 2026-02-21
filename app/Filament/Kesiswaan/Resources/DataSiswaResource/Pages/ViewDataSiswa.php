@@ -50,7 +50,7 @@ class ViewDataSiswa extends ViewRecord
             Infolists\Components\TextEntry::make('agama')->label('Agama'),
             Infolists\Components\TextEntry::make('jenis_kelamin')
               ->label('Jenis Kelamin')
-              ->formatStateUsing(fn(?string $s) => $s === 'P' ? 'Perempuan' : 'Laki-laki'),
+              ->formatStateUsing(fn(?string $state) => $state === 'P' ? 'Perempuan' : 'Laki-laki'),
           ])
           ->columns(3),
 

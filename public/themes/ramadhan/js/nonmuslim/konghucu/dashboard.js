@@ -37,6 +37,7 @@ function konghucuDashboard() {
 
         // ── Form State ─────────────────────────────────────────────────
         submittedDays: [],
+        submissionStatuses: {},
 
         // ── Lifecycle ──────────────────────────────────────────────────
         init() {
@@ -214,6 +215,13 @@ function konghucuDashboard() {
                 var isPast = cur < today && inRange;
                 var isCompleted =
                     inRange && this.submittedDays.includes(hijriDay);
+                var dayStatus = this.submissionStatuses[hijriDay];
+                var statusStr = dayStatus ? dayStatus.status : "";
+                var isVerified = isCompleted && statusStr === "verified";
+                var isPending =
+                    isCompleted &&
+                    (statusStr === "pending" || statusStr === "");
+                var isRejected = isCompleted && statusStr === "rejected";
                 var isPastUnfilled =
                     isPast && !isCompleted && !isToday && inRange;
 
@@ -224,6 +232,9 @@ function konghucuDashboard() {
                     isToday: isToday,
                     isPast: isPast,
                     isCompleted: isCompleted,
+                    isVerified: isVerified,
+                    isPending: isPending,
+                    isRejected: isRejected,
                     isPastUnfilled: isPastUnfilled,
                 });
 
@@ -259,6 +270,14 @@ function konghucuDashboard() {
                             "konghucu_submitted_days",
                             JSON.stringify(self.submittedDays),
                         );
+                        if (data.submissions) {
+                            data.submissions.forEach(function (sub) {
+                                self.submissionStatuses[sub.hari_ke] = {
+                                    status: sub.status || "pending",
+                                    catatan_guru: sub.catatan_guru || "",
+                                };
+                            });
+                        }
                         self.buildCalendar();
                     }
                 })

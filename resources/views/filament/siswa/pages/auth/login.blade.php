@@ -16,7 +16,7 @@
   @endonce
 
   {{-- ═══════════════════════════════
-       MAIN 2-COLUMN CARD
+      MAIN 2-COLUMN CARD
   ═══════════════════════════════ --}}
   <div class="login-container">
 

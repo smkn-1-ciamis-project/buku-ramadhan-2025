@@ -82,6 +82,7 @@ function ramadhanDashboard() {
         formSubmitted: false,
         formSaving: false,
         submittedDays: [],
+        submissionStatuses: {},
         formData: {
             puasa: "",
             sholat_dzuhur_j: false,
@@ -130,6 +131,7 @@ function ramadhanDashboard() {
             this.checkFormSubmitted();
             this.setPrayerTimes();
             this.buildCalendar();
+            this.syncFromServer();
             this.loadDoas();
             this.setDailyVerse();
             // Restore saved location first; only fall back to GPS if none
@@ -218,6 +220,13 @@ function ramadhanDashboard() {
                 const masehiDay = date.getDate();
                 const isToday = date.getTime() === today.getTime();
                 const isCompleted = this.submittedDays.includes(hijriDay);
+                const dayStatus = this.submissionStatuses[hijriDay];
+                const statusStr = dayStatus ? dayStatus.status : "";
+                const isVerified = isCompleted && statusStr === "verified";
+                const isPending =
+                    isCompleted &&
+                    (statusStr === "pending" || statusStr === "");
+                const isRejected = isCompleted && statusStr === "rejected";
                 const isPast = date < today && !isToday;
                 const isPastUnfilled = (isPast || isToday) && !isCompleted;
 
@@ -225,10 +234,13 @@ function ramadhanDashboard() {
                     key: "d" + hijriDay,
                     hijriDay: hijriDay,
                     masehiDay: masehiDay,
-                    month: date.getMonth(), // 0=Jan, 1=Feb, 2=Mar
-                    dayOfWeek: date.getDay(), // 0=Sun
+                    month: date.getMonth(),
+                    dayOfWeek: date.getDay(),
                     isToday: isToday,
                     isCompleted: isCompleted,
+                    isVerified: isVerified,
+                    isPending: isPending,
+                    isRejected: isRejected,
                     isPast: isPast,
                     isPastUnfilled: isPastUnfilled,
                     dateObj: date,
@@ -1688,6 +1700,37 @@ function ramadhanDashboard() {
 
         editForm() {
             this.formSubmitted = false;
+        },
+
+        syncFromServer() {
+            var self = this;
+            fetch("/api/formulir", { headers: { Accept: "application/json" } })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (data.success && data.submitted_days) {
+                        data.submitted_days.forEach(function (day) {
+                            if (!self.submittedDays.includes(day)) {
+                                self.submittedDays.push(day);
+                            }
+                        });
+                        localStorage.setItem(
+                            "ramadhan_submitted_days",
+                            JSON.stringify(self.submittedDays),
+                        );
+                        if (data.submissions) {
+                            data.submissions.forEach(function (sub) {
+                                self.submissionStatuses[sub.hari_ke] = {
+                                    status: sub.status || "pending",
+                                    catatan_guru: sub.catatan_guru || "",
+                                };
+                            });
+                        }
+                        self.buildCalendar();
+                    }
+                })
+                .catch(function () {});
         },
 
         getProgressPercent() {

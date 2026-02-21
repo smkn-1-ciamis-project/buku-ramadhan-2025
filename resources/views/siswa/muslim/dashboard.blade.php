@@ -309,7 +309,9 @@
                                         <div class="cal-cell"
                                             :class="{
                                                 'cal-cell-today':     item.isToday,
-                                                'cal-cell-done':      item.isCompleted && !item.isToday,
+                                                'cal-cell-done':      item.isVerified && !item.isToday,
+                                                'cal-cell-pending':   item.isPending && !item.isToday,
+                                                'cal-cell-rejected':  item.isRejected && !item.isToday,
                                                 'cal-cell-missed':    item.isPastUnfilled,
                                                 'cal-cell-future':    !item.isToday && !item.isPast && item.hijriDay > 0,
                                                 'cal-cell-empty':     item.hijriDay <= 0
@@ -320,10 +322,22 @@
                                                     <template x-if="item.isToday">
                                                         <span class="cal-today-label">Hari ini</span>
                                                     </template>
-                                                    {{-- Completed checkmark --}}
-                                                    <template x-if="item.isCompleted && !item.isToday">
+                                                    {{-- Verified checkmark --}}
+                                                    <template x-if="item.isVerified && !item.isToday">
                                                         <div class="cal-check-icon">
                                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                        </div>
+                                                    </template>
+                                                    {{-- Pending clock --}}
+                                                    <template x-if="item.isPending && !item.isToday">
+                                                        <div class="cal-check-icon" style="color: #854d0e;">
+                                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                        </div>
+                                                    </template>
+                                                    {{-- Rejected X --}}
+                                                    <template x-if="item.isRejected && !item.isToday">
+                                                        <div class="cal-check-icon" style="color: #991b1b;">
+                                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                                         </div>
                                                     </template>
                                                     {{-- Missed warning --}}
@@ -348,7 +362,15 @@
                                     </div>
                                     <div class="cal-legend-item">
                                         <div class="cal-legend-dot cal-legend-dot-done"></div>
-                                        <span class="cal-legend-text">Sudah diisi</span>
+                                        <span class="cal-legend-text">Diverifikasi</span>
+                                    </div>
+                                    <div class="cal-legend-item">
+                                        <div class="cal-legend-dot cal-legend-dot-pending"></div>
+                                        <span class="cal-legend-text">Menunggu Verifikasi</span>
+                                    </div>
+                                    <div class="cal-legend-item">
+                                        <div class="cal-legend-dot cal-legend-dot-rejected"></div>
+                                        <span class="cal-legend-text">Ditolak</span>
                                     </div>
                                     <div class="cal-legend-item">
                                         <div class="cal-legend-dot cal-legend-dot-missed"></div>
