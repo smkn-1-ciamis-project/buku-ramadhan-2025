@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\FormSubmissionController;
+use App\Http\Controllers\Api\PrayerCheckinController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,11 @@ Route::get('/', function () {
     return redirect('/siswa/login');
 })->name('index');
 
+// Halaman Tim Pengembang (publik)
+Route::get('/tim-pengembang', function () {
+    return view('tim-pengembang');
+})->name('tim-pengembang');
+
 // Siswa Dashboard — standalone (no Filament template)
 Route::get('/siswa', function () {
     if (!Auth::check()) {
@@ -34,6 +40,13 @@ Route::middleware('auth')->prefix('api/formulir')->group(function () {
     Route::get('/', [FormSubmissionController::class, 'index']);
     Route::post('/', [FormSubmissionController::class, 'store']);
     Route::get('/{hariKe}', [FormSubmissionController::class, 'show']);
+});
+
+// API Prayer Check-in (session-auth)
+Route::middleware('auth')->prefix('api/prayer-checkins')->group(function () {
+    Route::get('/today', [PrayerCheckinController::class, 'today']);
+    Route::get('/date/{date}', [PrayerCheckinController::class, 'forDate']);
+    Route::post('/', [PrayerCheckinController::class, 'store']);
 });
 
 // API Change Password (session-auth)
@@ -54,6 +67,10 @@ Route::middleware('auth')->post('/api/change-password', function (\Illuminate\Ht
         'password' => Hash::make($request->new_password),
         'must_change_password' => false,
     ]);
+
+    // Re-login agar session hash password diperbarui
+    // sehingga AuthenticateSession tidak logout user
+    Auth::login($user);
 
     return response()->json(['success' => true, 'message' => 'Password berhasil diubah.']);
 });

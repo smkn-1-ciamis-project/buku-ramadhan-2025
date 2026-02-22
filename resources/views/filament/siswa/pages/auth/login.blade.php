@@ -60,7 +60,9 @@
       {{-- Footer --}}
       <div class="login-form-footer">
         <div class="login-form-footer-copy">
-          &copy; {{ date('Y') }} SMKN 1 Ciamis. Semua hak cipta dilindungi.
+          <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener noreferrer">
+            &copy; {{ date('Y') }} SMKN 1 Ciamis. Semua hak cipta dilindungi.
+          </a>
         </div>
       </div>
 

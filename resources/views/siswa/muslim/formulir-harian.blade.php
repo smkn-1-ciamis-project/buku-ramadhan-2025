@@ -141,7 +141,7 @@
                                 <div class="f-sholat-options">
                                     <template x-for="opt in sholatFarduOptions" :key="opt">
                                         <button type="button" class="f-chip"
-                                                :class="formData.sholat[item.key] === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-blue' : opt === 'munfarid' ? 'f-chip-teal' : 'f-chip-gray'))"
+                                                :class="formData.sholat[item.key] === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-green' : opt === 'munfarid' ? 'f-chip-yellow' : 'f-chip-gray'))"
                                                 @click="formData.sholat[item.key] = formData.sholat[item.key] === opt ? '' : opt"
                                                 x-text="opt.charAt(0).toUpperCase() + opt.slice(1)">
                                         </button>
@@ -164,7 +164,7 @@
                                 <div class="f-sholat-options">
                                     <template x-for="opt in tarawihOptions" :key="opt">
                                         <button type="button" class="f-chip"
-                                                :class="formData.tarawih === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-blue' : opt === 'munfarid' ? 'f-chip-teal' : 'f-chip-gray'))"
+                                                :class="formData.tarawih === opt && ('f-chip-active ' + (opt === 'jamaah' ? 'f-chip-green' : opt === 'munfarid' ? 'f-chip-yellow' : 'f-chip-gray'))"
                                                 @click="formData.tarawih = formData.tarawih === opt ? '' : opt"
                                                 x-text="opt.charAt(0).toUpperCase() + opt.slice(1)">
                                         </button>
@@ -247,7 +247,7 @@
                     <p class="f-group-label" x-text="groupTitles[0]">Amaliyah Cageur, Bageur dan Bener</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupA" :key="kg.key">
-                            <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'">
+                            <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid' && (kg.key === 'dzikir_pagi' || kg.key === 'dzikir_petang'))">
                                 <input type="checkbox" x-model="formData.kegiatan[kg.key]" class="f-hidden">
                                 <div class="f-kegiatan-check">
                                     <svg x-show="formData.kegiatan[kg.key]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>

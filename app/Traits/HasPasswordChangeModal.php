@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Rule;
 
 /**
@@ -64,6 +65,10 @@ trait HasPasswordChangeModal
             'password' => $this->new_password,
             'must_change_password' => false,
         ]);
+
+        // Re-login agar session hash password diperbarui
+        // sehingga AuthenticateSession tidak logout user
+        Auth::login($user);
 
         $this->showPasswordModal = false;
         $this->isNisnPassword = false;

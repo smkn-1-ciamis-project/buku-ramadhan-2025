@@ -234,11 +234,12 @@
                 {{-- Centered menu bar --}}
                 <div class="center-menu-wrap">
                     <div class="center-menu">
-                        {{-- Left tabs: Kalender, Jadwal --}}
-                        <template x-for="tab in sidebarTabs.slice(0, 2)" :key="tab.id">
+                        {{-- Left tabs: Kalender, Shalat, Jadwal --}}
+                        <template x-for="tab in sidebarTabs.slice(0, 3)" :key="tab.id">
                             <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
                                 <div class="center-menu-icon">
                                     <svg x-show="tab.id === 'calendar'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                                    <svg x-show="tab.id === 'shalat'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
                                     <svg x-show="tab.id === 'schedule'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
                                 <span class="center-menu-label" x-text="tab.mobileLabel"></span>
@@ -254,7 +255,7 @@
                         </a>
 
                         {{-- Right tabs: Kiblat, Doa, Akun --}}
-                        <template x-for="tab in sidebarTabs.slice(2)" :key="tab.id">
+                        <template x-for="tab in sidebarTabs.slice(3)" :key="tab.id">
                             <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
                                 <div class="center-menu-icon">
                                     <svg x-show="tab.id === 'qibla'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
@@ -291,7 +292,7 @@
                                         <p class="cal-alert-title">Ada hari yang belum diisi!</p>
                                         <p class="cal-alert-sub" x-text="calendarDays.filter(d => d.isPastUnfilled).length + ' hari lalu belum mengisi buku Ramadhan'"></p>
                                     </div>
-                                    <a href="{{ \App\Filament\Siswa\Pages\Muslim\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;">
+                                    <a href="{{ \App\Filament\Siswa\Pages\Muslim\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;" target="_blank">
                                         Isi Sekarang
                                     </a>
                                 </div>
@@ -433,6 +434,154 @@
                                     <span class="progress-stat-num" x-text="calendarDays.filter(d => d.isPastUnfilled).length"></span>
                                     <span class="progress-stat-label">Belum isi</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- CHECK-IN SHALAT --}}
+                    <div x-show="activeTab === 'shalat'" x-transition.opacity.duration.200ms>
+                        <div class="checkin-card">
+                            {{-- Header --}}
+                            <div class="checkin-header">
+                                <div>
+                                    <h3 class="text-white font-bold text-sm lg:text-base">Check-in Shalat Hari Ini</h3>
+                                    <p class="text-white/80 text-[11px] mt-0.5" x-text="gregorianDate" style="color: rgba(255,255,255,0.8) !important;"></p>
+                                </div>
+                                <div class="checkin-counter">
+                                    <span x-text="getCheckinCount()"></span>/<span x-text="9"></span>
+                                </div>
+                            </div>
+
+                            <div class="checkin-body">
+                                {{-- Shalat Wajib Section --}}
+                                <div class="checkin-section">
+                                    <div class="checkin-section-title">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;color:#2563eb;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+                                        <span>Shalat Wajib</span>
+                                    </div>
+                                    <div class="checkin-grid">
+                                        <template x-for="prayer in checkinWajib" :key="prayer.id">
+                                            <button class="checkin-item" :class="getCheckinClass(prayer.id)" @click="openCheckinModal(prayer)">
+                                                <div class="checkin-item-icon" :class="getCheckinIconClass(prayer.id)">
+                                                    <svg x-show="!getCheckinStatus(prayer.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                                                    <svg x-show="getCheckinStatus(prayer.id) === 'jamaah'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg x-show="getCheckinStatus(prayer.id) === 'munfarid'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg x-show="getCheckinStatus(prayer.id) === 'tidak'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+                                                </div>
+                                                <div class="checkin-item-info">
+                                                    <span class="checkin-item-name" x-text="prayer.name"></span>
+                                                    <span class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
+                                                </div>
+                                                <div class="checkin-item-time" x-show="getCheckinTime(prayer.id)" x-text="getCheckinTime(prayer.id)"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Shalat Sunnah Section --}}
+                                <div class="checkin-section">
+                                    <div class="checkin-section-title">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;color:#7c3aed;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+                                        <span>Shalat Sunnah</span>
+                                    </div>
+                                    <div class="checkin-grid">
+                                        <template x-for="prayer in checkinSunnah" :key="prayer.id">
+                                            <button class="checkin-item" :class="getCheckinClass(prayer.id)" @click="openCheckinModal(prayer)">
+                                                <div class="checkin-item-icon" :class="getCheckinIconClass(prayer.id)">
+                                                    <svg x-show="!getCheckinStatus(prayer.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                                                    <svg x-show="getCheckinStatus(prayer.id) === 'ya'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg x-show="getCheckinStatus(prayer.id) === 'tidak'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+                                                </div>
+                                                <div class="checkin-item-info">
+                                                    <span class="checkin-item-name" x-text="prayer.name"></span>
+                                                    <span class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
+                                                </div>
+                                                <div class="checkin-item-time" x-show="getCheckinTime(prayer.id)" x-text="getCheckinTime(prayer.id)"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Legend --}}
+                                <div class="checkin-legend">
+                                    <div class="checkin-legend-item">
+                                        <span class="checkin-legend-dot" style="background:#16a34a"></span>
+                                        <span>Jamaah / Ya</span>
+                                    </div>
+                                    <div class="checkin-legend-item">
+                                        <span class="checkin-legend-dot" style="background:#eab308"></span>
+                                        <span>Munfarid</span>
+                                    </div>
+                                    <div class="checkin-legend-item">
+                                        <span class="checkin-legend-dot" style="background:#dc2626"></span>
+                                        <span>Tidak</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Check-in Modal Popup --}}
+                    <div x-show="showCheckinModal" x-transition.opacity class="checkin-modal-overlay" @click.self="showCheckinModal = false" style="display:none;">
+                        <div class="checkin-modal" x-show="showCheckinModal" x-transition.scale.90>
+                            <div class="checkin-modal-header">
+                                <h3 class="checkin-modal-title" x-text="'Check-in ' + (checkinModalPrayer?.name || '')"></h3>
+                                <button @click="showCheckinModal = false" class="checkin-modal-close">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+
+                            {{-- Wajib: Jamaah / Munfarid / Tidak --}}
+                            <template x-if="checkinModalPrayer?.tipe === 'wajib'">
+                                <div class="checkin-modal-options">
+                                    <button class="checkin-opt checkin-opt-jamaah" @click="submitCheckin('jamaah')" :disabled="checkinSaving">
+                                        <div class="checkin-opt-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                                        </div>
+                                        <span class="checkin-opt-label">Jamaah</span>
+                                        <span class="checkin-opt-desc">Shalat berjamaah</span>
+                                    </button>
+                                    <button class="checkin-opt checkin-opt-munfarid" @click="submitCheckin('munfarid')" :disabled="checkinSaving">
+                                        <div class="checkin-opt-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                                        </div>
+                                        <span class="checkin-opt-label">Munfarid</span>
+                                        <span class="checkin-opt-desc">Shalat sendiri</span>
+                                    </button>
+                                    <button class="checkin-opt checkin-opt-tidak" @click="submitCheckin('tidak')" :disabled="checkinSaving">
+                                        <div class="checkin-opt-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        </div>
+                                        <span class="checkin-opt-label">Tidak Shalat</span>
+                                        <span class="checkin-opt-desc">Tidak melaksanakan</span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            {{-- Sunnah: Ya / Tidak --}}
+                            <template x-if="checkinModalPrayer?.tipe === 'sunnah'">
+                                <div class="checkin-modal-options checkin-modal-options-sunnah">
+                                    <button class="checkin-opt checkin-opt-ya" @click="submitCheckin('ya')" :disabled="checkinSaving">
+                                        <div class="checkin-opt-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        </div>
+                                        <span class="checkin-opt-label">Ya</span>
+                                        <span class="checkin-opt-desc">Melaksanakan shalat sunnah</span>
+                                    </button>
+                                    <button class="checkin-opt checkin-opt-tidak" @click="submitCheckin('tidak')" :disabled="checkinSaving">
+                                        <div class="checkin-opt-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        </div>
+                                        <span class="checkin-opt-label">Tidak</span>
+                                        <span class="checkin-opt-desc">Tidak melaksanakan</span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            {{-- Loading state --}}
+                            <div x-show="checkinSaving" class="checkin-modal-loading">
+                                <div class="checkin-spinner"></div>
+                                <span>Menyimpan...</span>
                             </div>
                         </div>
                     </div>
@@ -1073,6 +1222,13 @@
 
                 </div>
             </div>
+        </div>
+
+        {{-- ===== WATERMARK SMKN 1 CIAMIS ===== --}}
+        <div class="watermark-footer">
+            <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener noreferrer">
+                &copy; {{ date('Y') }} SMKN 1 Ciamis
+            </a>
         </div>
 
         {{-- Notification Modal (must be inside x-data scope) --}}

@@ -787,6 +787,79 @@ function formulirHarian() {
                     }
                 }
             } catch (e) {}
+
+            // Auto-fill sholat fields from check-in data
+            this.loadCheckinForDay(this.formDay);
+        },
+
+        /**
+         * Fetch prayer check-in data for a given Ramadhan day
+         * and auto-fill empty sholat/tarawih/sunat fields in formData.
+         */
+        loadCheckinForDay(day) {
+            var self = this;
+            // Convert Ramadhan day number to calendar date
+            var ramadhanStart = new Date(2026, 1, 19); // 1 Ramadhan 1447H = 19 Feb 2026
+            var targetDate = new Date(
+                ramadhanStart.getTime() + (day - 1) * 86400000,
+            );
+            var yyyy = targetDate.getFullYear();
+            var mm = String(targetDate.getMonth() + 1).padStart(2, "0");
+            var dd = String(targetDate.getDate()).padStart(2, "0");
+            var dateStr = yyyy + "-" + mm + "-" + dd;
+
+            fetch("/api/prayer-checkins/date/" + dateStr, {
+                headers: { Accept: "application/json" },
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data || !data.checkins) return;
+                    var checkins = data.checkins;
+
+                    // Map wajib shalat (subuh, dzuhur, ashar, maghrib, isya)
+                    var wajibKeys = [
+                        "subuh",
+                        "dzuhur",
+                        "ashar",
+                        "maghrib",
+                        "isya",
+                    ];
+                    wajibKeys.forEach(function (key) {
+                        if (
+                            checkins[key] &&
+                            checkins[key].status &&
+                            !self.formData.sholat[key]
+                        ) {
+                            self.formData.sholat[key] = checkins[key].status;
+                        }
+                    });
+
+                    // Map tarawih
+                    if (
+                        checkins.tarawih &&
+                        checkins.tarawih.status &&
+                        !self.formData.tarawih
+                    ) {
+                        self.formData.tarawih = checkins.tarawih.status;
+                    }
+
+                    // Map sunnah (rowatib, tahajud, dhuha)
+                    var sunnahKeys = ["rowatib", "tahajud", "dhuha"];
+                    sunnahKeys.forEach(function (key) {
+                        if (
+                            checkins[key] &&
+                            checkins[key].status &&
+                            !self.formData.sunat[key]
+                        ) {
+                            self.formData.sunat[key] = checkins[key].status;
+                        }
+                    });
+                })
+                .catch(function () {
+                    // Silently ignore — check-in data is supplementary
+                });
         },
 
         _deepMerge(target, source) {

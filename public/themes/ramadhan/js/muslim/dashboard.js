@@ -78,10 +78,30 @@ function ramadhanDashboard() {
                 label: "Kalender Ramadhan",
                 mobileLabel: "Kalender",
             },
+            { id: "shalat", label: "Check-in Shalat", mobileLabel: "Shalat" },
             { id: "schedule", label: "Jadwal Sholat", mobileLabel: "Jadwal" },
             { id: "qibla", label: "Arah Kiblat", mobileLabel: "Kiblat" },
             { id: "dua", label: "Doa Harian", mobileLabel: "Doa" },
             { id: "account", label: "Pengaturan Akun", mobileLabel: "Akun" },
+        ],
+
+        // ── Check-in Shalat State ──────────────────────────────────────────
+        checkinData: {},
+        showCheckinModal: false,
+        checkinModalPrayer: null,
+        checkinSaving: false,
+        checkinWajib: [
+            { id: "subuh", name: "Subuh", tipe: "wajib" },
+            { id: "dzuhur", name: "Dzuhur", tipe: "wajib" },
+            { id: "ashar", name: "Ashar", tipe: "wajib" },
+            { id: "maghrib", name: "Maghrib", tipe: "wajib" },
+            { id: "isya", name: "Isya", tipe: "wajib" },
+            { id: "tarawih", name: "Tarawih", tipe: "wajib" },
+        ],
+        checkinSunnah: [
+            { id: "rowatib", name: "Rowatib", tipe: "sunnah" },
+            { id: "tahajud", name: "Tahajud", tipe: "sunnah" },
+            { id: "dhuha", name: "Dhuha", tipe: "sunnah" },
         ],
 
         // ── Notification Modal ─────────────────────────────────────────────
@@ -154,6 +174,7 @@ function ramadhanDashboard() {
             this.startCountdown();
             this.startClock();
             this.initCompass();
+            this.loadCheckins();
         },
 
         // ── Location Data ──────────────────────────────────────────────────
@@ -1938,6 +1959,173 @@ function ramadhanDashboard() {
                 .catch(function () {
                     self.pwLoading = false;
                     self.pwMessage = "Terjadi kesalahan. Coba lagi.";
+                });
+        },
+
+        // ══════════════════════════════════════════════════════════════════
+        //  CHECK-IN SHALAT
+        // ══════════════════════════════════════════════════════════════════
+
+        /**
+         * Load today's check-in data from server.
+         */
+        loadCheckins() {
+            var self = this;
+            fetch("/api/prayer-checkins/today", {
+                headers: { Accept: "application/json" },
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    self.checkinData =
+                        data && data.checkins ? data.checkins : {};
+                })
+                .catch(function () {
+                    console.warn("Gagal memuat data check-in shalat");
+                });
+        },
+
+        /**
+         * Get the status string for a prayer id, or null if not checked in.
+         */
+        getCheckinStatus(id) {
+            if (this.checkinData && this.checkinData[id]) {
+                return this.checkinData[id].status;
+            }
+            return null;
+        },
+
+        /**
+         * Return a human‑readable label for the current status.
+         */
+        getCheckinLabel(id) {
+            var s = this.getCheckinStatus(id);
+            if (!s) return "Belum check-in";
+            var labels = {
+                jamaah: "Jamaah ✓",
+                munfarid: "Munfarid ✓",
+                ya: "Sudah ✓",
+                tidak: "Tidak ✗",
+            };
+            return labels[s] || s;
+        },
+
+        /**
+         * Return a CSS colour hex for the status.
+         */
+        getCheckinColor(id) {
+            var s = this.getCheckinStatus(id);
+            if (!s) return "#94a3b8";
+            var map = {
+                jamaah: "#16a34a",
+                munfarid: "#ca8a04",
+                ya: "#16a34a",
+                tidak: "#dc2626",
+            };
+            return map[s] || "#94a3b8";
+        },
+
+        /**
+         * Return the timestamp string (HH:mm) or empty.
+         */
+        getCheckinTime(id) {
+            if (
+                this.checkinData &&
+                this.checkinData[id] &&
+                this.checkinData[id].waktu_checkin
+            ) {
+                return this.checkinData[id].waktu_checkin;
+            }
+            return "";
+        },
+
+        /**
+         * CSS class(es) for the checkin-item button based on status.
+         */
+        getCheckinClass(id) {
+            var s = this.getCheckinStatus(id);
+            if (!s) return "";
+            return "checkin-" + s;
+        },
+
+        /**
+         * CSS class for the icon container based on status.
+         */
+        getCheckinIconClass(id) {
+            var s = this.getCheckinStatus(id);
+            if (!s) return "";
+            return "checkin-icon-" + s;
+        },
+
+        /**
+         * Count how many prayers have been checked in today.
+         */
+        getCheckinCount() {
+            if (!this.checkinData) return 0;
+            var count = 0;
+            var keys = Object.keys(this.checkinData);
+            for (var i = 0; i < keys.length; i++) {
+                if (
+                    this.checkinData[keys[i]] &&
+                    this.checkinData[keys[i]].status
+                ) {
+                    count++;
+                }
+            }
+            return count;
+        },
+
+        /**
+         * Open the check-in modal for a specific prayer.
+         */
+        openCheckinModal(prayer) {
+            this.checkinModalPrayer = prayer;
+            this.showCheckinModal = true;
+        },
+
+        /**
+         * Submit a check-in for the current modal prayer.
+         */
+        submitCheckin(status) {
+            var self = this;
+            if (!self.checkinModalPrayer || self.checkinSaving) return;
+
+            self.checkinSaving = true;
+
+            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            var csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
+
+            fetch("/api/prayer-checkins", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({
+                    shalat: self.checkinModalPrayer.id,
+                    status: status,
+                }),
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    self.checkinSaving = false;
+                    if (data && data.checkin) {
+                        // Update local state immediately
+                        self.checkinData[self.checkinModalPrayer.id] = {
+                            status: data.checkin.status,
+                            tipe: data.checkin.tipe,
+                            waktu_checkin: data.checkin.waktu_checkin,
+                        };
+                    }
+                    self.showCheckinModal = false;
+                })
+                .catch(function () {
+                    self.checkinSaving = false;
+                    alert("Gagal menyimpan check-in. Silakan coba lagi.");
                 });
         },
     };

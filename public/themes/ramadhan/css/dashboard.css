@@ -3946,3 +3946,459 @@ html.fi .fi-page > section > * {
     }
 }
 }
+
+/* ═══════════════════════════════════════════
+   WATERMARK SMKN 1 CIAMIS
+═══════════════════════════════════════════ */
+.watermark-footer {
+    padding: 20px 16px 40px;
+    text-align: center;
+}
+
+.watermark-footer a {
+    font-size: 12px;
+    font-weight: 500;
+    color: #3b82f6;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: opacity 0.15s ease;
+}
+
+.watermark-footer a:hover {
+    opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHECK-IN SHALAT
+   ═══════════════════════════════════════════════════════════════════ */
+
+.checkin-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.checkin-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.checkin-counter {
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+.checkin-body {
+    padding: 16px 20px 20px;
+}
+
+.checkin-section {
+    margin-bottom: 20px;
+}
+
+.checkin-section:last-of-type {
+    margin-bottom: 12px;
+}
+
+.checkin-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.checkin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Individual prayer check-in item */
+.checkin-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.checkin-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+}
+
+/* Status-based styles */
+.checkin-item.checkin-jamaah {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.checkin-item.checkin-munfarid {
+    border-color: #fde047;
+    background: #fefce8;
+}
+
+.checkin-item.checkin-ya {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.checkin-item.checkin-tidak {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+/* Icon container */
+.checkin-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.checkin-item-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.checkin-item-icon.checkin-icon-jamaah {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.checkin-item-icon.checkin-icon-munfarid {
+    background: #fef9c3;
+    color: #ca8a04;
+}
+
+.checkin-item-icon.checkin-icon-ya {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.checkin-item-icon.checkin-icon-tidak {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Info */
+.checkin-item-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.checkin-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.checkin-item-status {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.checkin-item-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    flex-shrink: 0;
+    background: #f8fafc;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+/* Legend */
+.checkin-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.checkin-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.checkin-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* ── Check-in Modal ── */
+.checkin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+}
+
+.checkin-modal {
+    background: #ffffff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 380px;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+}
+
+.checkin-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 12px;
+}
+
+.checkin-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.checkin-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: background 0.15s;
+}
+
+.checkin-modal-close:hover {
+    background: #e2e8f0;
+}
+
+.checkin-modal-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+.checkin-modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 24px 24px;
+}
+
+/* Option buttons */
+.checkin-opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.checkin-opt:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.checkin-opt:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.checkin-opt-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.checkin-opt-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.checkin-opt-label {
+    font-size: 15px;
+    font-weight: 700;
+    display: block;
+}
+
+.checkin-opt-desc {
+    font-size: 12px;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Jamaah option */
+.checkin-opt-jamaah {
+    border-color: #bbf7d0;
+}
+
+.checkin-opt-jamaah:hover {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.checkin-opt-jamaah .checkin-opt-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.checkin-opt-jamaah .checkin-opt-label {
+    color: #15803d;
+}
+
+.checkin-opt-jamaah .checkin-opt-desc {
+    color: #4ade80;
+}
+
+/* Munfarid option */
+.checkin-opt-munfarid {
+    border-color: #fef08a;
+}
+
+.checkin-opt-munfarid:hover {
+    border-color: #ca8a04;
+    background: #fefce8;
+}
+
+.checkin-opt-munfarid .checkin-opt-icon {
+    background: #fef9c3;
+    color: #ca8a04;
+}
+
+.checkin-opt-munfarid .checkin-opt-label {
+    color: #a16207;
+}
+
+.checkin-opt-munfarid .checkin-opt-desc {
+    color: #ca8a04;
+}
+
+/* Ya option */
+.checkin-opt-ya {
+    border-color: #bbf7d0;
+}
+
+.checkin-opt-ya:hover {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.checkin-opt-ya .checkin-opt-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.checkin-opt-ya .checkin-opt-label {
+    color: #15803d;
+}
+
+.checkin-opt-ya .checkin-opt-desc {
+    color: #4ade80;
+}
+
+/* Tidak option */
+.checkin-opt-tidak {
+    border-color: #fecaca;
+}
+
+.checkin-opt-tidak:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+.checkin-opt-tidak .checkin-opt-icon {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.checkin-opt-tidak .checkin-opt-label {
+    color: #b91c1c;
+}
+
+.checkin-opt-tidak .checkin-opt-desc {
+    color: #ef4444;
+}
+
+/* Loading spinner */
+.checkin-modal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 24px 24px;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.checkin-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

@@ -372,6 +372,20 @@
     font-size: 0.72rem;
     color: var(--login-gray-400);
     margin-bottom: 4px;
+    text-align: center;
+}
+
+.login-form-footer-copy a {
+    color: var(--login-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition:
+        color 0.15s,
+        opacity 0.15s;
+}
+
+.login-form-footer-copy a:hover {
+    opacity: 0.75;
 }
 
 .login-form-footer-links {

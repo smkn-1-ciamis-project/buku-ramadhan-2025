@@ -3,6 +3,23 @@
   $record = $getRecord();
   $agama = $record->user->agama ?? '';
   $isMuslim = !in_array(strtolower($agama), ['kristen', 'katolik', 'hindu', 'budha', 'konghucu']);
+
+  // Ambil data waktu check-in sholat dari prayer_checkins
+  $checkinTimes = [];
+  if ($isMuslim && $record->user_id && $record->hari_ke) {
+    $ramadhanStart = \Carbon\Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
+    $tanggal = $ramadhanStart->copy()->addDays($record->hari_ke - 1)->toDateString();
+    $checkins = \App\Models\PrayerCheckin::where('user_id', $record->user_id)
+      ->where('tanggal', $tanggal)
+      ->whereNotNull('waktu_checkin')
+      ->get()
+      ->keyBy('shalat');
+    foreach ($checkins as $shalat => $c) {
+      $checkinTimes[$shalat] = $c->waktu_checkin
+        ? $c->waktu_checkin->timezone('Asia/Jakarta')->format('H:i')
+        : null;
+    }
+  }
 @endphp
 
 <style>
@@ -157,10 +174,14 @@
               $val = $data['sholat'][$key] ?? '';
               $cls = match($val) { 'jamaah' => 'jamaah', 'munfarid' => 'munfarid', 'tidak' => 'tidak', default => 'empty' };
               $text = match($val) { 'jamaah' => 'Jamaah', 'munfarid' => 'Munfarid', 'tidak' => 'Tidak', default => '—' };
+              $waktu = $checkinTimes[$key] ?? null;
             @endphp
             <div class="fsd-cell-{{ $cls }}" style="padding: 0.5rem; border-radius: 0.375rem; text-align: center;">
               <span class="fsd-label-sm">{{ $label }}</span>
               <span class="fsd-text-{{ $cls }}" style="font-size: 0.8rem;">{{ $text }}</span>
+              @if($waktu)
+                <span style="display: block; font-size: 0.65rem; color: #64748b; margin-top: 0.15rem;">🕐 {{ $waktu }}</span>
+              @endif
             </div>
           @endforeach
         </div>
@@ -176,8 +197,12 @@
             $tarawih = $data['tarawih'] ?? '';
             $cls = match($tarawih) { 'jamaah' => 'jamaah', 'munfarid' => 'munfarid', 'tidak' => 'tidak', default => 'empty' };
             $text = match($tarawih) { 'jamaah' => 'Jamaah', 'munfarid' => 'Munfarid', 'tidak' => 'Tidak', default => 'Belum diisi' };
+            $waktuTarawih = $checkinTimes['tarawih'] ?? null;
           @endphp
           <span class="fsd-pill fsd-cell-{{ $cls }} fsd-text-{{ $cls }}">{{ $text }}</span>
+          @if($waktuTarawih)
+            <span style="font-size: 0.7rem; color: #64748b; margin-left: 0.5rem;">🕐 {{ $waktuTarawih }}</span>
+          @endif
         </div>
       </div>
       <div class="fsd-card">
@@ -189,10 +214,14 @@
                 $val = $data['sunat'][$key] ?? '';
                 $cls = $val === 'ya' ? 'ya' : ($val === 'tidak' ? 'tidak' : 'empty');
                 $text = $val === 'ya' ? 'Ya' : ($val === 'tidak' ? 'Tidak' : '—');
+                $waktuSunat = $checkinTimes[$key] ?? null;
               @endphp
               <div class="fsd-cell-{{ $cls }}" style="flex: 1; padding: 0.5rem; border-radius: 0.375rem; text-align: center;">
                 <span class="fsd-label-sm">{{ $label }}</span>
                 <span class="fsd-text-{{ $cls }}" style="font-size: 0.8rem;">{{ $text }}</span>
+                @if($waktuSunat)
+                  <span style="display: block; font-size: 0.65rem; color: #64748b; margin-top: 0.15rem;">🕐 {{ $waktuSunat }}</span>
+                @endif
               </div>
             @endforeach
           </div>

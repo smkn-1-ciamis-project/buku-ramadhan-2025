@@ -856,6 +856,13 @@
 
     </div>
 
+    {{-- ===== WATERMARK SMKN 1 CIAMIS ===== --}}
+    <div class="watermark-footer">
+        <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener noreferrer">
+            &copy; {{ date('Y') }} SMKN 1 Ciamis
+        </a>
+    </div>
+
     @include('components.password-change-modal')
 </x-filament-panels::page>
 
