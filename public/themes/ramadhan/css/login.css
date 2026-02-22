@@ -376,16 +376,17 @@
 }
 
 .login-form-footer-copy a {
-    color: var(--login-blue);
+    color: var(--login-gray-400);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 400;
     transition:
         color 0.15s,
         opacity 0.15s;
 }
 
 .login-form-footer-copy a:hover {
-    opacity: 0.75;
+    color: var(--login-gray-400);
+    opacity: 0.65;
 }
 
 .login-form-footer-links {
@@ -599,16 +600,23 @@
     color: var(--login-white);
 }
 
-.illust-masjid-icon {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 24px;
+.illust-logo-icon {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.illust-masjid-icon svg {
+.illust-logo-icon img {
     width: 100%;
     height: 100%;
-    fill: var(--login-white);
+    object-fit: contain;
+    border-radius: 50%;
 }
 
 .illust-title {
@@ -619,24 +627,62 @@
 }
 
 .illust-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 400;
     opacity: 0.85;
     letter-spacing: 0.2px;
+    max-width: 280px;
+    margin: 0 auto;
+    line-height: 1.5;
 }
 
-/* Masjid silhouette at bottom of illustration panel */
-.illust-masjid-bottom {
+/* Religion icons row */
+.illust-religion-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.illust-religion-item {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        transform 0.2s,
+        background 0.2s;
+}
+
+.illust-religion-item:hover {
+    transform: scale(1.15);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.illust-religion-item svg {
+    width: 18px;
+    height: 18px;
+    color: var(--login-white);
+    fill: var(--login-white);
+}
+
+/* Bottom decorative wave */
+.illust-bottom-wave {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 80px;
+    height: 60px;
     pointer-events: none;
     z-index: 0;
 }
 
-.illust-masjid-bottom svg {
+.illust-bottom-wave svg {
     width: 100%;
     height: 100%;
     fill: rgba(255, 255, 255, 0.06);
@@ -667,10 +713,10 @@
         padding: 36px 32px 28px;
     }
 
-    .illust-masjid-icon {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 16px;
+    .illust-logo-icon {
+        width: 90px;
+        height: 90px;
+        margin-bottom: 14px;
     }
 
     .illust-title {
@@ -678,6 +724,19 @@
     }
     .illust-subtitle {
         font-size: 0.82rem;
+    }
+
+    .illust-religion-icons {
+        gap: 10px;
+        margin-top: 16px;
+    }
+    .illust-religion-item {
+        width: 28px;
+        height: 28px;
+    }
+    .illust-religion-item svg {
+        width: 16px;
+        height: 16px;
     }
 }
 
@@ -703,10 +762,11 @@
         padding: 32px 24px 28px;
     }
 
-    .illust-masjid-icon {
-        width: 56px;
-        height: 56px;
-        margin-bottom: 12px;
+    .illust-logo-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 10px;
+        padding: 5px;
     }
 
     .illust-title {
@@ -715,6 +775,20 @@
     }
     .illust-subtitle {
         font-size: 0.78rem;
+    }
+
+    .illust-religion-icons {
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .illust-religion-item {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+    }
+    .illust-religion-item svg {
+        width: 14px;
+        height: 14px;
     }
 
     .illust-shape--1 {
@@ -738,8 +812,8 @@
     .illust-check {
         display: none;
     }
-    .illust-masjid-bottom {
-        height: 50px;
+    .illust-bottom-wave {
+        height: 40px;
     }
 
     /* Form column */

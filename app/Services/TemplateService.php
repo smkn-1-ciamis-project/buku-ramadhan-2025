@@ -127,7 +127,7 @@ class TemplateService
         // Headers
         $headers = [
             'A1' => 'NAMA LENGKAP',
-            'B1' => 'EMAIL',
+            'B1' => 'EMAIL (OPSIONAL)',
             'C1' => 'JENIS KELAMIN (L/P)',
             'D1' => 'AGAMA',
             'E1' => 'NO. HP',
@@ -149,8 +149,8 @@ class TemplateService
 
         // Example data rows
         $examples = [
-            ['Drs. Ahmad Suryadi', 'ahmad.suryadi@smkn1ciamis.sch.id', 'L', 'Islam', '081234567890', 'guru123'],
-            ['Hj. Siti Aminah, S.Pd', 'siti.aminah@smkn1ciamis.sch.id', 'P', 'Islam', '081234567891', 'guru123'],
+            ['Drs. Ahmad Suryadi', '', 'L', 'Islam', '081234567890', 'guru123'],
+            ['Hj. Siti Aminah, S.Pd', '', 'P', 'Islam', '081234567891', 'guru123'],
         ];
 
         $rowIndex = 2;
@@ -183,7 +183,7 @@ class TemplateService
             [''],
             ['Kolom', 'Keterangan', 'Wajib'],
             ['NAMA LENGKAP', 'Nama lengkap guru (dengan gelar)', 'Ya'],
-            ['EMAIL', 'Email guru (format: nama@smkn1ciamis.sch.id)', 'Ya'],
+            ['EMAIL', 'Email guru. Jika dikosongkan, otomatis dibuat dari nama (format: nama@smkn1ciamis.sch.id)', 'Tidak'],
             ['JENIS KELAMIN', 'Isi dengan L (Laki-laki) atau P (Perempuan)', 'Ya'],
             ['AGAMA', 'Islam / Kristen / Katolik / Hindu / Buddha / Konghucu', 'Tidak'],
             ['NO. HP', 'Nomor HP guru', 'Tidak'],
@@ -191,6 +191,7 @@ class TemplateService
             [''],
             ['CATATAN:'],
             ['- Hapus contoh data sebelum mengisi data guru.'],
+            ['- Jika EMAIL dikosongkan, otomatis dibuat dari nama guru.'],
             ['- Email tidak boleh duplikat.'],
             ['- Jika kolom PASSWORD dikosongkan, default: guru123'],
         ];

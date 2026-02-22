@@ -19,8 +19,26 @@ trait HasPasswordChangeModal
     #[Rule('required|string|min:8')]
     public string $new_password = '';
 
-    #[Rule('required|string|min:8|same:new_password')]
+    #[Rule('required|string|same:new_password')]
     public string $new_password_confirmation = '';
+
+    protected function messages(): array
+    {
+        return [
+            'new_password.required'              => 'Password baru wajib diisi.',
+            'new_password.min'                   => 'Password minimal 8 karakter.',
+            'new_password_confirmation.required' => 'Konfirmasi password wajib diisi.',
+            'new_password_confirmation.same'     => 'Konfirmasi password tidak cocok.',
+        ];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return [
+            'new_password'              => 'password baru',
+            'new_password_confirmation' => 'konfirmasi password baru',
+        ];
+    }
 
     public function mountHasPasswordChangeModal(): void
     {
@@ -64,15 +82,18 @@ trait HasPasswordChangeModal
         $user->update([
             'password' => $this->new_password,
             'must_change_password' => false,
+            'active_session_id' => null,
+            'session_login_at'  => null,
         ]);
 
-        // Re-login agar session hash password diperbarui
-        // sehingga AuthenticateSession tidak logout user
-        Auth::login($user);
+        // Logout bersih & redirect ke login
+        Auth::logout();
+        Session::invalidate();
+        Session::regenerateToken();
 
-        $this->showPasswordModal = false;
-        $this->isNisnPassword = false;
-        $this->new_password = '';
-        $this->new_password_confirmation = '';
+        $this->redirect(
+            url('/siswa/login'),
+            navigate: false,
+        );
     }
 }

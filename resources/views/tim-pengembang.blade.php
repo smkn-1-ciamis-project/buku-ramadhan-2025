@@ -236,7 +236,7 @@
             Tim Pengembang
         </div>
         <h1 class="page-title">Buku Ramadhan</h1>
-        <p class="page-subtitle">Aplikasi catatan ibadah digital siswa SMKN 1 Ciamis — dikembangkan dengan penuh semangat.</p>
+        <p class="page-subtitle">Aplikasi catatan ibadah digital siswa SMKN 1 Ciamis — dibangun dari nol, dirancang untuk generasi terbaik.</p>
     </div>
 
     <div class="page-content">
@@ -277,10 +277,6 @@
                         </div>
                     </div>
                 </div>
-                <hr class="card-divider">
-                <p class="card-responsibility">
-                    <strong>Tanggung Jawab:</strong> Project Lead, Backend &amp; Frontend Development, Database Design, Deployment
-                </p>
             </div>
 
             {{-- Galuh Surya Putra --}}
@@ -313,10 +309,6 @@
                         </div>
                     </div>
                 </div>
-                <hr class="card-divider">
-                <p class="card-responsibility">
-                    <strong>Tanggung Jawab:</strong> Frontend Development, UI/UX Design, Responsive Design
-                </p>
             </div>
 
         </div>
@@ -324,7 +316,7 @@
 
     <div class="page-footer">
         <p>&copy; {{ date('Y') }} SMKN 1 Ciamis. Semua hak cipta dilindungi.</p>
-        <a href="javascript:history.back()" class="back-link">
+        <a href="{{ url('/') }}" onclick="if(document.referrer){history.back();return false;}" class="back-link">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>

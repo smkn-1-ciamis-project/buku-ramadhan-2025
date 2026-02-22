@@ -266,7 +266,7 @@
                             <p class="gd-day-label">Ramadhan {{ $hijriYear }} H</p>
                             <p class="gd-day-num">Hari ke-{{ $hariKe }}</p>
                         </div>
-                        <span style="font-size:2.25rem">🌙</span>
+
                     </div>
                 @else
                     <div class="gd-hero-day">
@@ -318,7 +318,7 @@
             <div class="gd-section-card">
                 <div class="gd-section-header">
                     <div class="gd-section-title">
-                        ⏳ Menunggu Verifikasi
+                        Menunggu Verifikasi
                         @if ($totalPending > 0)
                             <span class="gd-section-count gd-count-amber">{{ $totalPending }}</span>
                         @endif
@@ -328,7 +328,6 @@
                 <div class="gd-section-body">
                     @if ($pendingSubmissions->isEmpty())
                         <div class="gd-celebrate">
-                            <div class="gd-celebrate-icon">✅</div>
                             <div class="gd-celebrate-text gd-text-green">Semua formulir sudah diverifikasi!</div>
                         </div>
                     @else
@@ -369,7 +368,7 @@
             <div class="gd-section-card">
                 <div class="gd-section-header">
                     <div class="gd-section-title">
-                        📝 Belum Mengisi Formulir
+                        Belum Mengisi Formulir
                         @if (count($belumMengisiDetail) > 0)
                             <span class="gd-section-count gd-count-red">{{ count($belumMengisiDetail) }} siswa</span>
                         @endif
@@ -378,7 +377,7 @@
                 <div class="gd-section-body">
                     @if (count($belumMengisiDetail) === 0)
                         <div class="gd-celebrate">
-                            <div class="gd-celebrate-icon">🎉</div>
+
                             <div class="gd-celebrate-text gd-text-green">Semua siswa sudah mengisi formulir lengkap!</div>
                         </div>
                     @else
@@ -437,15 +436,15 @@
                 <div class="gd-tabs">
                     <button class="gd-tab" @click="tab = 'belum'"
                         :class="tab === 'belum' ? 'active-belum' : ''">
-                        ⏳ Belum Kirim <span class="gd-tab-count">({{ $overview['belum_submit'] }})</span>
+                        Belum Kirim <span class="gd-tab-count">({{ $overview['belum_submit'] }})</span>
                     </button>
                     <button class="gd-tab" @click="tab = 'sudah'"
                         :class="tab === 'sudah' ? 'active-sudah' : ''">
-                        ✅ Sudah Kirim <span class="gd-tab-count">({{ $overview['sudah_submit'] }})</span>
+                        Sudah Kirim <span class="gd-tab-count">({{ $overview['sudah_submit'] }})</span>
                     </button>
                     <button class="gd-tab" @click="tab = 'progress'"
                         :class="tab === 'progress' ? 'active-progress' : ''">
-                        📊 Progress
+                        Progress
                     </button>
                 </div>
 
@@ -456,7 +455,6 @@
                         @php $belumList = $overview['siswa_data']->where('today_submitted', false); @endphp
                         @if ($belumList->isEmpty())
                             <div class="gd-celebrate">
-                                <div class="gd-celebrate-icon">🎉</div>
                                 <div class="gd-celebrate-text gd-text-green">Semua siswa sudah mengirim formulir hari ini!</div>
                             </div>
                         @else
@@ -528,7 +526,7 @@
         @if (count($kelasOverview) === 0)
             <div class="gd-kelas">
                 <div class="gd-empty">
-                    <div class="gd-empty-icon">📚</div>
+
                     <div class="gd-empty-title">Belum ada kelas</div>
                     <div class="gd-empty-sub gd-text-muted">Anda belum ditugaskan sebagai wali kelas manapun.</div>
                 </div>

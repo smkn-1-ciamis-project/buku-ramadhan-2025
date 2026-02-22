@@ -149,8 +149,13 @@ class ImportService
             $password = trim($row['F'] ?? 'guru123');
 
             // Skip empty rows
-            if (empty($nama) && empty($email)) {
+            if (empty($nama)) {
                 continue;
+            }
+
+            // Auto-generate email from name if not provided
+            if (empty($email)) {
+                $email = self::generateGuruEmail($nama);
             }
 
             // Validate
@@ -196,5 +201,74 @@ class ImportService
         }
 
         return compact('success', 'failed', 'errors');
+    }
+
+    /**
+     * Generate email from guru name.
+     * E.g. "Drs. Ahmad Suryadi, M.Pd" => "ahmad.suryadi@smkn1ciamis.sch.id"
+     */
+    private static function generateGuruEmail(string $nama): string
+    {
+        // Remove common titles/degrees
+        $titles = [
+            'Prof\.?',
+            'Dr\.?',
+            'Drs\.?',
+            'Dra\.?',
+            'Ir\.?',
+            'Hj\.?',
+            'H\.?',
+            'S\.?Pd\.?',
+            'S\.?Kom\.?',
+            'S\.?E\.?',
+            'S\.?Ag\.?',
+            'S\.?Sos\.?',
+            'S\.?H\.?',
+            'S\.?T\.?',
+            'S\.?Si\.?',
+            'S\.?I\.?P\.?',
+            'M\.?Pd\.?',
+            'M\.?Kom\.?',
+            'M\.?M\.?',
+            'M\.?Si\.?',
+            'M\.?Ag\.?',
+            'M\.?T\.?',
+            'M\.?A\.?',
+            'M\.?Sc\.?',
+            'M\.?Eng\.?',
+            'M\.?Ed\.?',
+            'M\.?Hum\.?',
+            'M\.?Kes\.?',
+            'Ph\.?D\.?',
+            'MBA'
+        ];
+        $cleaned = $nama;
+        foreach ($titles as $title) {
+            $cleaned = preg_replace('/\b' . $title . '\b/i', '', $cleaned);
+        }
+
+        // Remove commas, dots, extra spaces
+        $cleaned = preg_replace('/[,\.]+/', ' ', $cleaned);
+        $cleaned = preg_replace('/\s+/', ' ', trim($cleaned));
+
+        // Convert to lowercase slug: "Ahmad Suryadi" => "ahmad.suryadi"
+        $parts = explode(' ', strtolower($cleaned));
+        $parts = array_filter($parts, fn($p) => strlen($p) > 0);
+        $slug = implode('.', $parts);
+
+        // Remove non-alphanumeric (except dots)
+        $slug = preg_replace('/[^a-z0-9\.]/', '', $slug);
+
+        $baseEmail = $slug . '@smkn1ciamis.sch.id';
+
+        // Ensure uniqueness
+        $email = $baseEmail;
+        $counter = 1;
+        while (User::where('email', $email)->exists()) {
+            $email = $slug . $counter . '@smkn1ciamis.sch.id';
+            $counter++;
+        }
+
+        return $email;
     }
 }
