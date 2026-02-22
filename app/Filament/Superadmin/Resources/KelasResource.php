@@ -36,8 +36,13 @@ class KelasResource extends Resource
           ->placeholder('Contoh: 10 AKL 1 KLOTER 1'),
         Forms\Components\Select::make('wali_id')
           ->label('Wali Kelas')
-          ->options(function () {
+          ->options(function (?Kelas $record) {
             return User::whereHas('role_user', fn(Builder $q) => $q->where('name', 'Guru'))
+              ->whereDoesntHave('kelasWali', function (Builder $q) use ($record) {
+                if ($record) {
+                  $q->where('kelas.id', '!=', $record->id);
+                }
+              })
               ->pluck('name', 'id');
           })
           ->searchable()

@@ -9,6 +9,7 @@ function formulirNonMuslim() {
         formSubmitted: false,
         formSaving: false,
         showSuccessPopup: false,
+        successDay: 0,
         showValidationError: false,
         validationMessage: "",
         submittedDays: [],
@@ -582,6 +583,7 @@ function formulirNonMuslim() {
 
             setTimeout(function () {
                 self.formSaving = false;
+                self.successDay = self.formDay;
                 self.showSuccessPopup = true;
                 setTimeout(function () {
                     self.showSuccessPopup = false;

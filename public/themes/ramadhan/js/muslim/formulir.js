@@ -126,6 +126,7 @@ function formulirHarian() {
         formSubmitted: false,
         formSaving: false,
         showSuccessPopup: false,
+        successDay: 0,
         showValidationError: false,
         validationMessage: "",
         submittedDays: [],
@@ -499,8 +500,38 @@ function formulirHarian() {
             this.loadSubmittedDays();
             this.loadFormConfig();
             this.syncFromServer();
-            // Always open the oldest unfilled day first (sequential enforcement)
-            this.formDay = this.getFirstUnfilledDay();
+
+            // Check for ?hari= query param (from calendar click)
+            var urlParams = new URLSearchParams(window.location.search);
+            var requestedDay = urlParams.get("hari");
+            if (requestedDay) {
+                requestedDay = parseInt(requestedDay);
+                if (
+                    requestedDay >= 1 &&
+                    requestedDay <= 30 &&
+                    requestedDay <= this.ramadhanDay
+                ) {
+                    // If this day is already submitted, allow revision
+                    if (this.submittedDays.includes(requestedDay)) {
+                        this.formDay = requestedDay;
+                    } else {
+                        // Enforce sequential: find the first unfilled day
+                        var firstUnfilled = this.getFirstUnfilledDay();
+                        if (firstUnfilled < requestedDay) {
+                            // Must fill earlier days first
+                            this.formDay = firstUnfilled;
+                        } else {
+                            this.formDay = requestedDay;
+                        }
+                    }
+                } else {
+                    this.formDay = this.getFirstUnfilledDay();
+                }
+            } else {
+                // Default: open the oldest unfilled day (sequential enforcement)
+                this.formDay = this.getFirstUnfilledDay();
+            }
+
             this.checkFormSubmitted();
             this.filteredSurahs = this.allSurahs;
         },
@@ -839,6 +870,7 @@ function formulirHarian() {
 
             setTimeout(function () {
                 self.formSaving = false;
+                self.successDay = self.formDay;
                 self.showSuccessPopup = true;
                 setTimeout(function () {
                     self.showSuccessPopup = false;
@@ -899,8 +931,25 @@ function formulirHarian() {
                                 }
                             });
                         }
-                        // Re-evaluate current day
-                        self.formDay = self.getFirstUnfilledDay();
+                        // Re-evaluate current day, but only if the user did NOT
+                        // explicitly navigate here with a ?hari= param (e.g. from calendar)
+                        var urlParams = new URLSearchParams(
+                            window.location.search,
+                        );
+                        var requestedHari = urlParams.get("hari");
+                        if (!requestedHari) {
+                            self.formDay = self.getFirstUnfilledDay();
+                        } else {
+                            // Keep the requested day; if it's now in submittedDays, mark submitted
+                            requestedHari = parseInt(requestedHari);
+                            if (
+                                requestedHari >= 1 &&
+                                requestedHari <= 30 &&
+                                self.submittedDays.includes(requestedHari)
+                            ) {
+                                self.formDay = requestedHari;
+                            }
+                        }
                         self.checkFormSubmitted();
                     }
                 })

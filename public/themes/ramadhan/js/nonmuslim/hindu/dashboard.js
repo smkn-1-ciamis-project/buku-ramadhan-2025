@@ -290,7 +290,44 @@ function hinduDashboard() {
         },
 
         getProgressPercent() {
-            return Math.round((this.submittedDays.length / 30) * 100);
+            return Math.round((this.getVerifiedCount() / 30) * 100);
+        },
+
+        getVerifiedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                if (this.submissionStatuses[key].status === "verified") count++;
+            }
+            return count;
+        },
+
+        getPendingCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                var s = this.submissionStatuses[key].status;
+                if (s === "pending" || s === "") count++;
+            }
+            return count;
+        },
+
+        getRejectedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                if (this.submissionStatuses[key].status === "rejected") count++;
+            }
+            return count;
+        },
+
+        getVerifiedPercent() {
+            return Math.round((this.getVerifiedCount() / 30) * 100);
+        },
+
+        getPendingPercent() {
+            return Math.round((this.getPendingCount() / 30) * 100);
+        },
+
+        getRejectedPercent() {
+            return Math.round((this.getRejectedCount() / 30) * 100);
         },
 
         // ── Hindu Prayers & Mantras (Doa & Mantra Hindu) ──────────────

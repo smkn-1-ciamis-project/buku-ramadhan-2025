@@ -9,6 +9,7 @@ function formulirBuddha() {
         formSubmitted: false,
         formSaving: false,
         showSuccessPopup: false,
+        successDay: 0,
         showValidationError: false,
         validationMessage: "",
         submittedDays: [],
@@ -566,6 +567,7 @@ function formulirBuddha() {
 
             setTimeout(function () {
                 self.formSaving = false;
+                self.successDay = self.formDay;
                 self.showSuccessPopup = true;
                 setTimeout(function () {
                     self.showSuccessPopup = false;

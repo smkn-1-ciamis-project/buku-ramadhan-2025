@@ -161,6 +161,7 @@ class SiswaResource extends Resource
             ->action(function (User $record) {
               $record->update([
                 'password' => Hash::make($record->nisn),
+                'must_change_password' => true,
               ]);
               Notification::make()
                 ->title('Password berhasil direset')

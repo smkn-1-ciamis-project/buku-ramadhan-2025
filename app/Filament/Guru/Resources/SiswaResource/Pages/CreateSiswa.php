@@ -34,6 +34,9 @@ class CreateSiswa extends CreateRecord
       $data['password'] = $data['nisn'] ?? 'siswa123';
     }
 
+    // Wajib ubah password saat pertama kali login
+    $data['must_change_password'] = true;
+
     return $data;
   }
 

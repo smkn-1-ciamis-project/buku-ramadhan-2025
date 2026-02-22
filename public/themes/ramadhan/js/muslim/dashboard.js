@@ -84,6 +84,12 @@ function ramadhanDashboard() {
             { id: "account", label: "Pengaturan Akun", mobileLabel: "Akun" },
         ],
 
+        // ── Notification Modal ─────────────────────────────────────────────
+        showNotifModal: false,
+        notifTitle: "",
+        notifMessage: "",
+        notifRedirectUrl: "",
+
         // ── Form State ─────────────────────────────────────────────────────
         formDay: 1,
         formSubmitted: false,
@@ -1741,7 +1747,105 @@ function ramadhanDashboard() {
         },
 
         getProgressPercent() {
-            return Math.round((this.submittedDays.length / 30) * 100);
+            return Math.round((this.getVerifiedCount() / 30) * 100);
+        },
+
+        getVerifiedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                if (this.submissionStatuses[key].status === "verified") count++;
+            }
+            return count;
+        },
+
+        getPendingCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                var s = this.submissionStatuses[key].status;
+                if (s === "pending" || s === "") count++;
+            }
+            return count;
+        },
+
+        getRejectedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                if (this.submissionStatuses[key].status === "rejected") count++;
+            }
+            return count;
+        },
+
+        getVerifiedPercent() {
+            return Math.round((this.getVerifiedCount() / 30) * 100);
+        },
+
+        getPendingPercent() {
+            return Math.round((this.getPendingCount() / 30) * 100);
+        },
+
+        getRejectedPercent() {
+            return Math.round((this.getRejectedCount() / 30) * 100);
+        },
+
+        /**
+         * Navigate to formulir page for a specific calendar day.
+         * - Submitted days: open for revision
+         * - Unfilled past/today: open to fill, but enforce sequential order
+         * - Future days: blocked
+         */
+        navigateToFormulir(item) {
+            if (item.hijriDay <= 0) return;
+
+            var day = item.hijriDay;
+            var formulirUrl = document.querySelector("[data-formulir-url]");
+            var baseUrl = formulirUrl
+                ? formulirUrl.dataset.formulirUrl
+                : "/siswa/formulir-harian";
+
+            // Future day that hasn't come yet — block
+            if (!item.isPast && !item.isToday) {
+                return;
+            }
+
+            // If this day is already submitted, go directly to revise
+            if (item.isCompleted) {
+                window.open(baseUrl + "?hari=" + day, "_blank");
+                return;
+            }
+
+            // Unfilled day — enforce sequential: find the first unfilled day
+            var firstUnfilled = null;
+            for (var d = 1; d <= this.ramadhanDay; d++) {
+                if (!this.submittedDays.includes(d)) {
+                    firstUnfilled = d;
+                    break;
+                }
+            }
+
+            if (firstUnfilled && firstUnfilled < day) {
+                // Must fill earlier days first — show styled notification
+                this.notifTitle = "Isi Formulir Secara Berurutan";
+                this.notifMessage =
+                    "Kamu harus mengisi Hari ke-" +
+                    firstUnfilled +
+                    " terlebih dahulu sebelum mengisi Hari ke-" +
+                    day +
+                    ".";
+                this.notifRedirectUrl = baseUrl + "?hari=" + firstUnfilled;
+                this.showNotifModal = true;
+            } else {
+                window.open(baseUrl + "?hari=" + day, "_blank");
+            }
+        },
+
+        closeNotifModal(redirect) {
+            this.showNotifModal = false;
+            if (redirect && this.notifRedirectUrl) {
+                window.open(this.notifRedirectUrl, "_blank");
+            }
+            this.notifTitle = "";
+            this.notifMessage = "";
+            this.notifRedirectUrl = "";
         },
 
         changePassword() {

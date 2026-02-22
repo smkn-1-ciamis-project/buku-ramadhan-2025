@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Rule;
 
 /**
@@ -11,6 +13,7 @@ use Livewire\Attributes\Rule;
 trait HasPasswordChangeModal
 {
     public bool $showPasswordModal = false;
+    public bool $isNisnPassword = false;
 
     #[Rule('required|string|min:8')]
     public string $new_password = '';
@@ -20,11 +23,19 @@ trait HasPasswordChangeModal
 
     public function mountHasPasswordChangeModal(): void
     {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
 
         if ($user && $user->must_change_password) {
             $this->showPasswordModal = true;
+            $this->isNisnPassword = true;
+            return;
+        }
+
+        // Cek apakah password masih sama dengan NISN
+        if ($user && $user->nisn && Hash::check($user->nisn, $user->password)) {
+            $this->showPasswordModal = true;
+            $this->isNisnPassword = true;
         }
     }
 
@@ -41,13 +52,21 @@ trait HasPasswordChangeModal
         ]);
 
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
+
+        // Tidak boleh menggunakan NISN sebagai password baru
+        if ($user->nisn && $this->new_password === $user->nisn) {
+            $this->addError('new_password', 'Password baru tidak boleh sama dengan NISN Anda.');
+            return;
+        }
+
         $user->update([
             'password' => $this->new_password,
             'must_change_password' => false,
         ]);
 
         $this->showPasswordModal = false;
+        $this->isNisnPassword = false;
         $this->new_password = '';
         $this->new_password_confirmation = '';
     }

@@ -17,8 +17,10 @@
         showPwConf: false,
         pw: $wire.entangle('new_password'),
         pwConf: $wire.entangle('new_password_confirmation'),
+        nisn: '{{ auth()->user()?->nisn ?? '' }}',
         get minLen() { return this.pw.length >= 8 },
-        get match() { return this.pw.length > 0 && this.pw === this.pwConf }
+        get match() { return this.pw.length > 0 && this.pw === this.pwConf },
+        get notNisn() { return this.nisn === '' || this.pw !== this.nisn }
     }" @click.outside="">
 
         {{-- Header --}}
@@ -36,11 +38,11 @@
         <div class="pcm-body">
 
             {{-- Info box --}}
-            <div class="pcm-info">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+            <div class="pcm-info" style="background: #fef2f2; border-color: #fca5a5; color: #991b1b;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color: #dc2626;">
+                    <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
                 </svg>
-                <span>Ini adalah login pertama Anda. Ganti password default untuk melanjutkan.</span>
+                <span><strong>PERINGATAN!</strong> Password Anda masih menggunakan NISN. Demi keamanan akun, Anda <strong>WAJIB</strong> mengganti password sekarang!</span>
             </div>
 
             <form wire:submit="simpanPasswordBaru">
@@ -87,10 +89,11 @@
                 <ul class="pcm-reqs">
                     <li :class="{ 'met': minLen }"><span class="req-dot"></span> Minimal 8 karakter</li>
                     <li :class="{ 'met': match }"><span class="req-dot"></span> Password & konfirmasi cocok</li>
+                    <li :class="{ 'met': notNisn, 'fail': !notNisn && pw.length > 0 }"><span class="req-dot"></span> Password tidak boleh sama dengan NISN</li>
                 </ul>
 
                 {{-- Submit --}}
-                <button type="submit" class="pcm-btn" wire:loading.attr="disabled" :disabled="!minLen || !match">
+                <button type="submit" class="pcm-btn" wire:loading.attr="disabled" :disabled="!minLen || !match || !notNisn">
                     <span wire:loading.remove wire:target="simpanPasswordBaru">Simpan Password Baru</span>
                     <span wire:loading wire:target="simpanPasswordBaru" style="display:none">Menyimpan…</span>
                 </button>
@@ -203,6 +206,8 @@
     .pcm-reqs li .req-dot { width: 6px; height: 6px; background: #d1d5db; border-radius: 50%; flex-shrink: 0; transition: background 0.2s; }
     .pcm-reqs li.met .req-dot { background: #22c55e; }
     .pcm-reqs li.met { color: #16a34a; }
+    .pcm-reqs li.fail .req-dot { background: #ef4444; }
+    .pcm-reqs li.fail { color: #dc2626; font-weight: 600; }
 
     .pcm-btn {
         width: 100%; padding: 11px;

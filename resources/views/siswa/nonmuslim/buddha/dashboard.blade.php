@@ -486,22 +486,33 @@
                                     </div>
                                     <div>
                                         <h4 class="progress-title">Progress Kegiatan</h4>
-                                        <p class="progress-subtitle" x-text="submittedDays.length + ' dari 30 hari terisi'"></p>
+                                        <p class="progress-subtitle" x-text="getVerifiedCount() + ' diterima dari 30 hari'"></p>
                                     </div>
                                 </div>
                                 <div class="progress-percent" x-text="getProgressPercent() + '%'"></div>
                             </div>
                             <div class="progress-bar-track">
-                                <div class="progress-bar-fill" :style="'width:'+getProgressPercent()+'%'"></div>
+                                <div class="progress-bar-verified" :style="'width:'+getVerifiedPercent()+'%'"></div>
+                                <div class="progress-bar-pending" :style="'width:'+getPendingPercent()+'%'"></div>
+                                <div class="progress-bar-rejected" :style="'width:'+getRejectedPercent()+'%'"></div>
                             </div>
-                            <div class="progress-stats">
+                            <div class="progress-bar-legend">
+                                <span class="legend-item"><span class="legend-dot legend-dot-verified"></span>Diterima</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-pending"></span>Menunggu</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-rejected"></span>Ditolak</span>
+                            </div>
+                            <div class="progress-stats" style="grid-template-columns:repeat(5,1fr)">
                                 <div class="progress-stat">
-                                    <span class="progress-stat-num" x-text="submittedDays.length"></span>
-                                    <span class="progress-stat-label">Terisi</span>
+                                    <span class="progress-stat-num" style="color:#16a34a" x-text="getVerifiedCount()"></span>
+                                    <span class="progress-stat-label">Diterima</span>
                                 </div>
                                 <div class="progress-stat">
-                                    <span class="progress-stat-num" x-text="30 - submittedDays.length"></span>
-                                    <span class="progress-stat-label">Tersisa</span>
+                                    <span class="progress-stat-num" style="color:#d97706" x-text="getPendingCount()"></span>
+                                    <span class="progress-stat-label">Menunggu</span>
+                                </div>
+                                <div class="progress-stat">
+                                    <span class="progress-stat-num" style="color:#dc2626" x-text="getRejectedCount()"></span>
+                                    <span class="progress-stat-label">Ditolak</span>
                                 </div>
                                 <div class="progress-stat">
                                     <span class="progress-stat-num" x-text="ramadhanDay"></span>

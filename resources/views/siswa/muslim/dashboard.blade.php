@@ -13,7 +13,7 @@
         *, *::before, *::after { box-sizing: border-box; }
         .fi-body { margin: 0 !important; padding: 0 !important; background: #f1f5f9 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     </style>
-    <div x-data="ramadhanDashboard()" x-init="init()" class="ramadhan-app">
+    <div x-data="ramadhanDashboard()" x-init="init()" class="ramadhan-app" data-formulir-url="{{ \App\Filament\Siswa\Pages\Muslim\FormulirHarian::getUrl() }}">
 
         {{-- ===== HERO HEADER ===== --}}
         <div class="hero-header">
@@ -314,8 +314,11 @@
                                                 'cal-cell-rejected':  item.isRejected && !item.isToday,
                                                 'cal-cell-missed':    item.isPastUnfilled,
                                                 'cal-cell-future':    !item.isToday && !item.isPast && item.hijriDay > 0,
-                                                'cal-cell-empty':     item.hijriDay <= 0
-                                            }">
+                                                'cal-cell-empty':     item.hijriDay <= 0,
+                                                'cal-cell-clickable': item.hijriDay > 0 && (item.isCompleted || item.isPastUnfilled || item.isToday)
+                                            }"
+                                            @click="item.hijriDay > 0 && navigateToFormulir(item)"
+                                            :style="item.hijriDay > 0 && (item.isCompleted || item.isPastUnfilled || item.isToday) ? 'cursor:pointer' : ''">
                                             <template x-if="item.hijriDay > 0">
                                                 <div class="cal-cell-inner">
                                                     {{-- Today ring --}}
@@ -393,22 +396,33 @@
                                     </div>
                                     <div>
                                         <h4 class="progress-title">Progress Ramadhan</h4>
-                                        <p class="progress-subtitle" x-text="submittedDays.length + ' dari 30 hari terisi'"></p>
+                                        <p class="progress-subtitle" x-text="getVerifiedCount() + ' diterima dari 30 hari'"></p>
                                     </div>
                                 </div>
                                 <div class="progress-percent" x-text="getProgressPercent() + '%'"></div>
                             </div>
                             <div class="progress-bar-track">
-                                <div class="progress-bar-fill" :style="'width:'+getProgressPercent()+'%'"></div>
+                                <div class="progress-bar-verified" :style="'width:'+getVerifiedPercent()+'%'"></div>
+                                <div class="progress-bar-pending" :style="'width:'+getPendingPercent()+'%'"></div>
+                                <div class="progress-bar-rejected" :style="'width:'+getRejectedPercent()+'%'"></div>
                             </div>
-                            <div class="progress-stats">
+                            <div class="progress-bar-legend">
+                                <span class="legend-item"><span class="legend-dot legend-dot-verified"></span>Diterima</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-pending"></span>Menunggu</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-rejected"></span>Ditolak</span>
+                            </div>
+                            <div class="progress-stats" style="grid-template-columns:repeat(5,1fr)">
                                 <div class="progress-stat">
-                                    <span class="progress-stat-num" x-text="submittedDays.length"></span>
-                                    <span class="progress-stat-label">Terisi</span>
+                                    <span class="progress-stat-num" style="color:#16a34a" x-text="getVerifiedCount()"></span>
+                                    <span class="progress-stat-label">Diterima</span>
                                 </div>
                                 <div class="progress-stat">
-                                    <span class="progress-stat-num" x-text="30 - submittedDays.length"></span>
-                                    <span class="progress-stat-label">Tersisa</span>
+                                    <span class="progress-stat-num" style="color:#d97706" x-text="getPendingCount()"></span>
+                                    <span class="progress-stat-label">Menunggu</span>
+                                </div>
+                                <div class="progress-stat">
+                                    <span class="progress-stat-num" style="color:#dc2626" x-text="getRejectedCount()"></span>
+                                    <span class="progress-stat-label">Ditolak</span>
                                 </div>
                                 <div class="progress-stat">
                                     <span class="progress-stat-num" x-text="ramadhanDay"></span>
@@ -1056,6 +1070,54 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+        </div>
+
+        {{-- Notification Modal (must be inside x-data scope) --}}
+        <div
+            x-show="showNotifModal"
+            x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="notif-overlay"
+            style="display: none;"
+        >
+            <div class="notif-backdrop" @click="closeNotifModal(false)"></div>
+
+            <div class="notif-modal">
+                {{-- Header --}}
+                <div class="notif-header">
+                    <div class="notif-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                    </div>
+                    <h3 class="notif-title" x-text="notifTitle"></h3>
+                </div>
+
+                {{-- Body --}}
+                <div class="notif-body">
+                    <div class="notif-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+                        </svg>
+                        <span x-text="notifMessage"></span>
+                    </div>
+
+                    <div class="notif-actions">
+                        <button class="notif-btn notif-btn-primary" @click="closeNotifModal(true)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                            Isi Sekarang
+                        </button>
+                        <button class="notif-btn notif-btn-secondary" @click="closeNotifModal(false)">Tutup</button>
+                    </div>
                 </div>
             </div>
         </div>

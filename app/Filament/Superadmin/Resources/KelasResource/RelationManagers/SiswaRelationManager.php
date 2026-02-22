@@ -61,14 +61,51 @@ class SiswaRelationManager extends RelationManager
           ->options(['L' => 'Laki-laki', 'P' => 'Perempuan']),
       ])
       ->headerActions([
+        Tables\Actions\Action::make('tambahSiswaExisting')
+          ->label('Ambil Siswa')
+          ->icon('heroicon-o-user-plus')
+          ->color('success')
+          ->form([
+            Forms\Components\Select::make('siswa_ids')
+              ->label('Pilih Siswa')
+              ->multiple()
+              ->searchable()
+              ->preload()
+              ->options(function () {
+                $siswaRole = RoleUser::where('name', 'Siswa')->first();
+                return User::where('role_user_id', $siswaRole?->id)
+                  ->where(function ($q) {
+                    $q->whereNull('kelas_id')
+                      ->orWhere('kelas_id', '');
+                  })
+                  ->orderBy('name')
+                  ->get()
+                  ->mapWithKeys(fn(User $u) => [
+                    $u->id => $u->name . ' (' . $u->nisn . ')',
+                  ]);
+              })
+              ->required()
+              ->helperText('Hanya menampilkan siswa yang belum terdaftar di kelas manapun.'),
+          ])
+          ->action(function (array $data): void {
+            $kelas = $this->getOwnerRecord();
+            $count = User::whereIn('id', $data['siswa_ids'])->update(['kelas_id' => $kelas->id]);
+
+            Notification::make()
+              ->title("Berhasil menambahkan {$count} siswa ke kelas {$kelas->nama}")
+              ->success()
+              ->send();
+          }),
+
         Tables\Actions\CreateAction::make()
-          ->label('Tambah Siswa')
+          ->label('Buat Siswa Baru')
           ->icon('heroicon-o-plus')
           ->form($this->getFormSchema())
           ->mutateFormDataUsing(function (array $data): array {
             $siswaRole = RoleUser::where('name', 'Siswa')->first();
             $data['role_user_id'] = $siswaRole?->id;
             $data['password'] = Hash::make($data['password'] ?? $data['nisn']);
+            $data['must_change_password'] = true;
             if (empty($data['email'])) {
               $data['email'] = $data['nisn'] . '@siswa.buku-ramadhan.id';
             }
@@ -344,6 +381,7 @@ class SiswaRelationManager extends RelationManager
                   'kelas_id' => $kelas->id,
                   'password' => Hash::make($password ?: $nisn),
                   'role_user_id' => $siswaRole->id,
+                  'must_change_password' => true,
                 ]);
 
                 $imported++;
@@ -376,11 +414,41 @@ class SiswaRelationManager extends RelationManager
         Tables\Actions\ActionGroup::make([
           Tables\Actions\EditAction::make()
             ->form($this->getFormSchema()),
+          Tables\Actions\Action::make('keluarkan')
+            ->label('Keluarkan dari Kelas')
+            ->icon('heroicon-o-arrow-right-start-on-rectangle')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->modalHeading('Keluarkan Siswa dari Kelas')
+            ->modalDescription(fn($record) => "Apakah Anda yakin ingin mengeluarkan {$record->name} dari kelas ini? Siswa tidak akan dihapus, hanya dikeluarkan dari kelas.")
+            ->action(function ($record): void {
+              $record->update(['kelas_id' => null]);
+              Notification::make()
+                ->title("{$record->name} telah dikeluarkan dari kelas")
+                ->success()
+                ->send();
+            }),
           Tables\Actions\DeleteAction::make(),
         ]),
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\BulkAction::make('keluarkanBulk')
+            ->label('Keluarkan dari Kelas')
+            ->icon('heroicon-o-arrow-right-start-on-rectangle')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->modalHeading('Keluarkan Siswa dari Kelas')
+            ->modalDescription('Apakah Anda yakin ingin mengeluarkan siswa yang dipilih dari kelas ini?')
+            ->action(function (\Illuminate\Database\Eloquent\Collection $records): void {
+              $count = $records->count();
+              $records->each(fn($record) => $record->update(['kelas_id' => null]));
+              Notification::make()
+                ->title("{$count} siswa telah dikeluarkan dari kelas")
+                ->success()
+                ->send();
+            })
+            ->deselectRecordsAfterCompletion(),
           Tables\Actions\DeleteBulkAction::make(),
         ]),
       ]);

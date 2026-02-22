@@ -75,17 +75,15 @@
                 </div>
 
                 {{-- Rejection banner --}}
-                <div x-show="currentDayStatus === 'rejected'" x-cloak style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
-                    <div style="flex-shrink:0;width:40px;height:40px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                        <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                <div x-show="currentDayStatus === 'rejected'" x-cloak style="background:linear-gradient(180deg,#fef2f2 0%,#fff5f5 100%);border:1.5px solid #fca5a5;border-radius:16px;padding:28px 24px 24px;margin-bottom:16px;text-align:center;">
+                    <div style="width:60px;height:60px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 16px rgba(239,68,68,.35);">
+                        <svg width="30" height="30" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </div>
-                    <div style="flex:1;">
-                        <p style="margin:0 0 4px;font-weight:700;color:#991b1b;font-size:15px;">Formulir Ditolak oleh Guru</p>
-                        <p style="margin:0 0 8px;color:#b91c1c;font-size:13px;">Silakan perbaiki dan kirim ulang formulir ini.</p>
-                        <div x-show="currentDayNote" style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;">
-                            <p style="margin:0 0 2px;font-size:11px;font-weight:600;color:#991b1b;text-transform:uppercase;letter-spacing:.5px;">Catatan Guru:</p>
-                            <p style="margin:0;color:#dc2626;font-size:13px;" x-text="currentDayNote"></p>
-                        </div>
+                    <p style="margin:0 0 6px;font-weight:700;color:#991b1b;font-size:17px;letter-spacing:-.2px;">Formulir Ditolak oleh Guru</p>
+                    <p style="margin:0 0 18px;color:#b91c1c;font-size:13px;">Silakan perbaiki dan kirim ulang formulir ini.</p>
+                    <div x-show="currentDayNote" style="background:#fff;border:1.5px solid #fca5a5;border-radius:10px;padding:14px 16px;text-align:left;">
+                        <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.8px;">Catatan Guru</p>
+                        <p style="margin:0;color:#dc2626;font-size:13px;line-height:1.6;" x-text="currentDayNote"></p>
                     </div>
                 </div>
 
@@ -498,7 +496,7 @@
                 </div>
 
                 {{-- Validation Error Toast --}}
-                <div x-show="showValidationError" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;background:#ef4444;color:#fff;padding:14px 28px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;max-width:90vw;">
+                <div x-show="showValidationError" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#ef4444;color:#fff;padding:18px 32px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;max-width:90vw;text-align:center;">
                     <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
                     <span x-text="validationMessage"></span>
                 </div>
@@ -509,7 +507,7 @@
                         <svg width="36" height="36" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                     </div>
                     <h3 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1e293b;">Berhasil Terkirim!</h3>
-                    <p style="margin:0;color:#64748b;font-size:14px;">Formulir harian Anda sudah berhasil disimpan.</p>
+                    <p style="margin:0;color:#64748b;font-size:14px;">Formulir <strong x-text="'Hari ke-' + successDay + ' Ramadhan'"></strong> sudah berhasil disimpan.</p>
                 </div>
                 <div x-show="showSuccessPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:9998;"></div>
 
