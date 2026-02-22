@@ -29,7 +29,7 @@
 
       {{-- Form Title --}}
       <div class="login-form-title">Login</div>
-      <div class="login-form-subtitle">Masuk ke akun Buku Ramadan Anda</div>
+      <div class="login-form-subtitle">Masuk ke akun Calakan Anda</div>
 
       {{-- Session Expired Alert --}}
       @if(session('session_expired'))
@@ -61,7 +61,7 @@
       <div class="login-form-footer">
         <div class="login-form-footer-copy">
           <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener noreferrer">
-            &copy; {{ date('Y') }} SMKN 1 Ciamis. Semua hak cipta dilindungi.
+            &copy; {{ date('Y') }} Calakan — SMKN 1 Ciamis
           </a>
         </div>
       </div>
@@ -96,8 +96,8 @@
           <img src="{{ asset('img/logo_smk.png') }}" alt="Logo SMKN 1 Ciamis">
         </div>
 
-        <div class="illust-title">Buku Ramadan</div>
-        <div class="illust-subtitle">Catatan kegiatan keagamaan digital siswa SMKN 1 Ciamis</div>
+        <div class="illust-title">Calakan</div>
+        <div class="illust-subtitle">Catatan Amaliyah Kegiatan Ramadan<br>SMKN 1 Ciamis</div>
 
         {{-- Religion icons row --}}
         <div class="illust-religion-icons">

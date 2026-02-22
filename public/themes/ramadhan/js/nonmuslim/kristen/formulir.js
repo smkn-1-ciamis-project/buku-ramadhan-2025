@@ -1,5 +1,5 @@
 /**
- * Buku Ramadhan — Formulir Harian Non-Muslim Alpine.js Component
+ * Calakan — Formulir Harian Non-Muslim Alpine.js Component
  * Kegiatan Pembiasaan Positif & Pengendalian Diri
  */
 

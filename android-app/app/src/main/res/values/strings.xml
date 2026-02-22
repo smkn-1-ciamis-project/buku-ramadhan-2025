@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Calakan</string>
+    <string name="app_full_name">Catatan Amaliyah Kegiatan Ramadan</string>
+    <string name="school_name">SMKN 1 Ciamis</string>
+    <string name="app_version">v1.0</string>
+
+    <!-- Error messages -->
+    <string name="error_no_connection">Tidak Ada Koneksi</string>
+    <string name="error_no_connection_message">Periksa koneksi internet Anda dan coba lagi.</string>
+    <string name="error_page_not_found">Halaman Tidak Ditemukan</string>
+    <string name="error_page_not_found_message">Terjadi kesalahan saat memuat halaman. Silakan coba lagi.</string>
+    <string name="btn_retry">Coba Lagi</string>
+
+    <!-- Dialog -->
+    <string name="exit_title">Keluar Aplikasi</string>
+    <string name="exit_message">Apakah Anda yakin ingin keluar dari Calakan?</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+
+    <!-- Permissions -->
+    <string name="camera_permission_required">Izin Kamera Diperlukan</string>
+    <string name="camera_permission_message">Izin kamera diperlukan untuk mengambil foto. Silakan aktifkan di pengaturan aplikasi.</string>
+    <string name="settings">Pengaturan</string>
+    <string name="cancel">Batal</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_app_logo">Logo Calakan</string>
+    <string name="cd_no_connection">Tidak ada koneksi internet</string>
+</resources>

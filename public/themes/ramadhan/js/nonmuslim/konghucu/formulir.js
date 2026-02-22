@@ -1,5 +1,5 @@
 /**
- * Buku Ramadhan — Formulir Harian Konghucu Alpine.js Component
+ * Calakan — Formulir Harian Konghucu Alpine.js Component
  * Kegiatan Pembiasaan Positif & Pengendalian Diri
  */
 

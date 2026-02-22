@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tim Pengembang — Buku Ramadhan SMKN 1 Ciamis</title>
+    <title>Tim Pengembang — Calakan SMKN 1 Ciamis</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calakan">
+    <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -235,8 +241,8 @@
             </svg>
             Tim Pengembang
         </div>
-        <h1 class="page-title">Buku Ramadhan</h1>
-        <p class="page-subtitle">Aplikasi catatan ibadah digital siswa SMKN 1 Ciamis — dibangun dari nol, dirancang untuk generasi terbaik.</p>
+        <h1 class="page-title">Calakan</h1>
+        <p class="page-subtitle">Catatan Amaliyah Kegiatan Ramadan — SMKN 1 Ciamis, dibangun dari nol, dirancang untuk generasi terbaik.</p>
     </div>
 
     <div class="page-content">
@@ -324,5 +330,12 @@
         </a>
     </div>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
 </body>
 </html>

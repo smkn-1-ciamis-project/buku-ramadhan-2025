@@ -230,7 +230,7 @@
             <div class="sa-hero-content">
                 <div class="sa-hero-left">
                     <p class="sa-greet">☪️ Assalamu'alaikum, Admin</p>
-                    <h1>Buku Ramadhan SMKN 1</h1>
+                    <h1>Calakan SMKN 1</h1>
                     <p class="sa-sub">Panel Superadmin — Kelola seluruh data sekolah</p>
                 </div>
                 @if ($isRamadhan)

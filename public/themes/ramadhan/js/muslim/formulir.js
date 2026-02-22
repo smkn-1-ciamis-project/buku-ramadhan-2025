@@ -1,5 +1,5 @@
 /**
- * Buku Ramadhan — Formulir Harian Alpine.js Component
+ * Calakan — Formulir Harian Alpine.js Component
  */
 
 /* ── 114 Surah data (number, name, total ayat) ── */

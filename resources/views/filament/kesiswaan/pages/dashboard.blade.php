@@ -227,7 +227,7 @@
             <div class="ks-hero-content">
                 <div class="ks-hero-left">
                     <p class="ks-greet">Assalamu'alaikum, Kesiswaan</p>
-                    <h1>Buku Ramadhan SMKN 1</h1>
+                    <h1>Calakan SMKN 1</h1>
                     <p class="ks-sub">Panel Kesiswaan — Validasi & monitoring data siswa</p>
                 </div>
                 @if ($isRamadhan)

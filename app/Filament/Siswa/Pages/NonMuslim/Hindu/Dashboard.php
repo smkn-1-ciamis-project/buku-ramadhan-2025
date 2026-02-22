@@ -3,6 +3,9 @@
 namespace App\Filament\Siswa\Pages\NonMuslim\Hindu;
 
 use App\Filament\Siswa\Pages\Muslim\Dashboard as MuslimDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Kristen\Dashboard as KristenDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Buddha\Dashboard as BuddhaDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Konghucu\Dashboard as KonghucuDashboard;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -25,8 +28,20 @@ class Dashboard extends Page
         $user = Auth::user();
         $agama = strtolower($user->agama ?? '');
 
-        if ($agama === 'islam') {
-            redirect()->to(MuslimDashboard::getUrl());
+        // Redirect ke dashboard yang sesuai agama user
+        $redirectMap = [
+            'islam' => MuslimDashboard::getUrl(),
+            'kristen' => KristenDashboard::getUrl(),
+            'katolik' => KristenDashboard::getUrl(),
+            'kristen katolik' => KristenDashboard::getUrl(),
+            'buddha' => BuddhaDashboard::getUrl(),
+            'budha' => BuddhaDashboard::getUrl(),
+            'konghucu' => KonghucuDashboard::getUrl(),
+            'khonghucu' => KonghucuDashboard::getUrl(),
+        ];
+
+        if (isset($redirectMap[$agama])) {
+            redirect()->to($redirectMap[$agama]);
         }
     }
 

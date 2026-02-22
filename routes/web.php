@@ -72,6 +72,12 @@ Route::middleware('auth')->post('/api/change-password', function (\Illuminate\Ht
     // sehingga AuthenticateSession tidak logout user
     Auth::login($user);
 
+    // Update active_session_id agar EnsureSingleSession
+    // tidak menendang user karena session ID berubah
+    $user->updateQuietly([
+        'active_session_id' => session()->getId(),
+    ]);
+
     return response()->json(['success' => true, 'message' => 'Password berhasil diubah.']);
 });
 

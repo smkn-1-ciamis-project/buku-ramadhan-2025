@@ -69,7 +69,7 @@ class ListSiswa extends ListRecords
 
           // Title row
           $writer->addRow(Row::fromValues([
-            'TEMPLATE IMPORT DATA SISWA — Buku Ramadhan SMKN 1 Ciamis',
+            'TEMPLATE IMPORT DATA SISWA — Calakan SMKN 1 Ciamis',
             '',
             '',
             '',

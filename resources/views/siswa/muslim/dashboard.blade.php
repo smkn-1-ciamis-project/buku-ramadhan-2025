@@ -135,7 +135,7 @@
                     <div class="flex items-center gap-3">
                         <img src="{{ asset('img/logo_smk.png') }}" alt="SMKN 1 Ciamis" class="w-10 h-10 lg:w-12 lg:h-12">
                         <div>
-                            <h1 class="text-white font-bold text-sm lg:text-lg leading-tight">Buku Ramadhan</h1>
+                            <h1 class="text-white font-bold text-sm lg:text-lg leading-tight">Calakan</h1>
                             <p class="text-blue-100 text-[11px] lg:text-xs">SMKN 1 Ciamis</p>
                         </div>
                     </div>
@@ -290,7 +290,7 @@
                                     </div>
                                     <div class="cal-alert-body">
                                         <p class="cal-alert-title">Ada hari yang belum diisi!</p>
-                                        <p class="cal-alert-sub" x-text="calendarDays.filter(d => d.isPastUnfilled).length + ' hari lalu belum mengisi buku Ramadhan'"></p>
+                                        <p class="cal-alert-sub" x-text="calendarDays.filter(d => d.isPastUnfilled).length + ' hari lalu belum mengisi Calakan'"></p>
                                     </div>
                                     <a href="{{ \App\Filament\Siswa\Pages\Muslim\FormulirHarian::getUrl() }}" class="cal-alert-btn" style="text-decoration:none;" target="_blank">
                                         Isi Sekarang
@@ -1182,7 +1182,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Buku Ramadhan v1.0 - SMKN 1 Ciamis</p>
+                                        <p class="akun-menu-sub">Calakan v1.0 - SMKN 1 Ciamis</p>
                                     </div>
                                 </div>
 

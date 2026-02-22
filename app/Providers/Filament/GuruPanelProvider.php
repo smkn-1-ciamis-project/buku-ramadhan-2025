@@ -13,6 +13,8 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Navigation\NavigationGroup;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\HtmlString;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -29,7 +31,7 @@ class GuruPanelProvider extends PanelProvider
             ->id('guru')
             ->path('portal-guru-smkn1')
             ->login()
-            ->brandName('Panel Guru - Buku Ramadhan')
+            ->brandName('Panel Guru - Calakan')
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -63,6 +65,29 @@ class GuruPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 EnsureSingleSession::class,
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn() => new HtmlString('
+                    <link rel="manifest" href="/manifest.json">
+                    <meta name="theme-color" content="#1e3a8a">
+                    <meta name="apple-mobile-web-app-capable" content="yes">
+                    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+                    <meta name="apple-mobile-web-app-title" content="Calakan">
+                    <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
+                ')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn() => new HtmlString('
+                    <script>
+                        if ("serviceWorker" in navigator) {
+                            window.addEventListener("load", () => {
+                                navigator.serviceWorker.register("/sw.js").catch(() => {});
+                            });
+                        }
+                    </script>
+                ')
+            );
     }
 }

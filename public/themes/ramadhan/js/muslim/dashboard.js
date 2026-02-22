@@ -1,6 +1,6 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /**
- * Buku Ramadhan â€” Dashboard Alpine.js Component
+ * Calakan â€” Dashboard Alpine.js Component
  * File : public/themes/ramadhan/js/dashboard.js
  */
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Buku Kegiatan Positif — Dashboard Hindu Alpine.js Component
+ * Calakan — Dashboard Hindu Alpine.js Component
  * Includes: Calendar, Progress, Hindu Prayers/Mantras, Bhagavad Gita Sloka.
  */
 
@@ -45,6 +45,12 @@ function hinduDashboard() {
         // ── Form State ─────────────────────────────────────────────────
         submittedDays: [],
         submissionStatuses: {},
+
+        // ── Notification Modal State ───────────────────────────────────
+        showNotifModal: false,
+        notifTitle: "",
+        notifMessage: "",
+        notifRedirectUrl: "",
 
         // ── Lifecycle ──────────────────────────────────────────────────
         init() {
@@ -789,6 +795,60 @@ function hinduDashboard() {
         refreshVerse() {
             var idx = Math.floor(Math.random() * this.holyVerses.length);
             this.dailyVerse = this.holyVerses[idx];
+        },
+
+        /**
+         * Navigate to formulir when clicking calendar cell.
+         */
+        navigateToFormulir(item) {
+            if (item.hijriDay <= 0) return;
+
+            var day = item.hijriDay;
+            var formulirUrl = document.querySelector("[data-formulir-url]");
+            var baseUrl = formulirUrl
+                ? formulirUrl.dataset.formulirUrl
+                : "/siswa/formulir-harian";
+
+            if (!item.isPast && !item.isToday) {
+                return;
+            }
+
+            if (item.isCompleted) {
+                window.open(baseUrl + "?hari=" + day, "_blank");
+                return;
+            }
+
+            var firstUnfilled = null;
+            for (var d = 1; d <= this.ramadhanDay; d++) {
+                if (!this.submittedDays.includes(d)) {
+                    firstUnfilled = d;
+                    break;
+                }
+            }
+
+            if (firstUnfilled && firstUnfilled < day) {
+                this.notifTitle = "Isi Formulir Secara Berurutan";
+                this.notifMessage =
+                    "Kamu harus mengisi Hari ke-" +
+                    firstUnfilled +
+                    " terlebih dahulu sebelum mengisi Hari ke-" +
+                    day +
+                    ".";
+                this.notifRedirectUrl = baseUrl + "?hari=" + firstUnfilled;
+                this.showNotifModal = true;
+            } else {
+                window.open(baseUrl + "?hari=" + day, "_blank");
+            }
+        },
+
+        closeNotifModal(redirect) {
+            this.showNotifModal = false;
+            if (redirect && this.notifRedirectUrl) {
+                window.open(this.notifRedirectUrl, "_blank");
+            }
+            this.notifTitle = "";
+            this.notifMessage = "";
+            this.notifRedirectUrl = "";
         },
 
         changePassword() {

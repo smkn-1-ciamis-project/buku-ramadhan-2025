@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Circle background -->
+    <path
+        android:fillColor="#F0F0F0"
+        android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
+
+    <!-- WiFi-off icon -->
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M60,38c-8.8,0 -17,3.4 -23.2,9.6l5.6,5.6c4.8,-4.8 10.8,-7.2 17.6,-7.2s12.8,2.4 17.6,7.2l5.6,-5.6C77,41.4 68.8,38 60,38z" />
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M60,54c-5.2,0 -10,2 -13.6,5.6l5.6,5.6c2,-2 4.8,-3.2 8,-3.2s6,1.2 8,3.2l5.6,-5.6C70,56 65.2,54 60,54z" />
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M60,68c-2.2,0 -4,1.8 -4,4s1.8,4 4,4s4,-1.8 4,-4S62.2,68 60,68z" />
+
+    <!-- Slash line -->
+    <path
+        android:strokeColor="#EF5350"
+        android:strokeWidth="3"
+        android:pathData="M35,82L85,36"
+        android:strokeLineCap="round" />
+</vector>

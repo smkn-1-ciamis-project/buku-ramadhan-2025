@@ -82,18 +82,21 @@ trait HasPasswordChangeModal
         $user->update([
             'password' => $this->new_password,
             'must_change_password' => false,
-            'active_session_id' => null,
-            'session_login_at'  => null,
         ]);
 
-        // Logout bersih & redirect ke login
-        Auth::logout();
-        Session::invalidate();
-        Session::regenerateToken();
+        // Re-login agar session hash password diperbarui
+        // sehingga AuthenticateSession tidak logout user
+        Auth::login($user);
 
-        $this->redirect(
-            url('/siswa/login'),
-            navigate: false,
-        );
+        // Update active_session_id agar EnsureSingleSession
+        // tidak menendang user karena session ID berubah
+        $user->updateQuietly([
+            'active_session_id' => Session::getId(),
+        ]);
+
+        $this->showPasswordModal = false;
+        $this->isNisnPassword = false;
+        $this->new_password = '';
+        $this->new_password_confirmation = '';
     }
 }
