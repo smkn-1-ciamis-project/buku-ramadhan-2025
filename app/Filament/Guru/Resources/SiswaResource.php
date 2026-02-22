@@ -27,6 +27,11 @@ class SiswaResource extends Resource
   protected static ?string $slug = 'siswa';
   protected static ?int $navigationSort = 2;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return \App\Models\RoleUser::checkNav('guru_manajemen_siswa');
+  }
+
   /**
    * Hanya tampilkan siswa dari kelas yang diwalikan guru ini.
    */
@@ -57,6 +62,8 @@ class SiswaResource extends Resource
               ->required()
               ->regex('/^\d{10}$/')
               ->maxLength(10)
+              ->unique(ignoreRecord: true)
+              ->validationMessages(['unique' => 'NISN sudah digunakan.'])
               ->extraInputAttributes([
                 'maxlength' => 10,
                 'inputmode' => 'numeric',

@@ -26,6 +26,11 @@ class GuruResource extends Resource
   protected static ?string $slug = 'guru';
   protected static ?int $navigationSort = 2;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_guru');
+  }
+
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()

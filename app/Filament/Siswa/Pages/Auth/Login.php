@@ -94,13 +94,25 @@ class Login extends BaseLogin
       // and EnsureSingleSession will kick the old device on its next request.
     }
 
-    // Attempt login — don't use remember_token (we handle session duration ourselves)
-    if (! Auth::attempt($credentials, false)) {
+    // Attempt login — use remember token only when "Ingat Saya" is checked
+    $remember = $data['remember'] ?? false;
+
+    if (! Auth::attempt($credentials, $remember)) {
       $this->throwFailureValidationException();
     }
 
     // Regenerate session to prevent session-fixation attacks
     session()->regenerate();
+
+    // If "Ingat Saya" is NOT checked: session cookie expires when browser closes
+    // and session lifetime is only 5 minutes of inactivity
+    if (! $remember) {
+      session(['session_short' => true]);
+      config(['session.expire_on_close' => true]);
+      config(['session.lifetime' => 5]);
+    } else {
+      session()->forget('session_short');
+    }
 
         // Save session tracking data (session ID reflects the NEW ID after regenerate)
     /** @var \App\Models\User $user */

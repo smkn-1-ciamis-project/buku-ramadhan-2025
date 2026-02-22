@@ -23,6 +23,11 @@ class VerifikasiResource extends Resource
   protected static ?string $slug = 'verifikasi';
   protected static ?int $navigationSort = 3;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return \App\Models\RoleUser::checkNav('guru_verifikasi');
+  }
+
   /**
    * Hanya tampilkan formulir dari siswa di kelas yang diwalikan guru ini.
    */

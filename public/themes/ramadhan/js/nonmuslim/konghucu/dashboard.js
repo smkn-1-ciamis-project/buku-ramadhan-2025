@@ -252,10 +252,37 @@ function konghucuDashboard() {
             this.calendarDays = days;
         },
 
+        // ── Per-user localStorage helpers ─────────────────────────────
+        _lsKey(base) {
+            var uid = window.__siswaUserId || "unknown";
+            return base + "_" + uid;
+        },
+
+        _clearOldUserData(prefix) {
+            var toRemove = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(prefix) === 0) toRemove.push(k);
+            }
+            toRemove.forEach(function (k) {
+                localStorage.removeItem(k);
+            });
+        },
+
         // ── Submitted Days ─────────────────────────────────────────────
         loadSubmittedDays() {
             try {
-                var saved = localStorage.getItem("konghucu_submitted_days");
+                var lastUser = localStorage.getItem("konghucu_last_user");
+                var currentUser = window.__siswaUserId || "unknown";
+                if (lastUser && lastUser !== currentUser) {
+                    this._clearOldUserData("konghucu_submitted_days_");
+                    this._clearOldUserData("konghucu_form_day_");
+                }
+                localStorage.setItem("konghucu_last_user", currentUser);
+
+                var saved = localStorage.getItem(
+                    this._lsKey("konghucu_submitted_days"),
+                );
                 this.submittedDays = saved ? JSON.parse(saved) : [];
             } catch (e) {
                 this.submittedDays = [];
@@ -268,13 +295,9 @@ function konghucuDashboard() {
                 })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
-                        data.submitted_days.forEach(function (day) {
-                            if (!self.submittedDays.includes(day)) {
-                                self.submittedDays.push(day);
-                            }
-                        });
+                        self.submittedDays = data.submitted_days.slice();
                         localStorage.setItem(
-                            "konghucu_submitted_days",
+                            self._lsKey("konghucu_submitted_days"),
                             JSON.stringify(self.submittedDays),
                         );
                         if (data.submissions) {

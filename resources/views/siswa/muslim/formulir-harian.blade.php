@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
     <style>
         html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }

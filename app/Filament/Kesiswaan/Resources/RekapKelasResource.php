@@ -24,6 +24,11 @@ class RekapKelasResource extends Resource
   protected static ?string $slug = 'rekap-kelas';
   protected static ?int $navigationSort = 5;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return \App\Models\RoleUser::checkNav('kesiswaan_rekap_kelas');
+  }
+
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()->with(['wali', 'siswa']);
@@ -68,7 +73,7 @@ class RekapKelasResource extends Resource
           ->alignCenter()
           ->color(fn(string $state) => $state === '-' ? 'gray' : null),
         Tables\Columns\TextColumn::make('verified_count')
-          ->label('Verified')
+          ->label('Terverifikasi')
           ->state(function (Kelas $record): int {
             $siswaIds = $record->siswa->pluck('id');
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'verified')->count();
@@ -77,7 +82,7 @@ class RekapKelasResource extends Resource
           ->color('success')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('pending_count')
-          ->label('Pending')
+          ->label('Menunggu')
           ->state(function (Kelas $record): int {
             $siswaIds = $record->siswa->pluck('id');
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
@@ -86,7 +91,7 @@ class RekapKelasResource extends Resource
           ->color(fn(int $state) => $state > 0 ? 'warning' : 'success')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('rejected_count')
-          ->label('Rejected')
+          ->label('Ditolak')
           ->state(function (Kelas $record): int {
             $siswaIds = $record->siswa->pluck('id');
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'rejected')->count();
@@ -95,7 +100,7 @@ class RekapKelasResource extends Resource
           ->color(fn(int $state) => $state > 0 ? 'danger' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('compliance_rate')
-          ->label('Compliance')
+          ->label('Kepatuhan')
           ->state(function (Kelas $record) use ($hariKe): string {
             $totalSiswa = $record->siswa->count();
             if ($totalSiswa === 0 || $hariKe < 1) return '-';

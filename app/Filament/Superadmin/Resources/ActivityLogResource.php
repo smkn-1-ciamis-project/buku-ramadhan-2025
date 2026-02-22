@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use App\Models\RoleUser;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -21,6 +22,11 @@ class ActivityLogResource extends Resource
   protected static ?string $pluralModelLabel = 'Log Aktivitas';
   protected static ?string $slug = 'log-aktivitas';
   protected static ?int $navigationSort = 8;
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_log_aktivitas');
+  }
 
   public static function canCreate(): bool
   {
@@ -93,6 +99,10 @@ class ActivityLogResource extends Resource
           ->label('Lokasi')
           ->icon('heroicon-o-map-pin')
           ->placeholder('Tidak diketahui')
+          ->url(fn($record) => ($record->metadata['lat'] ?? null) && ($record->metadata['lon'] ?? null)
+            ? 'https://maps.google.com/?q=' . $record->metadata['lat'] . ',' . $record->metadata['lon']
+            : null)
+          ->openUrlInNewTab()
           ->wrap(),
         Tables\Columns\TextColumn::make('browser')
           ->label('Browser')
@@ -152,7 +162,7 @@ class ActivityLogResource extends Resource
   public static function infolist(Infolist $infolist): Infolist
   {
     return $infolist->schema([
-      Infolists\Components\Section::make('Detail Aktivitas')->schema([
+      Infolists\Components\Section::make()->schema([
         Infolists\Components\TextEntry::make('created_at')
           ->label('Waktu')
           ->dateTime('d M Y, H:i:s'),
@@ -178,9 +188,6 @@ class ActivityLogResource extends Resource
         Infolists\Components\TextEntry::make('panel')
           ->label('Panel')
           ->placeholder('-'),
-      ])->columns(4),
-
-      Infolists\Components\Section::make('Informasi Pengguna')->schema([
         Infolists\Components\TextEntry::make('user.name')
           ->label('Nama')
           ->placeholder('Tidak diketahui'),
@@ -190,9 +197,6 @@ class ActivityLogResource extends Resource
         Infolists\Components\TextEntry::make('user.nisn')
           ->label('NISN')
           ->placeholder('-'),
-      ])->columns(3),
-
-      Infolists\Components\Section::make('Informasi Teknis')->schema([
         Infolists\Components\TextEntry::make('ip_address')
           ->label('IP Address')
           ->copyable()
@@ -200,12 +204,16 @@ class ActivityLogResource extends Resource
         Infolists\Components\TextEntry::make('location')
           ->label('Lokasi')
           ->icon('heroicon-o-map-pin')
-          ->placeholder('Tidak diketahui'),
+          ->placeholder('Tidak diketahui')
+          ->url(fn($record) => ($record->metadata['lat'] ?? null) && ($record->metadata['lon'] ?? null)
+            ? 'https://maps.google.com/?q=' . $record->metadata['lat'] . ',' . $record->metadata['lon']
+            : null)
+          ->openUrlInNewTab(),
         Infolists\Components\TextEntry::make('user_agent')
           ->label('User Agent')
-          ->columnSpanFull()
+          ->columnSpan(2)
           ->wrap(),
-      ])->columns(2),
+      ])->columns(4),
     ]);
   }
 

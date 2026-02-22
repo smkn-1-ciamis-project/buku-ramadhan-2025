@@ -4,6 +4,7 @@ namespace App\Filament\Siswa\Pages\NonMuslim;
 
 use App\Filament\Siswa\Pages\Muslim\Dashboard as MuslimDashboard;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 class Dashboard extends Page
@@ -18,7 +19,7 @@ class Dashboard extends Page
     public function mount(): void
     {
         /** @var User $user */
-        $user = auth()->user();
+        $user = Auth::user();
         $agama = strtolower($user->agama ?? '');
 
         // If user is Muslim, redirect to the Muslim dashboard

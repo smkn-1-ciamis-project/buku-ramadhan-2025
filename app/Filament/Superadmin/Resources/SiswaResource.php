@@ -26,6 +26,11 @@ class SiswaResource extends Resource
   protected static ?string $slug = 'siswa';
   protected static ?int $navigationSort = 3;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_siswa');
+  }
+
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()
@@ -47,6 +52,7 @@ class SiswaResource extends Resource
           ->regex('/^\d{10}$/')
           ->maxLength(10)
           ->unique(ignoreRecord: true)
+          ->validationMessages(['unique' => 'NISN sudah digunakan.'])
           ->extraInputAttributes([
             'maxlength' => 10,
             'inputmode' => 'numeric',

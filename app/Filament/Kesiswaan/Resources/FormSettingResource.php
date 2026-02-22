@@ -7,6 +7,8 @@ use App\Models\FormSetting;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,151 +25,83 @@ class FormSettingResource extends Resource
   protected static ?string $slug = 'setting-formulir';
   protected static ?int $navigationSort = 10;
 
-  public static function form(Form $form): Form
+  public static function shouldRegisterNavigation(): bool
   {
-    return $form->schema([
-      Forms\Components\Section::make('Informasi Agama')
-        ->schema([
-          Forms\Components\Select::make('agama')
-            ->label('Agama')
-            ->options([
-              'Islam' => 'Islam',
-              'Kristen' => 'Kristen',
-              'Katolik' => 'Katolik',
-              'Hindu' => 'Hindu',
-              'Buddha' => 'Buddha',
-              'Konghucu' => 'Konghucu',
-            ])
-            ->required()
-            ->unique(ignoreRecord: true)
-            ->disabled(fn(?FormSetting $record) => $record !== null)
-            ->dehydrated(),
-          Forms\Components\Toggle::make('is_active')
-            ->label('Aktif')
-            ->default(true)
-            ->helperText('Jika dinonaktifkan, siswa dengan agama ini tidak bisa mengisi formulir.'),
-        ])
-        ->columns(2),
+    return \App\Models\RoleUser::checkNav('kesiswaan_setting_formulir');
+  }
 
-      Forms\Components\Section::make('Konfigurasi Bagian Formulir')
-        ->description('Atur bagian-bagian formulir yang akan ditampilkan kepada siswa. Drag untuk mengubah urutan.')
-        ->schema([
-          Forms\Components\Repeater::make('sections')
-            ->label('')
-            ->schema([
-              Forms\Components\Grid::make(3)->schema([
-                Forms\Components\TextInput::make('key')
-                  ->label('Key (unik)')
-                  ->required()
-                  ->alphaDash()
-                  ->placeholder('cth: puasa')
-                  ->helperText('Identifier unik, tanpa spasi'),
-                Forms\Components\TextInput::make('title')
+  public static function canCreate(): bool
+  {
+    return false;
+  }
+
+  public static function canEdit($record): bool
+  {
+    return false;
+  }
+
+  public static function canDelete($record): bool
+  {
+    return false;
+  }
+
+  public static function infolist(Infolist $infolist): Infolist
+  {
+    return $infolist
+      ->schema([
+        Infolists\Components\Section::make('Informasi Agama')
+          ->schema([
+            Infolists\Components\TextEntry::make('agama')
+              ->label('Agama')
+              ->badge()
+              ->color('info'),
+            Infolists\Components\IconEntry::make('is_active')
+              ->label('Status')
+              ->boolean()
+              ->trueIcon('heroicon-o-check-circle')
+              ->falseIcon('heroicon-o-x-circle')
+              ->trueColor('success')
+              ->falseColor('danger'),
+          ])
+          ->columns(2),
+
+        Infolists\Components\Section::make('Bagian Formulir')
+          ->schema([
+            Infolists\Components\RepeatableEntry::make('sections')
+              ->label('')
+              ->schema([
+                Infolists\Components\TextEntry::make('title')
                   ->label('Judul Bagian')
-                  ->required()
-                  ->placeholder('cth: Puasa'),
-                Forms\Components\Select::make('type')
+                  ->weight('bold'),
+                Infolists\Components\TextEntry::make('key')
+                  ->label('Key')
+                  ->badge()
+                  ->color('gray'),
+                Infolists\Components\TextEntry::make('type')
                   ->label('Tipe')
-                  ->options([
+                  ->badge()
+                  ->formatStateUsing(fn(string $state): string => match ($state) {
                     'ya_tidak' => 'Ya / Tidak (single)',
                     'ya_tidak_list' => 'Ya / Tidak (list)',
-                    'multi_option' => 'Pilihan Ganda (per item)',
+                    'multi_option' => 'Pilihan Ganda',
                     'checklist_groups' => 'Checklist (grup)',
                     'ya_tidak_groups' => 'Ya / Tidak (grup)',
                     'tadarus' => 'Tadarus Al-Quran',
                     'ceramah' => 'Ringkasan Ceramah',
                     'catatan' => 'Catatan Harian',
-                  ])
-                  ->required()
-                  ->live(),
-              ]),
-
-              Forms\Components\Toggle::make('enabled')
-                ->label('Tampilkan bagian ini')
-                ->default(true),
-
-              // ── Has Reason (for ya_tidak) ──
-              Forms\Components\Toggle::make('has_reason')
-                ->label('Tampilkan input alasan jika "Tidak"')
-                ->default(false)
-                ->visible(fn(Get $get) => $get('type') === 'ya_tidak'),
-
-              // ── Reason suggestions (for ya_tidak) ──
-              Forms\Components\TagsInput::make('reason_suggestions')
-                ->label('Saran Alasan')
-                ->placeholder('Tambah saran alasan...')
-                ->helperText('Saran yang muncul saat siswa memilih "Tidak"')
-                ->visible(fn(Get $get) => $get('type') === 'ya_tidak' && $get('has_reason')),
-
-              // ── Options (for multi_option) ──
-              Forms\Components\TagsInput::make('options')
-                ->label('Pilihan')
-                ->placeholder('Tambah pilihan...')
-                ->helperText('Opsi yang bisa dipilih siswa per item (cth: jamaah, munfarid, tidak)')
-                ->visible(fn(Get $get) => $get('type') === 'multi_option'),
-
-              // ── Items (for ya_tidak_list, multi_option) ──
-              Forms\Components\Repeater::make('items')
-                ->label('Daftar Item')
-                ->schema([
-                  Forms\Components\TextInput::make('key')
-                    ->label('Key')
-                    ->required()
-                    ->alphaDash()
-                    ->columnSpan(1),
-                  Forms\Components\TextInput::make('label')
-                    ->label('Label')
-                    ->required()
-                    ->columnSpan(2),
-                ])
-                ->columns(3)
-                ->addActionLabel('+ Tambah Item')
-                ->reorderable()
-                ->collapsible()
-                ->itemLabel(fn(array $state): ?string => $state['label'] ?? null)
-                ->visible(fn(Get $get) => in_array($get('type'), ['ya_tidak_list', 'multi_option'])),
-
-              // ── Groups (for checklist_groups, ya_tidak_groups) ──
-              Forms\Components\Repeater::make('groups')
-                ->label('Grup Kegiatan')
-                ->schema([
-                  Forms\Components\TextInput::make('title')
-                    ->label('Judul Grup')
-                    ->required()
-                    ->columnSpanFull(),
-                  Forms\Components\Repeater::make('items')
-                    ->label('Item dalam grup')
-                    ->schema([
-                      Forms\Components\TextInput::make('key')
-                        ->label('Key')
-                        ->required()
-                        ->alphaDash()
-                        ->columnSpan(1),
-                      Forms\Components\TextInput::make('label')
-                        ->label('Label')
-                        ->required()
-                        ->columnSpan(2),
-                    ])
-                    ->columns(3)
-                    ->addActionLabel('+ Tambah Item')
-                    ->reorderable()
-                    ->collapsible()
-                    ->itemLabel(fn(array $state): ?string => $state['label'] ?? null),
-                ])
-                ->addActionLabel('+ Tambah Grup')
-                ->reorderable()
-                ->collapsible()
-                ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
-                ->visible(fn(Get $get) => in_array($get('type'), ['checklist_groups', 'ya_tidak_groups'])),
-            ])
-            ->addActionLabel('+ Tambah Bagian')
-            ->reorderable()
-            ->collapsible()
-            ->cloneable()
-            ->itemLabel(fn(array $state): ?string => ($state['enabled'] ?? true ? '✅' : '❌') . ' ' . ($state['title'] ?? 'Bagian Baru'))
-            ->defaultItems(0),
-        ]),
-    ]);
+                    default => $state,
+                  }),
+                Infolists\Components\IconEntry::make('enabled')
+                  ->label('Aktif')
+                  ->boolean()
+                  ->trueIcon('heroicon-o-check-circle')
+                  ->falseIcon('heroicon-o-x-circle')
+                  ->trueColor('success')
+                  ->falseColor('danger'),
+              ])
+              ->columns(4),
+          ]),
+      ]);
   }
 
   public static function table(Table $table): Table
@@ -205,8 +139,13 @@ class FormSettingResource extends Resource
       ->defaultSort('agama')
       ->actions([
         Tables\Actions\ActionGroup::make([
-          Tables\Actions\EditAction::make(),
-        ]),
+          Tables\Actions\ViewAction::make()
+            ->label('Lihat')
+            ->icon('heroicon-o-eye')
+            ->color('info'),
+        ])
+          ->icon('heroicon-m-ellipsis-vertical')
+          ->tooltip('Aksi'),
       ])
       ->bulkActions([]);
   }
@@ -215,8 +154,7 @@ class FormSettingResource extends Resource
   {
     return [
       'index' => Pages\ListFormSettings::route('/'),
-      'create' => Pages\CreateFormSetting::route('/create'),
-      'edit' => Pages\EditFormSetting::route('/{record}/edit'),
+      'view' => Pages\ViewFormSetting::route('/{record}'),
     ];
   }
 }

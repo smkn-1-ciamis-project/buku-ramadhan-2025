@@ -51,8 +51,11 @@ class ActivityLog extends Model
       $panel = 'siswa';
     }
 
-    // Get location from IP (simple approach using ip-api.com for non-local IPs)
-    $location = self::getLocationFromIp($ip);
+    // Get location from IP (includes lat/lon for Google Maps link)
+    $locationData = self::getLocationFromIp($ip);
+    $coords = ($locationData['lat'] && $locationData['lon'])
+      ? ['lat' => $locationData['lat'], 'lon' => $locationData['lon']]
+      : [];
 
     return self::create([
       'user_id' => $user?->id,
@@ -61,18 +64,18 @@ class ActivityLog extends Model
       'panel' => $panel ?? ($extra['panel'] ?? null),
       'ip_address' => $ip,
       'user_agent' => $request->userAgent(),
-      'location' => $location,
-      'metadata' => !empty($extra) ? $extra : null,
+      'location' => $locationData['location'],
+      'metadata' => !empty($extra) ? array_merge($extra, $coords) : (!empty($coords) ? $coords : null),
     ]);
   }
 
   /**
-   * Get location string from IP address.
+   * Get location data from IP address (returns location string + lat/lon).
    */
-  protected static function getLocationFromIp(?string $ip): ?string
+  protected static function getLocationFromIp(?string $ip): array
   {
     if (!$ip || in_array($ip, ['127.0.0.1', '::1', 'localhost'])) {
-      return 'Localhost';
+      return ['location' => 'Localhost', 'lat' => null, 'lon' => null];
     }
 
     // Private/reserved IPs
@@ -81,25 +84,30 @@ class ActivityLog extends Model
       str_starts_with($ip, '172.') ||
       str_starts_with($ip, '192.168.')
     ) {
-      return 'Jaringan Lokal';
+      return ['location' => 'Jaringan Lokal', 'lat' => null, 'lon' => null];
     }
 
     try {
-      $response = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country&lang=id", false, stream_context_create([
+      $response = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country,lat,lon&lang=id", false, stream_context_create([
         'http' => ['timeout' => 2],
       ]));
 
       if ($response) {
         $data = json_decode($response, true);
         if (($data['status'] ?? '') === 'success') {
-          return trim(($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ', ' . ($data['country'] ?? ''), ', ');
+          $location = trim(($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ', ' . ($data['country'] ?? ''), ', ');
+          return [
+            'location' => $location ?: null,
+            'lat' => $data['lat'] ?? null,
+            'lon' => $data['lon'] ?? null,
+          ];
         }
       }
     } catch (\Throwable $e) {
       // Silently fail
     }
 
-    return null;
+    return ['location' => null, 'lat' => null, 'lon' => null];
   }
 
   /**

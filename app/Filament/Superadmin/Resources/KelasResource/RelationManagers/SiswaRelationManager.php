@@ -467,6 +467,7 @@ class SiswaRelationManager extends RelationManager
         ->regex('/^\d{10}$/')
         ->maxLength(10)
         ->unique(ignoreRecord: true)
+        ->validationMessages(['unique' => 'NISN sudah digunakan.'])
         ->extraInputAttributes([
           'maxlength' => 10,
           'inputmode' => 'numeric',

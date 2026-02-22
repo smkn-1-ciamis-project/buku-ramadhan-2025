@@ -65,6 +65,12 @@ class Dashboard extends Page
     $totalVerified = FormSubmission::where('status', 'verified')->count();
     $totalRejected = FormSubmission::where('status', 'rejected')->count();
 
+    // Kesiswaan validation stats (only from guru-verified)
+    $menungguValidasi = FormSubmission::where('status', 'verified')->where('kesiswaan_status', 'pending')->count();
+    $sudahDivalidasi  = FormSubmission::where('status', 'verified')->where('kesiswaan_status', 'validated')->count();
+    $ditolakKesiswaan = FormSubmission::where('status', 'verified')->where('kesiswaan_status', 'rejected')->count();
+    $validasiRate     = $totalVerified > 0 ? round(($sudahDivalidasi / $totalVerified) * 100) : 0;
+
     // Today's stats
     $siswaSubmitToday = $hariKe > 0
       ? FormSubmission::whereDate('created_at', $now->toDateString())->distinct('user_id')->count('user_id')
@@ -138,6 +144,10 @@ class Dashboard extends Page
       'totalPending',
       'totalVerified',
       'totalRejected',
+      'menungguValidasi',
+      'sudahDivalidasi',
+      'ditolakKesiswaan',
+      'validasiRate',
       'siswaSubmitToday',
       'belumSubmitToday',
       'complianceRate',

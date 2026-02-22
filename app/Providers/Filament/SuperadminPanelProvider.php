@@ -29,7 +29,7 @@ class SuperadminPanelProvider extends PanelProvider
             ->id('superadmin')
             ->path('portal-admin-smkn1')
             ->login()
-            ->brandName('Panel Superadmin - Buku Ramadhan')
+            ->brandName('Buku Ramadhan')
             ->colors([
                 'primary' => Color::Blue,
             ])

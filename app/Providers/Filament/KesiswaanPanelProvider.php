@@ -29,7 +29,7 @@ class KesiswaanPanelProvider extends PanelProvider
             ->id('kesiswaan')
             ->path('portal-kesiswaan-smkn1')
             ->login()
-            ->brandName('Panel Kesiswaan - Buku Ramadhan')
+            ->brandName('Buku Ramadhan')
             ->colors([
                 'primary' => Color::Blue,
             ])

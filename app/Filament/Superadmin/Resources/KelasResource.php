@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\RoleUser;
 use Illuminate\Database\Eloquent\Builder;
 
 class KelasResource extends Resource
@@ -24,6 +25,11 @@ class KelasResource extends Resource
   protected static ?string $pluralModelLabel = 'Kelas';
   protected static ?string $slug = 'kelas';
   protected static ?int $navigationSort = 5;
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_kelas');
+  }
 
   public static function form(Form $form): Form
   {

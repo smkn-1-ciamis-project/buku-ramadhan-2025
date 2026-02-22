@@ -23,6 +23,11 @@ class DataGuruResource extends Resource
   protected static ?string $slug = 'data-guru';
   protected static ?int $navigationSort = 4;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return \App\Models\RoleUser::checkNav('kesiswaan_data_guru');
+  }
+
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()
@@ -57,7 +62,7 @@ class DataGuruResource extends Resource
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('pending_verifikasi')
-          ->label('Pending Verifikasi')
+          ->label('Menunggu Verifikasi')
           ->state(function (User $record): int {
             $kelasIds = $record->kelasWali->pluck('id');
             $siswaIds = User::whereIn('kelas_id', $kelasIds)->pluck('id');
@@ -68,7 +73,7 @@ class DataGuruResource extends Resource
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('total_verified')
-          ->label('Total Verifikasi')
+          ->label('Total Terverifikasi')
           ->state(function (User $record): int {
             return FormSubmission::where('verified_by', $record->id)->where('status', 'verified')->count();
           })

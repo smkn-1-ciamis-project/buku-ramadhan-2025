@@ -439,9 +439,38 @@ function formulirNonMuslim() {
         },
 
         /* ── LocalStorage persistence ── */
+
+        /* Build per-user localStorage key */
+        _lsKey(base) {
+            var uid = window.__siswaUserId || "unknown";
+            return base + "_" + uid;
+        },
+
+        /* Clear all localStorage entries for a given prefix (old user) */
+        _clearOldUserData(prefix) {
+            var toRemove = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(prefix) === 0) toRemove.push(k);
+            }
+            toRemove.forEach(function (k) {
+                localStorage.removeItem(k);
+            });
+        },
+
         loadSubmittedDays() {
             try {
-                var saved = localStorage.getItem("nonmuslim_submitted_days");
+                var lastUser = localStorage.getItem("nonmuslim_last_user");
+                var currentUser = window.__siswaUserId || "unknown";
+                if (lastUser && lastUser !== currentUser) {
+                    this._clearOldUserData("nonmuslim_submitted_days_");
+                    this._clearOldUserData("nonmuslim_form_day_");
+                }
+                localStorage.setItem("nonmuslim_last_user", currentUser);
+
+                var saved = localStorage.getItem(
+                    this._lsKey("nonmuslim_submitted_days"),
+                );
                 this.submittedDays = saved ? JSON.parse(saved) : [];
             } catch (e) {
                 this.submittedDays = [];
@@ -458,7 +487,7 @@ function formulirNonMuslim() {
             }
             try {
                 var savedForm = localStorage.getItem(
-                    "nonmuslim_form_day_" + this.formDay,
+                    this._lsKey("nonmuslim_form_day_" + this.formDay),
                 );
                 if (savedForm) {
                     var parsed = JSON.parse(savedForm);
@@ -545,13 +574,13 @@ function formulirNonMuslim() {
                 this.formData.catatan = this.$refs.catatanEditor.innerHTML;
             }
             localStorage.setItem(
-                "nonmuslim_form_day_" + this.formDay,
+                this._lsKey("nonmuslim_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
             );
             if (!this.submittedDays.includes(this.formDay)) {
                 this.submittedDays.push(this.formDay);
                 localStorage.setItem(
-                    "nonmuslim_submitted_days",
+                    this._lsKey("nonmuslim_submitted_days"),
                     JSON.stringify(this.submittedDays),
                 );
             }
@@ -614,13 +643,9 @@ function formulirNonMuslim() {
                 })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
-                        data.submitted_days.forEach(function (day) {
-                            if (!self.submittedDays.includes(day)) {
-                                self.submittedDays.push(day);
-                            }
-                        });
+                        self.submittedDays = data.submitted_days.slice();
                         localStorage.setItem(
-                            "nonmuslim_submitted_days",
+                            self._lsKey("nonmuslim_submitted_days"),
                             JSON.stringify(self.submittedDays),
                         );
                         if (data.submissions) {
@@ -629,7 +654,9 @@ function formulirNonMuslim() {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
                                 };
-                                var key = "nonmuslim_form_day_" + sub.hari_ke;
+                                var key = self._lsKey(
+                                    "nonmuslim_form_day_" + sub.hari_ke,
+                                );
                                 if (!localStorage.getItem(key) && sub.data) {
                                     localStorage.setItem(
                                         key,

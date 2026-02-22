@@ -3,7 +3,6 @@
 namespace App\Filament\Kesiswaan\Resources\FormSettingResource\Pages;
 
 use App\Filament\Kesiswaan\Resources\FormSettingResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFormSettings extends ListRecords
@@ -12,8 +11,6 @@ class ListFormSettings extends ListRecords
 
   protected function getHeaderActions(): array
   {
-    return [
-      Actions\CreateAction::make(),
-    ];
+    return [];
   }
 }

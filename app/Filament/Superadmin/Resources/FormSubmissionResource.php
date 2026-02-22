@@ -11,6 +11,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\RoleUser;
 use Illuminate\Database\Eloquent\Builder;
 
 class FormSubmissionResource extends Resource
@@ -24,6 +25,11 @@ class FormSubmissionResource extends Resource
   protected static ?string $pluralModelLabel = 'Formulir';
   protected static ?string $slug = 'log-formulir';
   protected static ?int $navigationSort = 6;
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_log_formulir');
+  }
 
   public static function canCreate(): bool
   {

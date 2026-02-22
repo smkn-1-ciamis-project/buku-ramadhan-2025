@@ -11,6 +11,10 @@
         .fi-simple-main { max-width: none !important; width: 100% !important; background: transparent !important; box-shadow: none !important; ring: none !important; padding: 0 !important; --tw-ring-shadow: none !important; --tw-shadow: none !important; margin: 0 !important; }
         .login-form-area .fi-ac-btn-action { width: 100% !important; }
         .login-form-area .fi-form-actions { margin-top: 6px !important; }
+        /* ── Remember-me checkbox alignment ── */
+        .login-form-area .fi-fo-checkbox label,
+        .login-form-area .fi-checkbox-label { display: flex !important; align-items: center !important; gap: 0.5rem !important; }
+        .login-form-area .fi-fo-checkbox input[type="checkbox"] { margin: 0 !important; flex-shrink: 0; align-self: center !important; }
       </style>
     @endpush
   @endonce
@@ -47,8 +51,8 @@
             class="w-full"
             wire:loading.attr="disabled"
           >
-            <span wire:loading.remove>Masuk</span>
-            <span wire:loading style="display:none;">Memproses…</span>
+            <span wire:loading.remove style="color: white !important;">Masuk</span>
+            <span wire:loading style="display:none; color: white !important;">Memproses…</span>
           </x-filament::button>
         </form>
       </div>

@@ -8,6 +8,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use App\Models\RoleUser;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -22,6 +23,11 @@ class FormSettingResource extends Resource
   protected static ?string $pluralModelLabel = 'Setting Formulir';
   protected static ?string $slug = 'setting-formulir';
   protected static ?int $navigationSort = 10;
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return RoleUser::checkNav('sa_setting_formulir');
+  }
 
   public static function form(Form $form): Form
   {
@@ -181,10 +187,10 @@ class FormSettingResource extends Resource
           ->weight('bold'),
         Tables\Columns\TextColumn::make('sections')
           ->label('Jumlah Bagian')
-          ->formatStateUsing(function ($state) {
-            if (!is_array($state)) return '0 bagian';
-            $total = count($state);
-            $active = count(array_filter($state, fn($s) => $s['enabled'] ?? true));
+          ->getStateUsing(function ($record) {
+            $sections = is_array($record->sections) ? $record->sections : [];
+            $total = count($sections);
+            $active = count(array_filter($sections, fn($s) => $s['enabled'] ?? true));
             return "{$active}/{$total} bagian aktif";
           })
           ->badge()
@@ -204,7 +210,10 @@ class FormSettingResource extends Resource
       ])
       ->defaultSort('agama')
       ->actions([
-        Tables\Actions\EditAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
+        ]),
       ])
       ->bulkActions([]);
   }

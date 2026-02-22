@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             RoleUserSeeder::class,
             UserSeeder::class,
             KelasSeeder::class,
+            FormSettingSeeder::class,
         ]);
         $this->command->info('sample user seeded.');
 

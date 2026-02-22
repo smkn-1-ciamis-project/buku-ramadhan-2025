@@ -8,7 +8,9 @@ use Filament\Actions;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ListActivityLog extends ListRecords
@@ -75,7 +77,8 @@ class ListActivityLog extends ListRecords
    */
   private function verifySuperadminPassword(string $password): bool
   {
-    $user = auth()->user();
+    /** @var User|null $user */
+    $user = Auth::user();
     return $user && Hash::check($password, $user->password);
   }
 

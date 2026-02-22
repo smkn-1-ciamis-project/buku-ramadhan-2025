@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
     <div x-data="formulirHindu()" x-init="init()" class="formulir-page">
         <style>
             html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }

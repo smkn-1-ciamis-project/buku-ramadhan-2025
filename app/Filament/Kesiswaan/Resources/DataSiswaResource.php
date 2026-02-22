@@ -21,6 +21,11 @@ class DataSiswaResource extends Resource
   protected static ?string $slug = 'data-siswa';
   protected static ?int $navigationSort = 3;
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return \App\Models\RoleUser::checkNav('kesiswaan_data_siswa');
+  }
+
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()

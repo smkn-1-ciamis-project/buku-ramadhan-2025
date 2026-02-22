@@ -1627,9 +1627,39 @@ function ramadhanDashboard() {
         },
 
         // ── Form Methods ───────────────────────────────────────────────────
+
+        /* Build per-user localStorage key */
+        _lsKey(base) {
+            var uid = window.__siswaUserId || "unknown";
+            return base + "_" + uid;
+        },
+
+        /* Clear all localStorage entries for a given prefix (old user) */
+        _clearOldUserData(prefix) {
+            var toRemove = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(prefix) === 0) toRemove.push(k);
+            }
+            toRemove.forEach(function (k) {
+                localStorage.removeItem(k);
+            });
+        },
+
         loadSubmittedDays() {
             try {
-                const saved = localStorage.getItem("ramadhan_submitted_days");
+                // Detect user change — clear stale data from previous user
+                var lastUser = localStorage.getItem("ramadhan_last_user");
+                var currentUser = window.__siswaUserId || "unknown";
+                if (lastUser && lastUser !== currentUser) {
+                    this._clearOldUserData("ramadhan_submitted_days_");
+                    this._clearOldUserData("ramadhan_form_day_");
+                }
+                localStorage.setItem("ramadhan_last_user", currentUser);
+
+                const saved = localStorage.getItem(
+                    this._lsKey("ramadhan_submitted_days"),
+                );
                 this.submittedDays = saved ? JSON.parse(saved) : [];
             } catch (e) {
                 this.submittedDays = [];
@@ -1641,7 +1671,7 @@ function ramadhanDashboard() {
             // Load saved form data for current day
             try {
                 const savedForm = localStorage.getItem(
-                    "ramadhan_form_day_" + this.formDay,
+                    this._lsKey("ramadhan_form_day_" + this.formDay),
                 );
                 if (savedForm) {
                     this.formData = JSON.parse(savedForm);
@@ -1693,14 +1723,14 @@ function ramadhanDashboard() {
             this.formSaving = true;
             // Save form data locally
             localStorage.setItem(
-                "ramadhan_form_day_" + this.formDay,
+                this._lsKey("ramadhan_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
             );
             // Mark day as submitted
             if (!this.submittedDays.includes(this.formDay)) {
                 this.submittedDays.push(this.formDay);
                 localStorage.setItem(
-                    "ramadhan_submitted_days",
+                    this._lsKey("ramadhan_submitted_days"),
                     JSON.stringify(this.submittedDays),
                 );
             }
@@ -1723,13 +1753,10 @@ function ramadhanDashboard() {
                 })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
-                        data.submitted_days.forEach(function (day) {
-                            if (!self.submittedDays.includes(day)) {
-                                self.submittedDays.push(day);
-                            }
-                        });
+                        // Replace local data with server data (authoritative)
+                        self.submittedDays = data.submitted_days.slice();
                         localStorage.setItem(
-                            "ramadhan_submitted_days",
+                            self._lsKey("ramadhan_submitted_days"),
                             JSON.stringify(self.submittedDays),
                         );
                         if (data.submissions) {

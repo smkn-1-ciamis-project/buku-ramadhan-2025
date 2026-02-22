@@ -30,8 +30,13 @@ class ViewValidasi extends ViewRecord
               ->label('Hari Ke')
               ->badge()
               ->color('info'),
+          ])
+          ->columns(3),
+
+        Infolists\Components\Section::make('Verifikasi Guru')
+          ->schema([
             Infolists\Components\TextEntry::make('status')
-              ->label('Status')
+              ->label('Status Guru')
               ->badge()
               ->color(fn(string $state): string => match ($state) {
                 'pending' => 'warning',
@@ -40,12 +45,9 @@ class ViewValidasi extends ViewRecord
               })
               ->formatStateUsing(fn(string $state): string => match ($state) {
                 'pending' => 'Menunggu',
-                'verified' => 'Terverifikasi',
+                'verified' => 'Diverifikasi',
                 'rejected' => 'Ditolak',
               }),
-            Infolists\Components\TextEntry::make('created_at')
-              ->label('Waktu Pengiriman')
-              ->dateTime('d M Y, H:i'),
             Infolists\Components\TextEntry::make('verifier.name')
               ->label('Diverifikasi Oleh')
               ->placeholder('-'),
@@ -54,7 +56,38 @@ class ViewValidasi extends ViewRecord
               ->dateTime('d M Y, H:i')
               ->placeholder('-'),
             Infolists\Components\TextEntry::make('catatan_guru')
-              ->label('Catatan')
+              ->label('Catatan Guru')
+              ->placeholder('Tidak ada catatan')
+              ->columnSpanFull(),
+          ])
+          ->columns(3),
+
+        Infolists\Components\Section::make('Validasi Kesiswaan')
+          ->schema([
+            Infolists\Components\TextEntry::make('kesiswaan_status')
+              ->label('Status Validasi')
+              ->badge()
+              ->color(fn(string $state): string => match ($state) {
+                'pending' => 'warning',
+                'validated' => 'success',
+                'rejected' => 'danger',
+                default => 'gray',
+              })
+              ->formatStateUsing(fn(string $state): string => match ($state) {
+                'pending' => 'Menunggu Validasi',
+                'validated' => 'Sudah Divalidasi',
+                'rejected' => 'Ditolak',
+                default => $state,
+              }),
+            Infolists\Components\TextEntry::make('validator.name')
+              ->label('Divalidasi Oleh')
+              ->placeholder('-'),
+            Infolists\Components\TextEntry::make('validated_at')
+              ->label('Waktu Validasi')
+              ->dateTime('d M Y, H:i')
+              ->placeholder('-'),
+            Infolists\Components\TextEntry::make('catatan_kesiswaan')
+              ->label('Catatan Kesiswaan')
               ->placeholder('Tidak ada catatan')
               ->columnSpanFull(),
           ])
@@ -81,24 +114,24 @@ class ViewValidasi extends ViewRecord
         ->modalHeading('Validasi Formulir')
         ->modalSubmitActionLabel('Ya, Validasi')
         ->form([
-          \Filament\Forms\Components\Textarea::make('catatan_guru')
+          \Filament\Forms\Components\Textarea::make('catatan_kesiswaan')
             ->label('Catatan Kesiswaan (opsional)')
             ->rows(2),
         ])
         ->action(function (array $data) {
           $this->record->update([
-            'status' => 'verified',
-            'verified_by' => Auth::id(),
-            'verified_at' => now(),
-            'catatan_guru' => $data['catatan_guru'] ?? $this->record->catatan_guru,
+            'kesiswaan_status' => 'validated',
+            'validated_by' => Auth::id(),
+            'validated_at' => now(),
+            'catatan_kesiswaan' => $data['catatan_kesiswaan'] ?? null,
           ]);
           \Filament\Notifications\Notification::make()
             ->title('Formulir berhasil divalidasi')
             ->success()
             ->send();
-          $this->refreshFormData(['status', 'verified_by', 'verified_at', 'catatan_guru']);
+          $this->refreshFormData(['kesiswaan_status', 'validated_by', 'validated_at', 'catatan_kesiswaan']);
         })
-        ->visible(fn() => $this->record->status !== 'verified'),
+        ->visible(fn() => $this->record->kesiswaan_status !== 'validated'),
 
       \Filament\Actions\Action::make('reject')
         ->label('Tolak')
@@ -108,25 +141,25 @@ class ViewValidasi extends ViewRecord
         ->modalHeading('Tolak Formulir')
         ->modalSubmitActionLabel('Ya, Tolak')
         ->form([
-          \Filament\Forms\Components\Textarea::make('catatan_guru')
+          \Filament\Forms\Components\Textarea::make('catatan_kesiswaan')
             ->label('Alasan Penolakan')
             ->rows(2)
             ->required(),
         ])
         ->action(function (array $data) {
           $this->record->update([
-            'status' => 'rejected',
-            'verified_by' => Auth::id(),
-            'verified_at' => now(),
-            'catatan_guru' => $data['catatan_guru'],
+            'kesiswaan_status' => 'rejected',
+            'validated_by' => Auth::id(),
+            'validated_at' => now(),
+            'catatan_kesiswaan' => $data['catatan_kesiswaan'],
           ]);
           \Filament\Notifications\Notification::make()
             ->title('Formulir ditolak')
             ->warning()
             ->send();
-          $this->refreshFormData(['status', 'verified_by', 'verified_at', 'catatan_guru']);
+          $this->refreshFormData(['kesiswaan_status', 'validated_by', 'validated_at', 'catatan_kesiswaan']);
         })
-        ->visible(fn() => $this->record->status !== 'rejected'),
+        ->visible(fn() => $this->record->kesiswaan_status !== 'rejected'),
     ];
   }
 }

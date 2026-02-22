@@ -226,7 +226,7 @@
             </div>
             <div class="ks-hero-content">
                 <div class="ks-hero-left">
-                    <p class="ks-greet">☪️ Assalamu'alaikum, Kesiswaan</p>
+                    <p class="ks-greet">Assalamu'alaikum, Kesiswaan</p>
                     <h1>Buku Ramadhan SMKN 1</h1>
                     <p class="ks-sub">Panel Kesiswaan — Validasi & monitoring data siswa</p>
                 </div>
@@ -290,7 +290,7 @@
             {{-- Hari Ini --}}
             <div class="ks-card">
                 <div class="ks-card-head">
-                    <span class="ks-card-title">📊 Hari Ini</span>
+                    <span class="ks-card-title">Hari Ini</span>
                 </div>
                 <div class="ks-card-body">
                     <div class="ks-today-grid">
@@ -323,16 +323,16 @@
                 </div>
             </div>
 
-            {{-- Status Formulir --}}
+            {{-- Status Formulir (Verifikasi Guru) --}}
             <div class="ks-card">
                 <div class="ks-card-head">
-                    <span class="ks-card-title">📋 Status Formulir</span>
+                    <span class="ks-card-title">Verifikasi Guru</span>
                     <span style="font-size:.75rem; font-weight:700;">{{ $totalFormulir }}</span>
                 </div>
                 <div class="ks-card-body">
                     <div class="ks-form-item">
                         <span class="ks-form-dot" style="background:#f59e0b;"></span>
-                        <span class="ks-form-label">Menunggu Validasi</span>
+                        <span class="ks-form-label">Menunggu Verifikasi</span>
                         <span class="ks-form-count" style="color:#d97706;">{{ $totalPending }}</span>
                     </div>
                     <div class="ks-form-item">
@@ -342,7 +342,7 @@
                     </div>
                     <div class="ks-form-item">
                         <span class="ks-form-dot" style="background:#ef4444;"></span>
-                        <span class="ks-form-label">Ditolak</span>
+                        <span class="ks-form-label">Ditolak Guru</span>
                         <span class="ks-form-count" style="color:#dc2626;">{{ $totalRejected }}</span>
                     </div>
                     @if ($totalFormulir > 0)
@@ -373,49 +373,71 @@
                             <span class="ks-compliance-pct">{{ $verifyRate }}%</span>
                         </div>
                         <div>
-                            <p style="font-size:.75rem; font-weight:600;">Tingkat Verifikasi</p>
+                            <p style="font-size:.75rem; font-weight:600;">Tingkat Verifikasi Guru</p>
                             <p style="font-size:.7rem; margin-top:.125rem;" class="ks-text-muted">{{ $totalVerified }} dari {{ $totalFormulir }} formulir</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Quick Actions --}}
+            {{-- Validasi Kesiswaan --}}
             <div class="ks-card">
                 <div class="ks-card-head">
-                    <span class="ks-card-title">⚡ Aksi Cepat</span>
+                    <span class="ks-card-title">Validasi Kesiswaan</span>
+                    <span style="font-size:.75rem; font-weight:700;">{{ $totalVerified }}</span>
                 </div>
-                <div class="ks-card-body" style="display:flex; flex-direction:column; gap:.75rem;">
-                    <a href="{{ url('/portal-kesiswaan-smkn1/validasi-formulir') }}" style="display:flex; align-items:center; gap:.75rem; padding:.875rem; border-radius:.75rem; background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.15); text-decoration:none; color:inherit; transition:all .2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">
-                        <span style="font-size:1.25rem;">📝</span>
-                        <div>
-                            <p style="font-size:.8rem; font-weight:600;">Validasi Formulir</p>
-                            <p style="font-size:.7rem;" class="ks-text-muted">{{ $totalPending }} menunggu validasi</p>
+                <div class="ks-card-body">
+                    <div class="ks-form-item">
+                        <span class="ks-form-dot" style="background:#f59e0b;"></span>
+                        <span class="ks-form-label">Menunggu Validasi</span>
+                        <span class="ks-form-count" style="color:#d97706;">{{ $menungguValidasi }}</span>
+                    </div>
+                    <div class="ks-form-item">
+                        <span class="ks-form-dot" style="background:#10b981;"></span>
+                        <span class="ks-form-label">Sudah Divalidasi</span>
+                        <span class="ks-form-count" style="color:#059669;">{{ $sudahDivalidasi }}</span>
+                    </div>
+                    <div class="ks-form-item">
+                        <span class="ks-form-dot" style="background:#ef4444;"></span>
+                        <span class="ks-form-label">Ditolak Kesiswaan</span>
+                        <span class="ks-form-count" style="color:#dc2626;">{{ $ditolakKesiswaan }}</span>
+                    </div>
+                    @if ($totalVerified > 0)
+                        <div style="margin-top:1rem;">
+                            <div style="display:flex; height:.375rem; border-radius:.25rem; overflow:hidden; background:rgba(100,100,100,.08);">
+                                @if ($sudahDivalidasi > 0)
+                                    <div style="width:{{ ($sudahDivalidasi / $totalVerified) * 100 }}%; background:#10b981;"></div>
+                                @endif
+                                @if ($menungguValidasi > 0)
+                                    <div style="width:{{ ($menungguValidasi / $totalVerified) * 100 }}%; background:#f59e0b;"></div>
+                                @endif
+                                @if ($ditolakKesiswaan > 0)
+                                    <div style="width:{{ ($ditolakKesiswaan / $totalVerified) * 100 }}%; background:#ef4444;"></div>
+                                @endif
+                            </div>
                         </div>
-                    </a>
-                    <a href="{{ url('/portal-kesiswaan-smkn1/data-siswa') }}" style="display:flex; align-items:center; gap:.75rem; padding:.875rem; border-radius:.75rem; background:rgba(37,99,235,.06); border:1px solid rgba(37,99,235,.15); text-decoration:none; color:inherit; transition:all .2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">
-                        <span style="font-size:1.25rem;">👨‍🎓</span>
-                        <div>
-                            <p style="font-size:.8rem; font-weight:600;">Data Siswa</p>
-                            <p style="font-size:.7rem;" class="ks-text-muted">{{ $totalSiswa }} siswa terdaftar</p>
+                    @endif
+                    <hr class="ks-divider">
+                    <div class="ks-compliance">
+                        <div class="ks-compliance-ring">
+                            <svg viewBox="0 0 36 36">
+                                <circle class="ks-ring-bg" cx="18" cy="18" r="14" fill="none" stroke-width="3.5"/>
+                                <circle cx="18" cy="18" r="14" fill="none" stroke-width="3.5"
+                                    stroke="#2563eb"
+                                    stroke-dasharray="{{ $validasiRate * 0.88 }} 88"
+                                    stroke-linecap="round"/>
+                            </svg>
+                            <span class="ks-compliance-pct">{{ $validasiRate }}%</span>
                         </div>
-                    </a>
-                    <a href="{{ url('/portal-kesiswaan-smkn1/rekap-kelas') }}" style="display:flex; align-items:center; gap:.75rem; padding:.875rem; border-radius:.75rem; background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.15); text-decoration:none; color:inherit; transition:all .2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">
-                        <span style="font-size:1.25rem;">📊</span>
                         <div>
-                            <p style="font-size:.8rem; font-weight:600;">Rekap Per Kelas</p>
-                            <p style="font-size:.7rem;" class="ks-text-muted">{{ $totalKelas }} kelas terdaftar</p>
+                            <p style="font-size:.75rem; font-weight:600;">Tingkat Validasi Kesiswaan</p>
+                            <p style="font-size:.7rem; margin-top:.125rem;" class="ks-text-muted">{{ $sudahDivalidasi }} dari {{ $totalVerified }} terverifikasi guru</p>
                         </div>
-                    </a>
-                    <a href="{{ url('/portal-kesiswaan-smkn1/data-guru') }}" style="display:flex; align-items:center; gap:.75rem; padding:.875rem; border-radius:.75rem; background:rgba(139,92,246,.06); border:1px solid rgba(139,92,246,.15); text-decoration:none; color:inherit; transition:all .2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">
-                        <span style="font-size:1.25rem;">👩‍🏫</span>
-                        <div>
-                            <p style="font-size:.8rem; font-weight:600;">Data Guru</p>
-                            <p style="font-size:.7rem;" class="ks-text-muted">{{ $totalGuru }} guru terdaftar</p>
-                        </div>
-                    </a>
+                    </div>
                 </div>
             </div>
+
+
         </div>
 
         {{-- ═══ Bottom: Verifikasi Terbaru & Guru Pending & Overview Kelas ═══ --}}
@@ -423,8 +445,8 @@
             {{-- Aktivitas Verifikasi Terbaru --}}
             <div class="ks-card">
                 <div class="ks-card-head">
-                    <span class="ks-card-title">🕐 Verifikasi Terbaru</span>
-                    <a href="{{ url('/portal-kesiswaan-smkn1/validasi-formulir') }}" class="ks-link">Lihat Semua →</a>
+                    <span class="ks-card-title">Verifikasi Terbaru</span>
+                    <a href="{{ url('/portal-kesiswaan-smkn1/validasi') }}" class="ks-link">Lihat Semua →</a>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="ks-table">
@@ -458,7 +480,7 @@
                                 <tr>
                                     <td colspan="6">
                                         <div class="ks-empty">
-                                            <div class="ks-empty-icon">📭</div>
+                                            <div class="ks-empty-icon" style="font-size:1.5rem;">—</div>
                                             <p class="ks-empty-text ks-text-muted">Belum ada formulir yang diverifikasi</p>
                                         </div>
                                     </td>
@@ -474,7 +496,7 @@
                 {{-- Guru Pending --}}
                 <div class="ks-card">
                     <div class="ks-card-head">
-                        <span class="ks-card-title">⚠️ Guru — Pending Terbanyak</span>
+                        <span class="ks-card-title">Guru — Pending Terbanyak</span>
                         <a href="{{ url('/portal-kesiswaan-smkn1/data-guru') }}" class="ks-link">Lihat →</a>
                     </div>
                     <div class="ks-card-body" style="padding:.875rem 1.25rem; max-height:14rem; overflow-y:auto;">
@@ -488,7 +510,7 @@
                             </div>
                         @empty
                             <div class="ks-empty">
-                                <div class="ks-empty-icon">✅</div>
+                                <div class="ks-empty-icon" style="font-size:1.5rem;">—</div>
                                 <p class="ks-empty-text ks-text-muted">Semua guru sudah memverifikasi</p>
                             </div>
                         @endforelse
@@ -498,7 +520,7 @@
                 {{-- Overview Kelas --}}
                 <div class="ks-card">
                     <div class="ks-card-head">
-                        <span class="ks-card-title">🏫 Overview Kelas</span>
+                        <span class="ks-card-title">Overview Kelas</span>
                         <a href="{{ url('/portal-kesiswaan-smkn1/rekap-kelas') }}" class="ks-link">Detail →</a>
                     </div>
                     <div class="ks-card-body" style="padding:.875rem 1.25rem; max-height:16rem; overflow-y:auto;">
@@ -524,7 +546,7 @@
                             @endif
                         @empty
                             <div class="ks-empty">
-                                <div class="ks-empty-icon">🏫</div>
+                                <div class="ks-empty-icon" style="font-size:1.5rem;">—</div>
                                 <p class="ks-empty-text ks-text-muted">Belum ada kelas terdaftar</p>
                             </div>
                         @endforelse

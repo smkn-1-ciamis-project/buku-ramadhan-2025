@@ -4,6 +4,7 @@ namespace App\Filament\Siswa\Pages\NonMuslim\Konghucu;
 
 use App\Filament\Siswa\Pages\Muslim\Dashboard as MuslimDashboard;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Traits\HasPasswordChangeModal;
 
@@ -21,7 +22,7 @@ class Dashboard extends Page
     public function mount(): void
     {
         /** @var User $user */
-        $user = auth()->user();
+        $user = Auth::user();
         $agama = strtolower($user->agama ?? '');
 
         if ($agama === 'islam') {

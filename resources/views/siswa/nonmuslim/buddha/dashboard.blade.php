@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
     <div x-data="buddhaDashboard()" x-init="init()" class="ramadhan-app">
         {{-- Kill ALL Filament wrapper spacing --}}
         <style>

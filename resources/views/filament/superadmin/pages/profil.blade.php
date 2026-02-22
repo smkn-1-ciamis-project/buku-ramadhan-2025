@@ -19,10 +19,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
             overflow: hidden;
         }
-        .dark .sa-profil-card {
-            background: #1e293b;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
-        }
         .sa-profil-header {
             background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
             padding: 20px 20px;
@@ -71,7 +67,6 @@
             letter-spacing: 0.05em;
             margin-bottom: 4px;
         }
-        .dark .sa-profil-label { color: #94a3b8; }
         .sa-profil-input {
             width: 100%;
             padding: 8px 12px;
@@ -84,18 +79,10 @@
             outline: none;
             box-sizing: border-box;
         }
-        .dark .sa-profil-input {
-            background: #0f172a;
-            border-color: #334155;
-            color: #e2e8f0;
-        }
         .sa-profil-input:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
             background: #fff;
-        }
-        .dark .sa-profil-input:focus {
-            background: #1e293b;
         }
         .sa-profil-hint {
             font-size: 11px;
@@ -129,10 +116,6 @@
             align-items: center;
             gap: 8px;
         }
-        .dark .sa-profil-role {
-            background: rgba(30,58,138,0.2);
-            border-color: rgba(59,130,246,0.2);
-        }
         .sa-profil-role-icon {
             width: 30px;
             height: 30px;
@@ -158,13 +141,11 @@
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
-        .dark .sa-profil-role-label { color: #94a3b8; }
         .sa-profil-role-value {
             font-size: 13px;
             font-weight: 700;
             color: #1e3a8a;
         }
-        .dark .sa-profil-role-value { color: #93c5fd; }
         /* Password section */
         .sa-profil-pw-header {
             background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);

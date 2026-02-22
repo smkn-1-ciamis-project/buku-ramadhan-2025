@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Siswa\Pages\Auth\Login;
 use App\Filament\Siswa\Pages\Muslim\Dashboard;
 use App\Http\Middleware\EnsureSingleSession;
+use App\Http\Middleware\ShortSessionIfNotRemembered;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -50,6 +51,7 @@ class SiswaPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                ShortSessionIfNotRemembered::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,

@@ -421,9 +421,36 @@ function formulirKonghucu() {
             this.updateEditorFormats();
         },
 
+        /* ── Per-user localStorage helpers ── */
+        _lsKey(base) {
+            var uid = window.__siswaUserId || "unknown";
+            return base + "_" + uid;
+        },
+
+        _clearOldUserData(prefix) {
+            var toRemove = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(prefix) === 0) toRemove.push(k);
+            }
+            toRemove.forEach(function (k) {
+                localStorage.removeItem(k);
+            });
+        },
+
         loadSubmittedDays() {
             try {
-                var saved = localStorage.getItem("konghucu_submitted_days");
+                var lastUser = localStorage.getItem("konghucu_last_user");
+                var currentUser = window.__siswaUserId || "unknown";
+                if (lastUser && lastUser !== currentUser) {
+                    this._clearOldUserData("konghucu_submitted_days_");
+                    this._clearOldUserData("konghucu_form_day_");
+                }
+                localStorage.setItem("konghucu_last_user", currentUser);
+
+                var saved = localStorage.getItem(
+                    this._lsKey("konghucu_submitted_days"),
+                );
                 this.submittedDays = saved ? JSON.parse(saved) : [];
             } catch (e) {
                 this.submittedDays = [];
@@ -440,7 +467,7 @@ function formulirKonghucu() {
             }
             try {
                 var savedForm = localStorage.getItem(
-                    "konghucu_form_day_" + this.formDay,
+                    this._lsKey("konghucu_form_day_" + this.formDay),
                 );
                 if (savedForm) {
                     var parsed = JSON.parse(savedForm);
@@ -527,13 +554,13 @@ function formulirKonghucu() {
                 this.formData.catatan = this.$refs.catatanEditor.innerHTML;
             }
             localStorage.setItem(
-                "konghucu_form_day_" + this.formDay,
+                this._lsKey("konghucu_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
             );
             if (!this.submittedDays.includes(this.formDay)) {
                 this.submittedDays.push(this.formDay);
                 localStorage.setItem(
-                    "konghucu_submitted_days",
+                    this._lsKey("konghucu_submitted_days"),
                     JSON.stringify(this.submittedDays),
                 );
             }
@@ -594,13 +621,9 @@ function formulirKonghucu() {
                 })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
-                        data.submitted_days.forEach(function (day) {
-                            if (!self.submittedDays.includes(day)) {
-                                self.submittedDays.push(day);
-                            }
-                        });
+                        self.submittedDays = data.submitted_days.slice();
                         localStorage.setItem(
-                            "konghucu_submitted_days",
+                            self._lsKey("konghucu_submitted_days"),
                             JSON.stringify(self.submittedDays),
                         );
                         if (data.submissions) {
@@ -609,7 +632,9 @@ function formulirKonghucu() {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
                                 };
-                                var key = "konghucu_form_day_" + sub.hari_ke;
+                                var key = self._lsKey(
+                                    "konghucu_form_day_" + sub.hari_ke,
+                                );
                                 if (!localStorage.getItem(key) && sub.data) {
                                     localStorage.setItem(
                                         key,

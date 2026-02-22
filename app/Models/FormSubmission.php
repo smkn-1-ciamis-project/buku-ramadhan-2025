@@ -19,12 +19,17 @@ class FormSubmission extends Model
     'verified_by',
     'verified_at',
     'catatan_guru',
+    'kesiswaan_status',
+    'validated_by',
+    'validated_at',
+    'catatan_kesiswaan',
   ];
 
   protected $casts = [
     'data' => 'array',
     'hari_ke' => 'integer',
     'verified_at' => 'datetime',
+    'validated_at' => 'datetime',
   ];
 
   public function user(): BelongsTo
@@ -35,5 +40,10 @@ class FormSubmission extends Model
   public function verifier(): BelongsTo
   {
     return $this->belongsTo(User::class, 'verified_by');
+  }
+
+  public function validator(): BelongsTo
+  {
+    return $this->belongsTo(User::class, 'validated_by');
   }
 }
