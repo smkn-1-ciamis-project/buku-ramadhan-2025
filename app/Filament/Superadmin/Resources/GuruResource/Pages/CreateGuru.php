@@ -4,6 +4,7 @@ namespace App\Filament\Superadmin\Resources\GuruResource\Pages;
 
 use App\Filament\Superadmin\Resources\GuruResource;
 use App\Models\RoleUser;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateGuru extends CreateRecord
@@ -20,5 +21,10 @@ class CreateGuru extends CreateRecord
   protected function getRedirectUrl(): string
   {
     return $this->getResource()::getUrl('index');
+  }
+
+  protected function getCreatedNotificationTitle(): ?string
+  {
+    return 'Guru berhasil ditambahkan';
   }
 }

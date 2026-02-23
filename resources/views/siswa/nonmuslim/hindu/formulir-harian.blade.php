@@ -400,12 +400,12 @@
         </div>
 
     </div>
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/formulir.css')) }}">
+    @endpush
+
+    @push('scripts')
+        <script src="{{ asset('themes/ramadhan/js/nonmuslim/hindu/formulir.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/nonmuslim/hindu/formulir.js')) }}" defer></script>
+    @endpush
 </x-filament-panels::page>
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ time() }}">
-@endpush
-
-@push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/nonmuslim/hindu/formulir.js') }}?v={{ time() }}"></script>
-@endpush

@@ -18,6 +18,11 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, UuidTrait;
 
+    /**
+     * Always eager-load role_user to avoid N+1 on canAccessPanel().
+     */
+    protected $with = ['role_user'];
+
     public function canAccessPanel(Panel $panel): bool
     {
         // Get role name

@@ -1,4 +1,4 @@
-<div class="login-page" x-data="{ showDevicePopup: $wire.entangle('showDevicePopup') }">
+<div class="login-page" x-data="{ showDevicePopup: $wire.entangle('showDevicePopup'), showErrorPopup: $wire.entangle('showErrorPopup') }">
 
   {{-- ── Inject Login CSS ── --}}
   @once
@@ -11,6 +11,9 @@
         .fi-simple-main { max-width: none !important; width: 100% !important; background: transparent !important; box-shadow: none !important; ring: none !important; padding: 0 !important; --tw-ring-shadow: none !important; --tw-shadow: none !important; margin: 0 !important; }
         .login-form-area .fi-ac-btn-action { width: 100% !important; }
         .login-form-area .fi-form-actions { margin-top: 6px !important; }
+        /* Hide inline validation errors — use popup notification instead */
+        .login-form-area .fi-fo-field-wrp-error-message { display: none !important; }
+        .login-form-area .fi-input-wrp.fi-invalid { --tw-ring-color: rgba(59,130,246,.3) !important; }
         /* ── Remember-me checkbox alignment ── */
         .login-form-area .fi-fo-checkbox label,
         .login-form-area .fi-checkbox-label { display: flex !important; align-items: center !important; gap: 0.5rem !important; }
@@ -184,6 +187,44 @@
 
       {{-- Button --}}
       <button type="button" class="login-popup-btn" @click="showDevicePopup = false">
+        Mengerti
+      </button>
+    </div>
+  </div>
+
+  {{-- ═══════════════════════════════
+       POPUP: Error / Validasi Gagal
+  ═══════════════════════════════ --}}
+  <div x-show="showErrorPopup"
+       x-cloak
+       class="login-popup-overlay"
+       @click.self="showErrorPopup = false"
+       x-transition:enter="popup-enter"
+       x-transition:enter-start="popup-enter-start"
+       x-transition:enter-end="popup-enter-end"
+       x-transition:leave="popup-leave"
+       x-transition:leave-start="popup-leave-start"
+       x-transition:leave-end="popup-leave-end">
+
+    <div class="login-popup-card">
+
+      {{-- Icon --}}
+      <div class="login-popup-icon login-popup-icon--error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="13"/>
+          <circle cx="12" cy="16.5" r="0.5" fill="currentColor"/>
+        </svg>
+      </div>
+
+      {{-- Title --}}
+      <div class="login-popup-title">Login Gagal</div>
+
+      {{-- Message --}}
+      <div class="login-popup-message">{{ $errorPopupMessage }}</div>
+
+      {{-- Button --}}
+      <button type="button" class="login-popup-btn" @click="showErrorPopup = false">
         Mengerti
       </button>
     </div>

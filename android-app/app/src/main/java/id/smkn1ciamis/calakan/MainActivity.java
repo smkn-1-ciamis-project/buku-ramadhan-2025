@@ -145,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         webView.onPause();
+        // Flush cookies to disk so sessions survive app kill
+        CookieManager.getInstance().flush();
         super.onPause();
     }
 
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
         // User agent: append Calakan identifier
         String ua = settings.getUserAgentString();
-        settings.setUserAgentString(ua + " Calakan-Android/1.0");
+        settings.setUserAgentString(ua + " Calakan-Android/1.1");
 
         // Cookies
         CookieManager cookieManager = CookieManager.getInstance();
@@ -265,8 +267,14 @@ public class MainActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 swipeRefresh.setRefreshing(false);
 
-                // Inject CSS to hide browser-specific elements if needed
+                // Unregister service worker to prevent stale cache
+                unregisterServiceWorker(view);
+
+                // Inject CSS to fix PWA/WebView differences
                 injectCustomCSS(view);
+
+                // Fix swipe-to-refresh conflict with scrollable content
+                fixSwipeRefreshConflict(view);
             }
 
             @Override
@@ -408,20 +416,60 @@ public class MainActivity extends AppCompatActivity {
     // ── CSS Injection ──────────────────────────────────────────────────
 
     private void injectCustomCSS(WebView view) {
-        // Hide any elements that shouldn't appear in the app
+        // Hide PWA install prompts, fix overscroll, consistent mobile rendering
         String css = ""
-                + "/* Sembunyikan scrollbar horizontal */"
-                + "body { overflow-x: hidden !important; }"
-                + "/* Prevent text selection highlight on long press */"
-                + "-webkit-touch-callout: none;";
+                + "body { overflow-x: hidden !important; -webkit-overflow-scrolling: touch; }"
+                + "html, body { overscroll-behavior: none; }"
+                // Hide PWA install banner/prompt if any
+                + ".pwa-install-prompt, .install-banner, [data-pwa-install] { display: none !important; }"
+                // Prevent text selection highlight on long press
+                + "* { -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }"
+                // Ensure forms and modals don't overflow on smaller screens
+                + ".fi-modal-window { max-height: 90vh !important; overflow-y: auto !important; }"
+                // Fix fixed position elements in WebView
+                + ".fi-topbar { position: sticky !important; }";
 
         String js = "javascript:(function() {"
+                + "var existing = document.getElementById('calakan-android-css');"
+                + "if (existing) return;"
                 + "var style = document.createElement('style');"
+                + "style.id = 'calakan-android-css';"
                 + "style.type = 'text/css';"
                 + "style.innerHTML = '" + css + "';"
                 + "document.head.appendChild(style);"
                 + "})()";
         view.loadUrl(js);
+    }
+
+    /**
+     * Unregister service worker in WebView to prevent stale cache issues.
+     * The Android app manages its own cache, so the SW is not needed.
+     */
+    private void unregisterServiceWorker(WebView view) {
+        String js = "javascript:(function() {"
+                + "if ('serviceWorker' in navigator) {"
+                + "  navigator.serviceWorker.getRegistrations().then(function(registrations) {"
+                + "    registrations.forEach(function(reg) { reg.unregister(); });"
+                + "  });"
+                + "  if (navigator.serviceWorker.controller) {"
+                + "    caches.keys().then(function(names) {"
+                + "      names.forEach(function(name) { caches.delete(name); });"
+                + "    });"
+                + "  }"
+                + "}"
+                + "})()";
+        view.loadUrl(js);
+    }
+
+    /**
+     * Prevent SwipeRefreshLayout from triggering when scrolling up inside
+     * formulir forms, tables, or modals. Only enable pull-to-refresh when
+     * the WebView is scrolled to the very top.
+     */
+    private void fixSwipeRefreshConflict(WebView view) {
+        view.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            swipeRefresh.setEnabled(scrollY == 0);
+        });
     }
 
     // ── Error Handling UI ──────────────────────────────────────────────

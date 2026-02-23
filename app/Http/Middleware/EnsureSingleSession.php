@@ -10,11 +10,25 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureSingleSession
 {
     /**
+     * Durasi sesi per role (dalam menit):
+     *  - Siswa:      30 menit
+     *  - Guru:       60 menit (1 jam)
+     *  - Kesiswaan:  720 menit (12 jam)
+     *  - Superadmin: 720 menit (12 jam)
+     */
+    private const SESSION_DURATIONS = [
+        'super admin' => 720,
+        'kesiswaan'   => 720,
+        'guru'        => 60,
+        'siswa'       => 30,
+    ];
+
+    /**
      * Hanya izinkan satu sesi aktif per akun.
      *
      * Urutan pemeriksaan per request:
      *  1. Single-session check  — jika session ID tidak cocok, perangkat LAMA dikeluarkan.
-     *  2. Session expiry check  — superadmin 24 jam, role lain 12 jam.
+     *  2. Session expiry check  — durasi per role (lihat SESSION_DURATIONS).
      *
      * Catatan penting:
      *  Ketika perangkat LAMA ditendang (case 1), Auth::logout() tetap dipanggil agar
@@ -44,12 +58,12 @@ class EnsureSingleSession
                     ->with('session_expired', 'Sesi Anda telah berakhir karena akun ini login dari perangkat lain.');
             }
 
-            // ── 2. Session expiry: superadmin 24 jam, lainnya 12 jam ───────────
-            $maxHours = $this->isSuperadmin($user) ? 24 : 12;
+            // ── 2. Session expiry: durasi berbeda per role ─────────────────────
+            $maxMinutes = $this->getSessionDuration($user);
 
             if (
                 $user->session_login_at &&
-                $user->session_login_at->addHours($maxHours)->isPast()
+                $user->session_login_at->addMinutes($maxMinutes)->isPast()
             ) {
                 // Hapus tracking terlebih dahulu, BARU logout
                 // (supaya Logout event listener tidak mencoba menghapus lagi)
@@ -62,19 +76,43 @@ class EnsureSingleSession
                 session()->invalidate();
                 session()->regenerateToken();
 
+                $label = $this->formatDurationLabel($maxMinutes);
+
                 return redirect()->to($this->loginUrl($request))
-                    ->with('session_expired', "Sesi Anda telah berakhir setelah {$maxHours} jam. Silakan login kembali.");
+                    ->with('session_expired', "Sesi Anda telah berakhir setelah {$label}. Silakan login kembali.");
             }
         }
 
         return $next($request);
     }
 
-    /** Cek apakah user adalah superadmin. */
-    private function isSuperadmin($user): bool
+    /** Ambil durasi sesi (menit) berdasarkan role user. */
+    public static function getSessionDurationForRole(string $roleName): int
     {
-        $roleName = strtolower($user->role_user?->name ?? '');
-        return str_contains($roleName, 'super admin') || str_contains($roleName, 'superadmin');
+        $role = strtolower(trim($roleName));
+        foreach (self::SESSION_DURATIONS as $key => $minutes) {
+            if (str_contains($role, $key)) {
+                return $minutes;
+            }
+        }
+        return 30; // default fallback
+    }
+
+    /** Ambil durasi sesi (menit) untuk user tertentu. */
+    private function getSessionDuration($user): int
+    {
+        $roleName = $user->role_user?->name ?? '';
+        return self::getSessionDurationForRole($roleName);
+    }
+
+    /** Format label durasi untuk pesan. */
+    private function formatDurationLabel(int $minutes): string
+    {
+        if ($minutes >= 60) {
+            $hours = intdiv($minutes, 60);
+            return $hours . ' jam';
+        }
+        return $minutes . ' menit';
     }
 
     /** Resolve login URL safely regardless of panel context. */

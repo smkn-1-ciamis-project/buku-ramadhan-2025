@@ -99,7 +99,6 @@
                         <p style="margin:0;color:#dc2626;font-size:13px;line-height:1.6;" x-text="currentDayNote"></p>
                     </div>
                 </div>
-                </div>
 
                 <fieldset :disabled="formSubmitted" class="f-fieldset">
 
@@ -401,12 +400,12 @@
         </div>
 
     </div>
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/formulir.css')) }}">
+    @endpush
+
+    @push('scripts')
+        <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/formulir.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/nonmuslim/buddha/formulir.js')) }}" defer></script>
+    @endpush
 </x-filament-panels::page>
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ time() }}">
-@endpush
-
-@push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/formulir.js') }}?v={{ time() }}"></script>
-@endpush

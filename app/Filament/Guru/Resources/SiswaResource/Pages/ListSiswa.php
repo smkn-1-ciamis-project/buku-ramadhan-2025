@@ -13,6 +13,7 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
@@ -354,6 +355,45 @@ class ListSiswa extends ListRecords
           }
 
           $notification->send();
+        }),
+
+      Actions\Action::make('exportPdf')
+        ->label('Export PDF')
+        ->icon('heroicon-o-document-arrow-down')
+        ->color('danger')
+        ->action(function () {
+          $guru = Auth::user();
+          $kelas = Kelas::where('wali_id', $guru->id)->first();
+          $namaKelas = $kelas?->nama ?? '-';
+
+          $siswa = User::where('kelas_id', $kelas?->id)
+            ->whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))
+            ->orderBy('name')
+            ->get();
+
+          $totalL = $siswa->where('jenis_kelamin', 'L')->count();
+          $totalP = $siswa->where('jenis_kelamin', 'P')->count();
+
+          $pdf = Pdf::loadView('pdf.data-siswa', [
+            'siswa'        => $siswa,
+            'kelas'        => $namaKelas,
+            'guru'         => $guru->name,
+            'tahunAjaran'  => '2025/2026',
+            'tanggalCetak' => now()->translatedFormat('d F Y'),
+            'totalSiswa'   => $siswa->count(),
+            'totalL'       => $totalL,
+            'totalP'       => $totalP,
+          ]);
+
+          $pdf->setPaper('a4', 'portrait');
+
+          $filename = 'Data_Siswa_' . str_replace(' ', '_', $namaKelas) . '_' . now()->format('Ymd_His') . '.pdf';
+
+          return response()->streamDownload(
+            fn() => print($pdf->output()),
+            $filename,
+            ['Content-Type' => 'application/pdf']
+          );
         }),
     ];
   }

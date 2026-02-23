@@ -1,13 +1,29 @@
-// @ts-nocheck
-/**
- * Calakan — Dashboard Non-Muslim Alpine.js Component
- * Stripped from Islamic features (prayer times, qibla, Islamic duas).
- * Includes: Calendar, Progress, Christian Prayers, Bible Verses.
- */
+// ── API Throttle Helper ─────────────────────────────────────────────
+var _apiLastCall = {};
+function _throttledFetch(key, url, options, cooldownMs) {
+    cooldownMs = cooldownMs || 5000;
+    var now = Date.now();
+    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
+        return Promise.reject({ throttled: true });
+    }
+    _apiLastCall[key] = now;
+    return fetch(url, options).then(function (r) {
+        if (r.status === 429) {
+            return r.json().then(function (d) {
+                return Promise.reject({
+                    rateLimited: true,
+                    message:
+                        d.message ||
+                        "Terlalu banyak permintaan. Tunggu sebentar.",
+                });
+            });
+        }
+        return r;
+    });
+}
 
 function nonmuslimDashboard() {
     return {
-        // ── State ──────────────────────────────────────────────────────
         activeTab: "calendar",
         showChangePassword: false,
         showLogoutConfirm: false,
@@ -42,18 +58,12 @@ function nonmuslimDashboard() {
         calendarMonthLabel: "",
         isSunday: false,
         motivationalBadge: "",
-
-        // ── Form State ─────────────────────────────────────────────────
         submittedDays: [],
         submissionStatuses: {},
-
-        // ── Notification Modal State ───────────────────────────────────
         showNotifModal: false,
         notifTitle: "",
         notifMessage: "",
         notifRedirectUrl: "",
-
-        // ── Lifecycle ──────────────────────────────────────────────────
         init() {
             this.setDates();
             this.calculateRamadhanDay();
@@ -65,8 +75,6 @@ function nonmuslimDashboard() {
             this.startClock();
             this.setMotivationalBadge();
         },
-
-        // ── Clock ──────────────────────────────────────────────────────
         startClock() {
             var self = this;
             function tick() {
@@ -90,18 +98,13 @@ function nonmuslimDashboard() {
                         fmt2(d.getSeconds())
                     );
                 };
-
-                // Main clock follows selected timezone
                 if (self.selectedTz === "WIB") self.clockMain = fmtFull(wib);
                 else if (self.selectedTz === "WITA")
                     self.clockMain = fmtFull(wita);
                 else self.clockMain = fmtFull(wit);
-
                 self.clockWIB = fmtTime(wib);
                 self.clockWITA = fmtTime(wita);
                 self.clockWIT = fmtTime(wit);
-
-                // Greeting
                 var h = wib.getHours();
                 if (h >= 3 && h < 11) self.greeting = "Selamat Pagi ☀️";
                 else if (h >= 11 && h < 15) self.greeting = "Selamat Siang 🌤️";
@@ -111,7 +114,6 @@ function nonmuslimDashboard() {
             tick();
             setInterval(tick, 1000);
         },
-
         setDates() {
             var now = new Date();
             var days = [
@@ -146,9 +148,8 @@ function nonmuslimDashboard() {
                 " " +
                 now.getFullYear();
         },
-
         calculateRamadhanDay() {
-            var startDate = new Date(2026, 1, 19); // Feb 19 2026 = day 1
+            var startDate = new Date(2026, 1, 19);
             var now = new Date();
             var today = new Date(
                 now.getFullYear(),
@@ -158,11 +159,9 @@ function nonmuslimDashboard() {
             var diff = Math.floor((today - startDate) / 86400000) + 1;
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
         },
-
         checkSunday() {
             this.isSunday = new Date().getDay() === 0;
         },
-
         setMotivationalBadge() {
             if (this.isSunday) {
                 this.motivationalBadge = "Hari Minggu — Waktunya beribadah 🙏";
@@ -178,17 +177,13 @@ function nonmuslimDashboard() {
                     badges[this.ramadhanDay % badges.length];
             }
         },
-
-        // ── Calendar ───────────────────────────────────────────────────
         buildCalendar() {
             var startDate = new Date(2026, 1, 19);
-            var endDate = new Date(2026, 2, 20); // 30 days
-            // Find the Monday of the week containing startDate
-            var startDow = startDate.getDay(); // 0=Sun
+            var endDate = new Date(2026, 2, 20);
+            var startDow = startDate.getDay();
             var mondayOffset = startDow === 0 ? -6 : 1 - startDow;
             var calStart = new Date(startDate);
             calStart.setDate(calStart.getDate() + mondayOffset);
-
             var today = new Date();
             today = new Date(
                 today.getFullYear(),
@@ -197,8 +192,6 @@ function nonmuslimDashboard() {
             );
             var days = [];
             var d = new Date(calStart);
-
-            // Month label
             var months = [
                 "Januari",
                 "Februari",
@@ -219,8 +212,6 @@ function nonmuslimDashboard() {
                 months[endDate.getMonth()] +
                 " " +
                 endDate.getFullYear();
-
-            // Generate 5 weeks (35 cells max) to cover 30 days
             for (var i = 0; i < 42; i++) {
                 var cur = new Date(d);
                 var hijriDay = Math.floor((cur - startDate) / 86400000) + 1;
@@ -238,7 +229,6 @@ function nonmuslimDashboard() {
                 var isRejected = isCompleted && statusStr === "rejected";
                 var isPastUnfilled =
                     isPast && !isCompleted && !isToday && inRange;
-
                 days.push({
                     key: "d" + i,
                     masehiDay: cur.getDate(),
@@ -251,20 +241,15 @@ function nonmuslimDashboard() {
                     isRejected: isRejected,
                     isPastUnfilled: isPastUnfilled,
                 });
-
                 d.setDate(d.getDate() + 1);
-                // Stop after enough rows
                 if (i > 27 && hijriDay >= 30 && d.getDay() === 1) break;
             }
             this.calendarDays = days;
         },
-
-        // ── Per-user localStorage helpers ─────────────────────────────
         _lsKey(base) {
             var uid = window.__siswaUserId || "unknown";
             return base + "_" + uid;
         },
-
         _clearOldUserData(prefix) {
             var toRemove = [];
             for (var i = 0; i < localStorage.length; i++) {
@@ -275,8 +260,6 @@ function nonmuslimDashboard() {
                 localStorage.removeItem(k);
             });
         },
-
-        // ── Submitted Days ─────────────────────────────────────────────
         loadSubmittedDays() {
             try {
                 var lastUser = localStorage.getItem("nonmuslim_last_user");
@@ -286,7 +269,6 @@ function nonmuslimDashboard() {
                     this._clearOldUserData("nonmuslim_form_day_");
                 }
                 localStorage.setItem("nonmuslim_last_user", currentUser);
-
                 var saved = localStorage.getItem(
                     this._lsKey("nonmuslim_submitted_days"),
                 );
@@ -294,9 +276,13 @@ function nonmuslimDashboard() {
             } catch (e) {
                 this.submittedDays = [];
             }
-            // Sync from server
             var self = this;
-            fetch("/api/formulir", { headers: { Accept: "application/json" } })
+            _throttledFetch(
+                "sync",
+                "/api/formulir",
+                { headers: { Accept: "application/json" } },
+                10000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
@@ -318,13 +304,13 @@ function nonmuslimDashboard() {
                         self.buildCalendar();
                     }
                 })
-                .catch(function () {});
+                .catch(function (e) {
+                    if (e && e.rateLimited) console.warn(e.message);
+                });
         },
-
         getProgressPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getVerifiedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -332,7 +318,6 @@ function nonmuslimDashboard() {
             }
             return count;
         },
-
         getPendingCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -341,7 +326,6 @@ function nonmuslimDashboard() {
             }
             return count;
         },
-
         getRejectedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -349,23 +333,17 @@ function nonmuslimDashboard() {
             }
             return count;
         },
-
         getVerifiedPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getPendingPercent() {
             return Math.round((this.getPendingCount() / 30) * 100);
         },
-
         getRejectedPercent() {
             return Math.round((this.getRejectedCount() / 30) * 100);
         },
-
-        // ── Christian Prayers (Doa Kristen) ────────────────────────────
         loadDoas() {
             this.allDuas = [
-                // === Doa Harian ===
                 {
                     id: 1,
                     title: "Doa Bapa Kami",
@@ -406,8 +384,6 @@ function nonmuslimDashboard() {
                     text: "Terima kasih Tuhan untuk makanan yang telah kami nikmati. Terima kasih atas kasih-Mu yang besar dalam memenuhi kebutuhan kami setiap hari. Amin.",
                     verse: "",
                 },
-
-                // === Doa Ucapan Syukur ===
                 {
                     id: 6,
                     title: "Doa Ucapan Syukur",
@@ -432,8 +408,6 @@ function nonmuslimDashboard() {
                     text: "Tuhan, kasih setia-Mu tidak berkesudahan, belas kasihan-Mu tidak habis-habisnya, setiap pagi selalu baru. Terima kasih untuk pagi yang indah ini. Biarlah hari ini menjadi hari yang penuh dengan kasih karunia-Mu. Amin.",
                     verse: '"Bahwasanya kemurahan Tuhan tidak berkesudahan, belas kasihan-Nya tidak habis-habisnya: setiap pagi selalu baru." — Ratapan 3:22-23',
                 },
-
-                // === Doa Pengampunan ===
                 {
                     id: 9,
                     title: "Doa Memohon Pengampunan",
@@ -450,8 +424,6 @@ function nonmuslimDashboard() {
                     text: "Ya Allah, kasihanilah aku menurut kasih setia-Mu, hapuskanlah pelanggaranku menurut rahmat-Mu yang besar! Bersihkanlah aku seluruhnya dari kesalahanku, dan tahirkanlah aku dari dosaku. Jadikanlah hatiku yang bersih, ya Allah, dan perbaharuilah batinku dengan roh yang teguh. Amin.",
                     verse: '"Jadikanlah hatiku yang bersih, ya Allah, dan perbaharuilah batinku dengan roh yang teguh." — Mazmur 51:12',
                 },
-
-                // === Doa Kekuatan ===
                 {
                     id: 11,
                     title: "Doa Memohon Kekuatan",
@@ -484,8 +456,6 @@ function nonmuslimDashboard() {
                     text: "Tuhan, meskipun aku merasa sendiri, aku tahu Engkau selalu ada bersamaku. Engkau tidak pernah meninggalkan aku, tidak pernah melepaskan aku. Hibur hatiku dan berilah aku teman-teman yang mendukung. Amin.",
                     verse: '"Kuatkan dan teguhkanlah hatimu, janganlah takut dan jangan gemetar. Sebab Tuhan, Allahmu, Dialah yang berjalan menyertai engkau; Ia tidak akan membiarkan engkau dan tidak akan meninggalkan engkau." — Ulangan 31:6',
                 },
-
-                // === Doa Belajar ===
                 {
                     id: 15,
                     title: "Doa Sebelum Belajar",
@@ -510,8 +480,6 @@ function nonmuslimDashboard() {
                     text: "Tuhan, aku akan menghadapi ujian. Berilah aku ketenangan, konsentrasi, dan hikmat untuk menjawab setiap pertanyaan. Aku percaya Engkau memberikan hikmat dengan murah hati kepada siapa pun yang memintanya. Amin.",
                     verse: '"Tetapi apabila di antara kamu ada yang kekurangan hikmat, hendaklah ia memintakannya kepada Allah, — yang memberikan kepada semua orang dengan murah hati." — Yakobus 1:5',
                 },
-
-                // === Doa Keluarga ===
                 {
                     id: 18,
                     title: "Doa untuk Orang Tua",
@@ -536,8 +504,6 @@ function nonmuslimDashboard() {
                     text: "Tuhan, berkatilah guru-guru kami yang dengan sabar mendidik dan mengajar kami. Berilah mereka kesehatan dan semangat. Berkatilah sekolah kami agar menjadi tempat yang aman dan nyaman untuk belajar. Amin.",
                     verse: "",
                 },
-
-                // === Doa Ibadah ===
                 {
                     id: 21,
                     title: "Doa Sebelum Ibadah",
@@ -562,8 +528,6 @@ function nonmuslimDashboard() {
                     text: "Tuhan, di hari Minggu ini aku ingin mengkhususkan waktu untuk beribadah kepada-Mu. Sertailah perjalananku ke gereja, berkatilah ibadah yang akan kami lakukan bersama jemaat. Biarlah pujian dan penyembahan kami berkenan di hadapan-Mu. Amin.",
                     verse: '"Janganlah kita menjauhkan diri dari pertemuan-pertemuan ibadah kita, seperti kebiasaan beberapa orang, tetapi marilah kita saling menasihati." — Ibrani 10:25',
                 },
-
-                // === Doa Umum ===
                 {
                     id: 24,
                     title: "Doa Minta Berkat",
@@ -605,8 +569,6 @@ function nonmuslimDashboard() {
                     verse: '"Kasih itu sabar; kasih itu murah hati; ia tidak cemburu. Ia tidak memegahkan diri dan tidak sombong." — 1 Korintus 13:4',
                 },
             ];
-
-            // Build category counts
             var catMap = {};
             this.allDuas.forEach(function (d) {
                 catMap[d.category] = (catMap[d.category] || 0) + 1;
@@ -638,11 +600,9 @@ function nonmuslimDashboard() {
                 { id: "ibadah", label: "Ibadah", count: catMap["ibadah"] || 0 },
                 { id: "umum", label: "Umum", count: catMap["umum"] || 0 },
             ];
-
             this.filteredDuas = this.allDuas.slice();
             this.paginateDuas();
         },
-
         filterDuas() {
             var self = this;
             var search = this.doaSearch.toLowerCase();
@@ -660,7 +620,6 @@ function nonmuslimDashboard() {
             this.doaPage = 1;
             this.paginateDuas();
         },
-
         paginateDuas() {
             var start = (this.doaPage - 1) * this.doaPerPage;
             this.paginatedDuas = this.filteredDuas.slice(
@@ -671,7 +630,6 @@ function nonmuslimDashboard() {
                 1,
                 Math.ceil(this.filteredDuas.length / this.doaPerPage),
             );
-            // Build page numbers
             var pages = [];
             var total = this.doaTotalPages;
             if (total <= 5) {
@@ -688,13 +646,11 @@ function nonmuslimDashboard() {
             }
             this.doaPageNumbers = pages;
         },
-
         toggleDoaExpand(id) {
             var idx = this.expandedDoas.indexOf(id);
             if (idx === -1) this.expandedDoas.push(id);
             else this.expandedDoas.splice(idx, 1);
         },
-
         getCategoryLabel(catId) {
             var map = {
                 harian: "Harian",
@@ -708,8 +664,6 @@ function nonmuslimDashboard() {
             };
             return map[catId] || catId;
         },
-
-        // ── Bible Verses ───────────────────────────────────────────────
         bibleVerses: [
             {
                 text: "Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman Tuhan, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan, untuk memberikan kepadamu hari depan yang penuh harapan.",
@@ -792,45 +746,28 @@ function nonmuslimDashboard() {
                 source: "1 Yohanes 4:7",
             },
         ],
-
         setDailyVerse() {
-            // Pick verse based on day number
             var idx = (this.ramadhanDay - 1) % this.bibleVerses.length;
             this.dailyVerse = this.bibleVerses[idx];
         },
-
         refreshVerse() {
             var idx = Math.floor(Math.random() * this.bibleVerses.length);
             this.dailyVerse = this.bibleVerses[idx];
         },
-
-        /**
-         * Navigate to formulir when clicking calendar cell.
-         * - Submitted days: open for revision
-         * - Unfilled past/today: open to fill, but enforce sequential order
-         * - Future days: blocked
-         */
         navigateToFormulir(item) {
             if (item.hijriDay <= 0) return;
-
             var day = item.hijriDay;
             var formulirUrl = document.querySelector("[data-formulir-url]");
             var baseUrl = formulirUrl
                 ? formulirUrl.dataset.formulirUrl
                 : "/siswa/formulir-harian";
-
-            // Future day that hasn't come yet — block
             if (!item.isPast && !item.isToday) {
                 return;
             }
-
-            // If this day is already submitted, go directly to revise
             if (item.isCompleted) {
                 window.open(baseUrl + "?hari=" + day, "_blank");
                 return;
             }
-
-            // Unfilled day — enforce sequential: find the first unfilled day
             var firstUnfilled = null;
             for (var d = 1; d <= this.ramadhanDay; d++) {
                 if (!this.submittedDays.includes(d)) {
@@ -838,9 +775,7 @@ function nonmuslimDashboard() {
                     break;
                 }
             }
-
             if (firstUnfilled && firstUnfilled < day) {
-                // Must fill earlier days first — show styled notification
                 this.notifTitle = "Isi Formulir Secara Berurutan";
                 this.notifMessage =
                     "Kamu harus mengisi Hari ke-" +
@@ -854,7 +789,6 @@ function nonmuslimDashboard() {
                 window.open(baseUrl + "?hari=" + day, "_blank");
             }
         },
-
         closeNotifModal(redirect) {
             this.showNotifModal = false;
             if (redirect && this.notifRedirectUrl) {
@@ -864,12 +798,10 @@ function nonmuslimDashboard() {
             this.notifMessage = "";
             this.notifRedirectUrl = "";
         },
-
         changePassword() {
             var self = this;
             self.pwMessage = "";
             self.pwSuccess = false;
-
             if (!self.pwOld || !self.pwNew || !self.pwConfirm) {
                 self.pwMessage = "Semua field harus diisi.";
                 return;
@@ -882,25 +814,28 @@ function nonmuslimDashboard() {
                 self.pwMessage = "Konfirmasi password tidak cocok.";
                 return;
             }
-
             self.pwLoading = true;
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
-
-            fetch("/api/change-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                        ? csrfToken.getAttribute("content")
-                        : "",
+            _throttledFetch(
+                "changePw",
+                "/api/change-password",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        current_password: self.pwOld,
+                        new_password: self.pwNew,
+                        new_password_confirmation: self.pwConfirm,
+                    }),
                 },
-                body: JSON.stringify({
-                    current_password: self.pwOld,
-                    new_password: self.pwNew,
-                    new_password_confirmation: self.pwConfirm,
-                }),
-            })
+                3000,
+            )
                 .then(function (r) {
                     return r.json().then(function (d) {
                         return { ok: r.ok, data: d };
@@ -925,9 +860,13 @@ function nonmuslimDashboard() {
                             res.data.message || "Gagal mengubah password.";
                     }
                 })
-                .catch(function () {
+                .catch(function (e) {
                     self.pwLoading = false;
-                    self.pwMessage = "Terjadi kesalahan. Coba lagi.";
+                    if (e && e.throttled) return;
+                    self.pwMessage =
+                        e && e.rateLimited
+                            ? e.message
+                            : "Terjadi kesalahan. Coba lagi.";
                 });
         },
     };

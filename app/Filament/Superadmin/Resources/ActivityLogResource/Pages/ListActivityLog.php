@@ -11,7 +11,12 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use OpenSpout\Writer\XLSX\Writer;
+use OpenSpout\Writer\XLSX\Options;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Cell;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Common\Entity\Style\Color;
 
 class ListActivityLog extends ListRecords
 {
@@ -27,9 +32,9 @@ class ListActivityLog extends ListRecords
         ->color('info')
         ->requiresConfirmation()
         ->modalHeading('Backup Log Aktivitas')
-        ->modalDescription('Semua data log aktivitas akan di-export ke file CSV.')
+        ->modalDescription('Semua data log aktivitas akan di-export ke file Excel (.xlsx).')
         ->modalSubmitActionLabel('Download Backup')
-        ->action(fn() => $this->exportCsv()),
+        ->action(fn() => $this->exportExcel()),
 
       // ── Backup & Hapus Semua Log ──
       Actions\Action::make('backupAndDeleteLog')
@@ -42,10 +47,10 @@ class ListActivityLog extends ListRecords
             ->password()
             ->revealable()
             ->required()
-            ->helperText('Data akan di-backup ke CSV terlebih dahulu, lalu semua log dihapus.'),
+            ->helperText('Data akan di-backup ke Excel terlebih dahulu, lalu semua log dihapus.'),
         ])
         ->modalHeading('Backup & Hapus Semua Log')
-        ->modalDescription('Data log akan di-download sebagai CSV, kemudian semua log di database akan dihapus permanen.')
+        ->modalDescription('Data log akan di-download sebagai Excel (.xlsx), kemudian semua log di database akan dihapus permanen.')
         ->modalSubmitActionLabel('Backup & Hapus')
         ->action(function (array $data) {
           if (!$this->verifySuperadminPassword($data['password'])) {
@@ -57,7 +62,7 @@ class ListActivityLog extends ListRecords
             return;
           }
 
-          $response = $this->exportCsv();
+          $response = $this->exportExcel();
 
           ActivityLog::truncate();
 
@@ -83,68 +88,120 @@ class ListActivityLog extends ListRecords
   }
 
   /**
-   * Export all activity logs to a CSV streamed response.
+   * Export all activity logs to an Excel (.xlsx) file.
    */
-  private function exportCsv(): StreamedResponse
+  private function exportExcel()
   {
-    $filename = 'log-aktivitas-' . now()->format('Y-m-d_His') . '.csv';
+    $filename = 'log-aktivitas-' . now()->format('Y-m-d_His') . '.xlsx';
+    $tempPath = storage_path('app/' . $filename);
 
-    return response()->streamDownload(function () {
-      $handle = fopen('php://output', 'w');
+    $options = new Options();
+    $writer = new Writer($options);
+    $writer->openToFile($tempPath);
 
-      // BOM for Excel UTF-8 compatibility
-      fwrite($handle, "\xEF\xBB\xBF");
+    // ── Header style ──
+    $headerStyle = (new Style())
+      ->setFontBold()
+      ->setFontSize(11)
+      ->setFontColor(Color::WHITE)
+      ->setBackgroundColor(Color::rgb(30, 64, 175))
+      ->setShouldWrapText(false);
 
-      // Header row
-      fputcsv($handle, [
-        'Waktu',
-        'Nama Pengguna',
-        'Email / NISN',
-        'Aktivitas',
-        'Role',
-        'Panel',
-        'IP Address',
-        'Lokasi',
-        'Browser',
-        'Perangkat',
-        'User Agent',
-      ]);
+    // ── Header row ──
+    $headers = [
+      'No',
+      'Tanggal',
+      'Jam',
+      'Nama Pengguna',
+      'Email',
+      'NISN',
+      'Aktivitas',
+      'Status',
+      'Role',
+      'Panel',
+      'IP Address',
+      'Lokasi',
+      'Browser',
+      'Perangkat',
+      'OS',
+      'User Agent',
+    ];
 
-      // Data rows — chunked to handle large datasets
-      ActivityLog::with('user')
-        ->orderBy('created_at', 'desc')
-        ->chunk(500, function ($logs) use ($handle) {
-          foreach ($logs as $log) {
-            fputcsv($handle, [
-              $log->created_at->format('Y-m-d H:i:s'),
-              $log->user?->name ?? 'Tidak diketahui',
-              $log->user?->email ?? $log->user?->nisn ?? '-',
-              match ($log->activity) {
-                'login' => 'Login',
-                'logout' => 'Logout',
-                'login_failed' => 'Gagal Login',
-                default => $log->activity,
-              },
-              $log->role ?? '-',
-              match ($log->panel) {
-                'superadmin' => 'Superadmin',
-                'guru' => 'Guru',
-                'kesiswaan' => 'Kesiswaan',
-                'siswa' => 'Siswa',
-                default => $log->panel ?? '-',
-              },
-              $log->ip_address ?? '-',
-              $log->location ?? '-',
-              $log->browser ?? '-',
-              $log->device ?? '-',
-              $log->user_agent ?? '-',
-            ]);
-          }
-        });
+    $headerCells = array_map(fn(string $h) => Cell\StringCell::fromValue($h), $headers);
+    $writer->addRow(new Row($headerCells, $headerStyle));
 
-      fclose($handle);
-    }, $filename, [
-      'Content-Type' => 'text/csv; charset=UTF-8',
-    ]);
+    // ── Data style ──
+    $dataStyle = (new Style())
+      ->setFontSize(10)
+      ->setShouldWrapText(false);
+
+    // ── Data rows — chunked ──
+    $rowNum = 0;
+    ActivityLog::with('user')
+      ->orderBy('created_at', 'desc')
+      ->chunk(500, function ($logs) use ($writer, $dataStyle, &$rowNum) {
+        foreach ($logs as $log) {
+          $rowNum++;
+
+          $activityLabel = match ($log->activity) {
+            'login' => 'Login',
+            'logout' => 'Logout',
+            'login_failed' => 'Gagal Login',
+            default => $log->activity,
+          };
+
+          $statusLabel = match ($log->activity) {
+            'login' => '✅ Berhasil',
+            'logout' => '🔒 Keluar',
+            'login_failed' => '❌ Gagal',
+            default => '-',
+          };
+
+          $panelLabel = match ($log->panel) {
+            'superadmin' => 'Super Admin',
+            'guru' => 'Guru',
+            'kesiswaan' => 'Kesiswaan',
+            'siswa' => 'Siswa',
+            default => $log->panel ?? '-',
+          };
+
+          // Parse OS from user_agent
+          $os = '-';
+          $ua = $log->user_agent ?? '';
+          if (str_contains($ua, 'Windows')) $os = 'Windows';
+          elseif (str_contains($ua, 'Macintosh') || str_contains($ua, 'Mac OS')) $os = 'macOS';
+          elseif (str_contains($ua, 'Android')) $os = 'Android';
+          elseif (str_contains($ua, 'iPhone') || str_contains($ua, 'iPad')) $os = 'iOS';
+          elseif (str_contains($ua, 'Linux')) $os = 'Linux';
+          elseif (str_contains($ua, 'CrOS')) $os = 'Chrome OS';
+
+          $cells = [
+            Cell\NumericCell::fromValue($rowNum),
+            Cell\StringCell::fromValue($log->created_at->format('d/m/Y')),
+            Cell\StringCell::fromValue($log->created_at->format('H:i:s')),
+            Cell\StringCell::fromValue($log->user?->name ?? 'Tidak diketahui'),
+            Cell\StringCell::fromValue($log->user?->email ?? '-'),
+            Cell\StringCell::fromValue($log->user?->nisn ?? '-'),
+            Cell\StringCell::fromValue($activityLabel),
+            Cell\StringCell::fromValue($statusLabel),
+            Cell\StringCell::fromValue($log->role ?? '-'),
+            Cell\StringCell::fromValue($panelLabel),
+            Cell\StringCell::fromValue($log->ip_address ?? '-'),
+            Cell\StringCell::fromValue($log->location ?? '-'),
+            Cell\StringCell::fromValue($log->browser ?? '-'),
+            Cell\StringCell::fromValue($log->device ?? '-'),
+            Cell\StringCell::fromValue($os),
+            Cell\StringCell::fromValue($ua ?: '-'),
+          ];
+
+          $writer->addRow(new Row($cells, $dataStyle));
+        }
+      });
+
+    $writer->close();
+
+    return response()->download($tempPath, $filename, [
+      'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ])->deleteFileAfterSend(true);
   }
 }

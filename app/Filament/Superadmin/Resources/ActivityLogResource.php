@@ -211,8 +211,7 @@ class ActivityLogResource extends Resource
           ->openUrlInNewTab(),
         Infolists\Components\TextEntry::make('user_agent')
           ->label('User Agent')
-          ->columnSpan(2)
-          ->wrap(),
+          ->columnSpan(2),
       ])->columns(4),
     ]);
   }

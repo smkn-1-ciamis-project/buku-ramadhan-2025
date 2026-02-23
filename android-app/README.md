@@ -6,17 +6,18 @@ Aplikasi Android WebView wrapper untuk **Calakan** (Catatan Amaliyah Kegiatan Ra
 
 | Property     | Value                                         |
 | ------------ | --------------------------------------------- |
-| Package      | `id.smkn1ciamis.calakan`                        |
+| Package      | `id.smkn1ciamis.calakan`                      |
 | Min SDK      | 24 (Android 7.0 Nougat)                       |
 | Target SDK   | 34 (Android 14)                               |
 | URL Produksi | `https://ramadhan.smkn1ciamis.id/siswa/login` |
 | Bahasa       | Java 17                                       |
 | Build System | Gradle 8.5 + AGP 8.2.2                        |
+| Versi        | 1.1.0                                         |
 
 ## Fitur
 
 - **WebView** dengan JavaScript, DOM Storage, dan Cookie support
-- **Pull-to-refresh** (SwipeRefreshLayout)
+- **Pull-to-refresh** (SwipeRefreshLayout) — otomatis disabled saat scroll ke bawah
 - **Splash screen** dengan animasi fade-in
 - **Upload file** dari gallery dan kamera
 - **Error handling** dengan halaman custom (tidak ada koneksi / gagal memuat)
@@ -24,6 +25,9 @@ Aplikasi Android WebView wrapper untuk **Calakan** (Catatan Amaliyah Kegiatan Ra
 - **Adaptive icon** untuk Android 8.0+
 - **Network security config** untuk development dan production
 - **ProGuard / R8** minification untuk release build
+- **Service Worker bypass** — SW otomatis di-unregister di WebView untuk mencegah stale cache
+- **Cookie persistence** — Session cookie di-flush saat app pause agar sesi tidak hilang
+- **Swipe refresh smart** — Pull-to-refresh hanya aktif di posisi scroll paling atas
 
 ## Prasyarat
 

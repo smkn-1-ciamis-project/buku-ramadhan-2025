@@ -809,7 +809,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v1.0 - SMKN 1 Ciamis</p>
+                                        <p class="akun-menu-sub">Calakan v2.0 - SMKN 1 Ciamis</p>
                                     </div>
                                 </div>
 
@@ -936,9 +936,9 @@
 </x-filament-panels::page>
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/dashboard.css')) }}">
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/dashboard.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/dashboard.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/nonmuslim/buddha/dashboard.js')) }}" defer></script>
 @endpush

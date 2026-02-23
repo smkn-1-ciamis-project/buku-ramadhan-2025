@@ -15,6 +15,8 @@ class Login extends BaseLogin
   protected static string $view = 'filament.siswa.pages.auth.login';
 
   public bool $showDevicePopup = false;
+  public bool $showErrorPopup = false;
+  public string $errorPopupMessage = '';
 
   protected function getForms(): array
   {
@@ -41,6 +43,12 @@ class Login extends BaseLogin
       ->minLength(10)
       ->maxLength(10)
       ->regex('/^\d{10}$/')
+      ->validationMessages([
+        'required' => 'NISN wajib diisi.',
+        'min' => 'NISN harus 10 digit angka.',
+        'max' => 'NISN harus 10 digit angka.',
+        'regex' => 'Format NISN tidak valid. Harus 10 digit angka.',
+      ])
       ->autofocus()
       ->extraInputAttributes([
         'tabindex' => 1,
@@ -70,7 +78,15 @@ class Login extends BaseLogin
       return null;
     }
 
-    $data = $this->form->getState();
+    // Validate form — catch and show as centered popup instead of inline
+    try {
+      $data = $this->form->getState();
+    } catch (ValidationException $e) {
+      $this->errorPopupMessage = collect($e->errors())->flatten()->first() ?? 'Validasi gagal.';
+      $this->showErrorPopup = true;
+      return null;
+    }
+
     $credentials = $this->getCredentialsFromFormData($data);
 
     // ── Single-session pre-check ───────────────────────────────────────
@@ -81,8 +97,9 @@ class Login extends BaseLogin
     if ($existingUser) {
       $hasActiveSession  = !empty($existingUser->active_session_id);
       $isDifferentDevice = $existingUser->active_session_id !== session()->getId();
+      $maxMinutes = \App\Http\Middleware\EnsureSingleSession::getSessionDurationForRole($existingUser->role_user?->name ?? '');
       $sessionStillValid = $existingUser->session_login_at &&
-        $existingUser->session_login_at->addHours(12)->isFuture();
+        $existingUser->session_login_at->addMinutes($maxMinutes)->isFuture();
 
       // Block new login if another device holds a valid (< 12 h) active session.
       if ($hasActiveSession && $isDifferentDevice && $sessionStillValid) {
@@ -98,21 +115,13 @@ class Login extends BaseLogin
     $remember = $data['remember'] ?? false;
 
     if (! Auth::attempt($credentials, $remember)) {
-      $this->throwFailureValidationException();
+      $this->errorPopupMessage = 'NISN atau password salah. Pastikan NISN terdiri dari 10 digit angka.';
+      $this->showErrorPopup = true;
+      return null;
     }
 
     // Regenerate session to prevent session-fixation attacks
     session()->regenerate();
-
-    // If "Ingat Saya" is NOT checked: session cookie expires when browser closes
-    // and session lifetime is only 5 minutes of inactivity
-    if (! $remember) {
-      session(['session_short' => true]);
-      config(['session.expire_on_close' => true]);
-      config(['session.lifetime' => 5]);
-    } else {
-      session()->forget('session_short');
-    }
 
         // Save session tracking data (session ID reflects the NEW ID after regenerate)
     /** @var \App\Models\User $user */

@@ -348,6 +348,12 @@ class SiswaRelationManager extends RelationManager
                   continue;
                 }
 
+                if (strlen($nisn) > 10) {
+                  $errors[] = "Baris {$rowNum}: NISN '{$nisn}' terlalu panjang (maks. 10 karakter).";
+                  $skipped++;
+                  continue;
+                }
+
                 $validAgama = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'];
                 $matchedAgama = collect($validAgama)->first(fn($a) => strtolower($a) === strtolower($agama));
                 if (!$matchedAgama) {
@@ -372,17 +378,23 @@ class SiswaRelationManager extends RelationManager
                   continue;
                 }
 
-                User::create([
-                  'name' => $nama,
-                  'nisn' => $nisn,
-                  'email' => $email,
-                  'jenis_kelamin' => $jk,
-                  'agama' => $matchedAgama,
-                  'kelas_id' => $kelas->id,
-                  'password' => Hash::make($password ?: $nisn),
-                  'role_user_id' => $siswaRole->id,
-                  'must_change_password' => true,
-                ]);
+                try {
+                  User::create([
+                    'name' => $nama,
+                    'nisn' => $nisn,
+                    'email' => $email,
+                    'jenis_kelamin' => $jk,
+                    'agama' => $matchedAgama,
+                    'kelas_id' => $kelas->id,
+                    'password' => Hash::make($password ?: $nisn),
+                    'role_user_id' => $siswaRole->id,
+                    'must_change_password' => true,
+                  ]);
+                } catch (\Exception $e) {
+                  $errors[] = "Baris {$rowNum}: Gagal menyimpan '{$nama}' - " . \Illuminate\Support\Str::limit($e->getMessage(), 100);
+                  $skipped++;
+                  continue;
+                }
 
                 $imported++;
               }

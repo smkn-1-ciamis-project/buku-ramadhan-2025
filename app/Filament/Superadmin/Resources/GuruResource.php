@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 
@@ -125,6 +126,22 @@ class GuruResource extends Resource
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\EditAction::make(),
+          Tables\Actions\Action::make('resetPassword')
+            ->label('Reset Password')
+            ->icon('heroicon-o-key')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Password Guru')
+            ->modalDescription(fn($record) => "Password akun {$record->name} akan direset ke default (guru123). Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Reset')
+            ->action(function ($record) {
+              $record->update(['password' => Hash::make('guru123')]);
+              Notification::make()
+                ->title('Password berhasil direset')
+                ->body("Password {$record->name} telah direset ke guru123")
+                ->success()
+                ->send();
+            }),
           Tables\Actions\DeleteAction::make(),
         ]),
       ])
@@ -133,13 +150,6 @@ class GuruResource extends Resource
           Tables\Actions\DeleteBulkAction::make(),
         ]),
       ]);
-  }
-
-  public static function mutateFormDataBeforeCreate(array $data): array
-  {
-    $data['role_user_id'] = RoleUser::where('name', 'Guru')->first()?->id;
-    $data['email_verified_at'] = now();
-    return $data;
   }
 
   public static function getPages(): array

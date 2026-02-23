@@ -32,6 +32,7 @@ class SuperadminPanelProvider extends PanelProvider
             ->path('portal-admin-smkn1')
             ->login()
             ->brandName('Calakan')
+            ->favicon(asset('img/logo_smk.png'))
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -81,7 +82,7 @@ class SuperadminPanelProvider extends PanelProvider
                 PanelsRenderHook::BODY_END,
                 fn() => new HtmlString('
                     <script>
-                        if ("serviceWorker" in navigator) {
+                        if ("serviceWorker" in navigator && !navigator.userAgent.includes("Calakan-Android")) {
                             window.addEventListener("load", () => {
                                 navigator.serviceWorker.register("/sw.js").catch(() => {});
                             });

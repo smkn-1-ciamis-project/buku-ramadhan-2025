@@ -4,18 +4,16 @@ namespace App\Filament\Kesiswaan\Resources\RekapKelasResource\Pages;
 
 use App\Filament\Kesiswaan\Resources\RekapKelasResource;
 use App\Models\FormSubmission;
-use App\Models\Kelas;
-use App\Models\User;
 use Carbon\Carbon;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewRekapKelas extends ViewRecord
 {
   protected static string $resource = RekapKelasResource::class;
 
-  public function infolist(Infolist $infolist): Infolist
+  protected static string $view = 'filament.kesiswaan.pages.view-rekap-kelas';
+
+  protected function getViewData(): array
   {
     $kelas = $this->record;
     $kelas->load(['wali', 'siswa']);
@@ -36,12 +34,17 @@ class ViewRekapKelas extends ViewRecord
       ? FormSubmission::whereIn('user_id', $siswaIds)->where('hari_ke', $hariKe)->count()
       : 0;
 
+    $expectedTotal = $totalSiswa * max($hariKe, 1);
+    $complianceRate = $expectedTotal > 0 ? round(($totalSubmissions / $expectedTotal) * 100) : 0;
+    $verifyRate = $totalSubmissions > 0 ? round(($verified / $totalSubmissions) * 100) : 0;
+
     // Per-siswa progress
-    $siswaProgress = $kelas->siswa->map(function ($siswa) {
+    $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe) {
       $total = FormSubmission::where('user_id', $siswa->id)->count();
       $verifiedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'verified')->count();
       $pendingCount  = FormSubmission::where('user_id', $siswa->id)->where('status', 'pending')->count();
       $rejectedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'rejected')->count();
+      $rate = $hariKe > 0 ? round(($total / $hariKe) * 100) : 0;
       return [
         'name' => $siswa->name,
         'nisn' => $siswa->nisn ?? '-',
@@ -49,67 +52,22 @@ class ViewRekapKelas extends ViewRecord
         'verified' => $verifiedCount,
         'pending' => $pendingCount,
         'rejected' => $rejectedCount,
+        'rate' => min($rate, 100),
       ];
     })->sortBy('name')->values();
 
-    return $infolist
-      ->schema([
-        Infolists\Components\Section::make('Info Kelas')
-          ->schema([
-            Infolists\Components\TextEntry::make('nama')
-              ->label('Kelas'),
-            Infolists\Components\TextEntry::make('wali.name')
-              ->label('Wali Kelas')
-              ->placeholder('-'),
-            Infolists\Components\TextEntry::make('stat_siswa')
-              ->label('Jumlah Siswa')
-              ->state((string) $totalSiswa)
-              ->badge()
-              ->color('info'),
-            Infolists\Components\TextEntry::make('hari_ke_state')
-              ->label('Hari Ke')
-              ->state($hariKe > 0 ? "Hari ke-{$hariKe}" : 'Belum dimulai')
-              ->badge()
-              ->color($hariKe > 0 ? 'success' : 'gray'),
-          ])
-          ->columns(4),
-
-        Infolists\Components\Section::make('Statistik Formulir')
-          ->schema([
-            Infolists\Components\TextEntry::make('stat_total')
-              ->label('Total Formulir')
-              ->state((string) $totalSubmissions)
-              ->badge()
-              ->color('info'),
-            Infolists\Components\TextEntry::make('stat_today')
-              ->label('Submit Hari Ini')
-              ->state("{$todaySubmit}/{$totalSiswa}")
-              ->badge()
-              ->color($todaySubmit >= $totalSiswa ? 'success' : 'warning'),
-            Infolists\Components\TextEntry::make('stat_verified')
-              ->label('Verified')
-              ->state((string) $verified)
-              ->badge()
-              ->color('success'),
-            Infolists\Components\TextEntry::make('stat_pending')
-              ->label('Pending')
-              ->state((string) $pending)
-              ->badge()
-              ->color($pending > 0 ? 'warning' : 'success'),
-            Infolists\Components\TextEntry::make('stat_rejected')
-              ->label('Rejected')
-              ->state((string) $rejected)
-              ->badge()
-              ->color($rejected > 0 ? 'danger' : 'gray'),
-          ])
-          ->columns(5),
-
-        Infolists\Components\Section::make('Progress Per Siswa')
-          ->schema([
-            Infolists\Components\ViewEntry::make('siswa_progress_table')
-              ->view('filament.kesiswaan.components.siswa-progress-table')
-              ->state($siswaProgress->toArray()),
-          ]),
-      ]);
+    return [
+      'kelas' => $kelas,
+      'totalSiswa' => $totalSiswa,
+      'hariKe' => $hariKe,
+      'totalSubmissions' => $totalSubmissions,
+      'verified' => $verified,
+      'pending' => $pending,
+      'rejected' => $rejected,
+      'todaySubmit' => $todaySubmit,
+      'complianceRate' => $complianceRate,
+      'verifyRate' => $verifyRate,
+      'siswaProgress' => $siswaProgress,
+    ];
   }
 }

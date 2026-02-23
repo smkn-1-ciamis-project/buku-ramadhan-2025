@@ -1,8 +1,27 @@
-/**
- * Calakan — Formulir Harian Alpine.js Component
- */
+// ── API Throttle Helper ─────────────────────────────────────────────
+var _apiLastCall = {};
+function _throttledFetch(key, url, options, cooldownMs) {
+    cooldownMs = cooldownMs || 5000;
+    var now = Date.now();
+    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
+        return Promise.reject({ throttled: true });
+    }
+    _apiLastCall[key] = now;
+    return fetch(url, options).then(function (r) {
+        if (r.status === 429) {
+            return r.json().then(function (d) {
+                return Promise.reject({
+                    rateLimited: true,
+                    message:
+                        d.message ||
+                        "Terlalu banyak permintaan. Tunggu sebentar.",
+                });
+            });
+        }
+        return r;
+    });
+}
 
-/* ── 114 Surah data (number, name, total ayat) ── */
 const QURAN_SURAHS = [
     { number: 1, name: "Al-Fatihah", ayat: 7 },
     { number: 2, name: "Al-Baqarah", ayat: 286 },
@@ -119,7 +138,6 @@ const QURAN_SURAHS = [
     { number: 113, name: "Al-Falaq", ayat: 5 },
     { number: 114, name: "An-Nas", ayat: 6 },
 ];
-
 function formulirHarian() {
     return {
         formDay: 1,
@@ -127,8 +145,8 @@ function formulirHarian() {
         formSaving: false,
         showSuccessPopup: false,
         successDay: 0,
-        showValidationError: false,
-        validationMessage: "",
+        showErrorPopup: false,
+        errorMessages: [],
         submittedDays: [],
         submissionStatuses: {},
         currentDayStatus: "",
@@ -136,20 +154,18 @@ function formulirHarian() {
         configLoaded: false,
         formDisabled: false,
         formDisabledMessage: "",
-
-        /* ── Dynamic config from server ── */
         sectionConfig: [],
         enabledSections: {},
         extraSections: [],
-
-        /* ── Surah autocomplete ── */
         allSurahs: QURAN_SURAHS,
-        filteredSurahs: [],
-        showSurahList: false,
-        selectedSurahAyat: 0,
-        ayatError: "",
-
-        /* ── Editor format state ── */
+        tadarusUI: [
+            {
+                maxAyat: 0,
+                ayatError: "",
+                filteredSurahs: QURAN_SURAHS.slice(),
+                showSurahList: false,
+            },
+        ],
         editorFormats: {
             bold: false,
             italic: false,
@@ -157,7 +173,6 @@ function formulirHarian() {
             ul: false,
             ol: false,
         },
-
         updateEditorFormats() {
             this.editorFormats.bold = document.queryCommandState("bold");
             this.editorFormats.italic = document.queryCommandState("italic");
@@ -169,8 +184,6 @@ function formulirHarian() {
             this.editorFormats.ol =
                 document.queryCommandState("insertOrderedList");
         },
-
-        /* ── Puasa reason suggestions ── */
         showPuasaSuggest: false,
         puasaSuggestions: [
             "Sakit (demam, maag, dll)",
@@ -180,8 +193,6 @@ function formulirHarian() {
             "Bepergian jauh",
             "Izin orang tua",
         ],
-
-        /* ── Dynamic item arrays (populated from config) ── */
         sholatFarduItems: [
             { key: "subuh", label: "Subuh" },
             { key: "dzuhur", label: "Dzuhur" },
@@ -198,8 +209,6 @@ function formulirHarian() {
             { key: "dhuha", label: "Dhuha" },
         ],
         sholatSunatOptions: ["ya", "tidak"],
-
-        /* ── Kegiatan groups (matches paper form) ── */
         kegiatanGroupA: [
             { key: "dzikir_pagi", label: "Dzikir Pagi" },
             { key: "olahraga", label: "Olahraga Ringan" },
@@ -220,8 +229,6 @@ function formulirHarian() {
             { key: "tidur_cepat", label: "Tidur Cepat" },
             { key: "bangun_pagi", label: "Bangun Pagi / Sahur" },
         ],
-
-        /* ── Section titles (dynamic from config) ── */
         sectionTitles: {
             puasa: "Puasa",
             sholat_fardu: "Sholat Fardu",
@@ -236,19 +243,13 @@ function formulirHarian() {
             "Amaliyah Pancawaluya Pinter",
             "Amaliyah Pancawaluya Singer",
         ],
-
-        /* ── Form data ── */
         formData: {
             puasa: "",
             puasa_alasan: "",
-
             sholat: { subuh: "", dzuhur: "", ashar: "", maghrib: "", isya: "" },
             tarawih: "",
             sunat: { rowatib: "", tahajud: "", dhuha: "" },
-
-            tadarus_surat: "",
-            tadarus_ayat: "",
-
+            tadarus_entries: [{ surat: "", ayat: "" }],
             kegiatan: {
                 dzikir_pagi: false,
                 olahraga: false,
@@ -266,18 +267,20 @@ function formulirHarian() {
                 tidur_cepat: false,
                 bangun_pagi: false,
             },
-
             ceramah_mode: "",
             ceramah_tema: "",
             ringkasan_ceramah: "",
         },
-
-        /* ── Load dynamic form config from server ── */
         loadFormConfig() {
             var self = this;
-            fetch("/api/form-settings/Islam", {
-                headers: { Accept: "application/json" },
-            })
+            _throttledFetch(
+                "formConfig",
+                "/api/form-settings/Islam",
+                {
+                    headers: { Accept: "application/json" },
+                },
+                10000,
+            )
                 .then(function (r) {
                     if (r.status === 403) {
                         return r.json().then(function (d) {
@@ -293,21 +296,15 @@ function formulirHarian() {
                 .then(function (data) {
                     if (!data || !data.sections) return;
                     self.sectionConfig = data.sections;
-
-                    // Build enabled sections map
                     var enabled = {};
                     data.sections.forEach(function (s) {
                         enabled[s.key] = s.enabled !== false;
                     });
                     self.enabledSections = enabled;
-
-                    // Apply config to each section
                     data.sections.forEach(function (section) {
-                        // Update section titles
                         if (section.title) {
                             self.sectionTitles[section.key] = section.title;
                         }
-
                         if (
                             section.key === "puasa" &&
                             section.type === "ya_tidak"
@@ -320,12 +317,10 @@ function formulirHarian() {
                                     section.reason_suggestions;
                             }
                         }
-
                         if (section.key === "sholat_fardu" && section.items) {
                             self.sholatFarduItems = section.items;
                             if (section.options)
                                 self.sholatFarduOptions = section.options;
-                            // Rebuild sholat formData
                             var newSholat = {};
                             section.items.forEach(function (item) {
                                 newSholat[item.key] =
@@ -333,18 +328,15 @@ function formulirHarian() {
                             });
                             self.formData.sholat = newSholat;
                         }
-
                         if (section.key === "tarawih" && section.items) {
                             self.tarawihItems = section.items;
                             if (section.options)
                                 self.tarawihOptions = section.options;
                         }
-
                         if (section.key === "sholat_sunat" && section.items) {
                             self.sholatSunatItems = section.items;
                             if (section.options)
                                 self.sholatSunatOptions = section.options;
-                            // Rebuild sunat formData
                             var newSunat = {};
                             section.items.forEach(function (item) {
                                 newSunat[item.key] =
@@ -352,7 +344,6 @@ function formulirHarian() {
                             });
                             self.formData.sunat = newSunat;
                         }
-
                         if (section.key === "kegiatan" && section.groups) {
                             var allGroups = section.groups;
                             if (allGroups[0]) {
@@ -370,7 +361,6 @@ function formulirHarian() {
                                 self.groupTitles[2] =
                                     allGroups[2].title || self.groupTitles[2];
                             }
-                            // Rebuild kegiatan formData
                             var newKegiatan = {};
                             allGroups.forEach(function (group) {
                                 (group.items || []).forEach(function (item) {
@@ -382,8 +372,6 @@ function formulirHarian() {
                             self.formData.kegiatan = newKegiatan;
                         }
                     });
-
-                    // Collect extra (dynamic) sections not handled by hardcoded keys
                     var knownKeys = [
                         "puasa",
                         "sholat_fardu",
@@ -477,31 +465,24 @@ function formulirHarian() {
                         }
                     });
                     self.extraSections = extras;
-
                     self.configLoaded = true;
-                    // Re-check form submitted after config loaded (restores saved data properly)
                     self.checkFormSubmitted();
                 })
                 .catch(function (e) {
+                    if (e && (e.throttled || e.rateLimited)) return;
                     console.warn("Gagal memuat konfigurasi formulir:", e);
-                    self.configLoaded = true; // Use defaults
+                    self.configLoaded = true;
                 });
         },
-
-        /* Check if a section is enabled by key */
         isSectionEnabled(key) {
-            if (Object.keys(this.enabledSections).length === 0) return true; // defaults before config loads
+            if (Object.keys(this.enabledSections).length === 0) return true;
             return this.enabledSections[key] !== false;
         },
-
-        /* ── Lifecycle ── */
         init() {
             this.calculateRamadhanDay();
             this.loadSubmittedDays();
             this.loadFormConfig();
             this.syncFromServer();
-
-            // Check for ?hari= query param (from calendar click)
             var urlParams = new URLSearchParams(window.location.search);
             var requestedDay = urlParams.get("hari");
             if (requestedDay) {
@@ -511,14 +492,11 @@ function formulirHarian() {
                     requestedDay <= 30 &&
                     requestedDay <= this.ramadhanDay
                 ) {
-                    // If this day is already submitted, allow revision
                     if (this.submittedDays.includes(requestedDay)) {
                         this.formDay = requestedDay;
                     } else {
-                        // Enforce sequential: find the first unfilled day
                         var firstUnfilled = this.getFirstUnfilledDay();
                         if (firstUnfilled < requestedDay) {
-                            // Must fill earlier days first
                             this.formDay = firstUnfilled;
                         } else {
                             this.formDay = requestedDay;
@@ -528,18 +506,14 @@ function formulirHarian() {
                     this.formDay = this.getFirstUnfilledDay();
                 }
             } else {
-                // Default: open the oldest unfilled day (sequential enforcement)
                 this.formDay = this.getFirstUnfilledDay();
             }
-
             this.checkFormSubmitted();
-            this.filteredSurahs = this.allSurahs;
+            this._rebuildTadarusUI();
         },
-
         ramadhanDay: 1,
-
         calculateRamadhanDay() {
-            const ramadhanStart = new Date(2026, 1, 19); // 1 Ramadhan 1447H
+            const ramadhanStart = new Date(2026, 1, 19);
             const now = new Date();
             const today = new Date(
                 now.getFullYear(),
@@ -549,16 +523,12 @@ function formulirHarian() {
             const diff = Math.floor((today - ramadhanStart) / 86400000) + 1;
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
         },
-
-        /* Return the earliest unfilled day (1..ramadhanDay) */
         getFirstUnfilledDay() {
             for (var d = 1; d <= this.ramadhanDay; d++) {
                 if (!this.submittedDays.includes(d)) return d;
             }
             return this.ramadhanDay;
         },
-
-        /* Count how many days before today are still unfilled */
         getMissedCount() {
             var count = 0;
             for (var d = 1; d < this.ramadhanDay; d++) {
@@ -566,20 +536,15 @@ function formulirHarian() {
             }
             return count;
         },
-
-        /* Reset form fields (used when advancing to the next day) */
         resetFormData() {
-            // Build sholat object from dynamic items
             var sholat = {};
             this.sholatFarduItems.forEach(function (item) {
                 sholat[item.key] = "";
             });
-            // Build sunat object from dynamic items
             var sunat = {};
             this.sholatSunatItems.forEach(function (item) {
                 sunat[item.key] = "";
             });
-            // Build kegiatan object from dynamic groups
             var kegiatan = {};
             this.kegiatanGroupA.forEach(function (item) {
                 kegiatan[item.key] = false;
@@ -590,21 +555,18 @@ function formulirHarian() {
             this.kegiatanGroupC.forEach(function (item) {
                 kegiatan[item.key] = false;
             });
-
             this.formData = {
                 puasa: "",
                 puasa_alasan: "",
                 sholat: sholat,
                 tarawih: "",
                 sunat: sunat,
-                tadarus_surat: "",
-                tadarus_ayat: "",
+                tadarus_entries: [{ surat: "", ayat: "" }],
                 kegiatan: kegiatan,
                 ceramah_mode: "",
                 ceramah_tema: "",
                 ringkasan_ceramah: "",
             };
-            // Reset extra (dynamic) section formData
             var self = this;
             this.extraSections.forEach(function (section) {
                 if (section.type === "ya_tidak") {
@@ -638,88 +600,117 @@ function formulirHarian() {
                     self.formData[section.key] = "";
                 }
             });
-            this.selectedSurahAyat = 0;
-            this.ayatError = "";
+            this.tadarusUI = [
+                {
+                    maxAyat: 0,
+                    ayatError: "",
+                    filteredSurahs: QURAN_SURAHS.slice(),
+                    showSurahList: false,
+                },
+            ];
             if (this.$refs.ceramahEditor)
                 this.$refs.ceramahEditor.innerHTML = "";
         },
-
-        /* ── Surah search / filter ── */
-        filterSurah(query) {
+        filterSurahForEntry(idx, query) {
+            if (!this.tadarusUI[idx]) return;
             if (!query || query.length === 0) {
-                this.filteredSurahs = this.allSurahs;
+                this.tadarusUI[idx].filteredSurahs = QURAN_SURAHS.slice();
                 return;
             }
             var q = query.toLowerCase();
-            this.filteredSurahs = this.allSurahs.filter(function (s) {
-                return (
-                    s.name.toLowerCase().indexOf(q) !== -1 ||
-                    String(s.number).indexOf(q) !== -1
-                );
-            });
+            this.tadarusUI[idx].filteredSurahs = QURAN_SURAHS.filter(
+                function (s) {
+                    return (
+                        s.name.toLowerCase().indexOf(q) !== -1 ||
+                        String(s.number).indexOf(q) !== -1
+                    );
+                },
+            );
         },
-
-        selectSurah(s) {
-            this.formData.tadarus_surat = s.name;
-            this.selectedSurahAyat = s.ayat;
-            this.showSurahList = false;
-            this.ayatError = "";
-            // Re-validate existing ayat input against new surah
-            if (this.formData.tadarus_ayat) {
-                this.validateAyat(this.formData.tadarus_ayat);
+        selectSurahForEntry(idx, s) {
+            this.formData.tadarus_entries[idx].surat = s.name;
+            this.tadarusUI[idx].maxAyat = s.ayat;
+            this.tadarusUI[idx].showSurahList = false;
+            this.tadarusUI[idx].ayatError = "";
+            if (this.formData.tadarus_entries[idx].ayat) {
+                this.validateAyatForEntry(
+                    idx,
+                    this.formData.tadarus_entries[idx].ayat,
+                );
             }
         },
-
-        validateAyat(val) {
-            // Strip anything that's not a digit or dash
+        validateAyatForEntry(idx, val) {
             var clean = val.replace(/[^0-9\-]/g, "");
-            // Collapse multiple dashes
             clean = clean.replace(/-{2,}/g, "-");
-            // Remove leading dash
             clean = clean.replace(/^-/, "");
-            this.formData.tadarus_ayat = clean;
-
-            if (!clean || !this.selectedSurahAyat) {
-                this.ayatError = "";
+            this.formData.tadarus_entries[idx].ayat = clean;
+            var ui = this.tadarusUI[idx];
+            if (!clean || !ui.maxAyat) {
+                ui.ayatError = "";
                 return;
             }
-
             var parts = clean.split("-").filter(function (p) {
                 return p !== "";
             });
-            var max = this.selectedSurahAyat;
+            var max = ui.maxAyat;
             var exceeded = parts.some(function (p) {
                 return parseInt(p) > max;
             });
             var reversed =
                 parts.length === 2 && parseInt(parts[0]) > parseInt(parts[1]);
-
             if (exceeded) {
-                this.ayatError = "Melebihi jumlah ayat surat ini (" + max + ")";
+                ui.ayatError = "Melebihi jumlah ayat surat ini (" + max + ")";
             } else if (reversed) {
-                this.ayatError =
+                ui.ayatError =
                     "Ayat awal tidak boleh lebih besar dari ayat akhir";
             } else {
-                this.ayatError = "";
+                ui.ayatError = "";
             }
         },
-
-        /* ── Rich text editor commands ── */
+        addTadarusEntry() {
+            this.formData.tadarus_entries.push({ surat: "", ayat: "" });
+            this.tadarusUI.push({
+                maxAyat: 0,
+                ayatError: "",
+                filteredSurahs: QURAN_SURAHS.slice(),
+                showSurahList: false,
+            });
+        },
+        removeTadarusEntry(idx) {
+            if (this.formData.tadarus_entries.length <= 1) return;
+            this.formData.tadarus_entries.splice(idx, 1);
+            this.tadarusUI.splice(idx, 1);
+        },
+        _rebuildTadarusUI() {
+            var self = this;
+            var entries = this.formData.tadarus_entries || [
+                { surat: "", ayat: "" },
+            ];
+            this.tadarusUI = entries.map(function (entry) {
+                var ui = {
+                    maxAyat: 0,
+                    ayatError: "",
+                    filteredSurahs: QURAN_SURAHS.slice(),
+                    showSurahList: false,
+                };
+                if (entry.surat) {
+                    var found = QURAN_SURAHS.find(function (s) {
+                        return s.name === entry.surat;
+                    });
+                    if (found) ui.maxAyat = found.ayat;
+                }
+                return ui;
+            });
+        },
         execCmd(cmd) {
             document.execCommand(cmd, false, null);
             if (this.$refs.ceramahEditor) this.$refs.ceramahEditor.focus();
             this.updateEditorFormats();
         },
-
-        /* ── LocalStorage persistence ── */
-
-        /* Build per-user localStorage key */
         _lsKey(base) {
             var uid = window.__siswaUserId || "unknown";
             return base + "_" + uid;
         },
-
-        /* Clear all localStorage entries for a given prefix (old user) */
         _clearOldUserData(prefix) {
             var toRemove = [];
             for (var i = 0; i < localStorage.length; i++) {
@@ -730,10 +721,8 @@ function formulirHarian() {
                 localStorage.removeItem(k);
             });
         },
-
         loadSubmittedDays() {
             try {
-                // Detect user change — clear stale data from previous user
                 var lastUser = localStorage.getItem("ramadhan_last_user");
                 var currentUser = window.__siswaUserId || "unknown";
                 if (lastUser && lastUser !== currentUser) {
@@ -741,7 +730,6 @@ function formulirHarian() {
                     this._clearOldUserData("ramadhan_form_day_");
                 }
                 localStorage.setItem("ramadhan_last_user", currentUser);
-
                 var saved = localStorage.getItem(
                     this._lsKey("ramadhan_submitted_days"),
                 );
@@ -750,14 +738,11 @@ function formulirHarian() {
                 this.submittedDays = [];
             }
         },
-
         checkFormSubmitted() {
             this.formSubmitted = this.submittedDays.includes(this.formDay);
-            // Set current day verification status
             var dayStatus = this.submissionStatuses[this.formDay];
             this.currentDayStatus = dayStatus ? dayStatus.status : "";
             this.currentDayNote = dayStatus ? dayStatus.catatan_guru || "" : "";
-            // If rejected, allow re-edit
             if (this.currentDayStatus === "rejected") {
                 this.formSubmitted = false;
             }
@@ -768,7 +753,6 @@ function formulirHarian() {
                 if (savedForm) {
                     var parsed = JSON.parse(savedForm);
                     this.formData = this._deepMerge(this.formData, parsed);
-                    // Restore rich text editor content
                     var self = this;
                     if (self.formData.ringkasan_ceramah) {
                         this.$nextTick(function () {
@@ -778,28 +762,35 @@ function formulirHarian() {
                             }
                         });
                     }
-                    // Restore surah ayat count
-                    if (this.formData.tadarus_surat) {
-                        var found = this.allSurahs.find(function (s) {
-                            return s.name === self.formData.tadarus_surat;
-                        });
-                        if (found) this.selectedSurahAyat = found.ayat;
+                    if (
+                        this.formData.tadarus_surat &&
+                        !this.formData.tadarus_entries
+                    ) {
+                        this.formData.tadarus_entries = [
+                            {
+                                surat: this.formData.tadarus_surat,
+                                ayat: this.formData.tadarus_ayat || "",
+                            },
+                        ];
+                        delete this.formData.tadarus_surat;
+                        delete this.formData.tadarus_ayat;
                     }
+                    if (
+                        !this.formData.tadarus_entries ||
+                        !Array.isArray(this.formData.tadarus_entries)
+                    ) {
+                        this.formData.tadarus_entries = [
+                            { surat: "", ayat: "" },
+                        ];
+                    }
+                    this._rebuildTadarusUI();
                 }
             } catch (e) {}
-
-            // Auto-fill sholat fields from check-in data
             this.loadCheckinForDay(this.formDay);
         },
-
-        /**
-         * Fetch prayer check-in data for a given Ramadhan day
-         * and auto-fill empty sholat/tarawih/sunat fields in formData.
-         */
         loadCheckinForDay(day) {
             var self = this;
-            // Convert Ramadhan day number to calendar date
-            var ramadhanStart = new Date(2026, 1, 19); // 1 Ramadhan 1447H = 19 Feb 2026
+            var ramadhanStart = new Date(2026, 1, 19);
             var targetDate = new Date(
                 ramadhanStart.getTime() + (day - 1) * 86400000,
             );
@@ -807,18 +798,20 @@ function formulirHarian() {
             var mm = String(targetDate.getMonth() + 1).padStart(2, "0");
             var dd = String(targetDate.getDate()).padStart(2, "0");
             var dateStr = yyyy + "-" + mm + "-" + dd;
-
-            fetch("/api/prayer-checkins/date/" + dateStr, {
-                headers: { Accept: "application/json" },
-            })
+            _throttledFetch(
+                "checkinDay",
+                "/api/prayer-checkins/date/" + dateStr,
+                {
+                    headers: { Accept: "application/json" },
+                },
+                5000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
                 .then(function (data) {
                     if (!data || !data.checkins) return;
                     var checkins = data.checkins;
-
-                    // Map wajib shalat (subuh, dzuhur, ashar, maghrib, isya)
                     var wajibKeys = [
                         "subuh",
                         "dzuhur",
@@ -835,8 +828,6 @@ function formulirHarian() {
                             self.formData.sholat[key] = checkins[key].status;
                         }
                     });
-
-                    // Map tarawih
                     if (
                         checkins.tarawih &&
                         checkins.tarawih.status &&
@@ -844,8 +835,6 @@ function formulirHarian() {
                     ) {
                         self.formData.tarawih = checkins.tarawih.status;
                     }
-
-                    // Map sunnah (rowatib, tahajud, dhuha)
                     var sunnahKeys = ["rowatib", "tahajud", "dhuha"];
                     sunnahKeys.forEach(function (key) {
                         if (
@@ -857,11 +846,8 @@ function formulirHarian() {
                         }
                     });
                 })
-                .catch(function () {
-                    // Silently ignore — check-in data is supplementary
-                });
+                .catch(function () {});
         },
-
         _deepMerge(target, source) {
             var result = Object.assign({}, target);
             for (var key in source) {
@@ -881,59 +867,183 @@ function formulirHarian() {
             }
             return result;
         },
-
         validateForm() {
             var errors = [];
-            // Puasa wajib diisi
+            var isHaid =
+                this.formData.puasa === "tidak" &&
+                this.formData.puasa_alasan === "Haid";
+
+            // 1. Puasa wajib
             if (!this.formData.puasa) {
-                errors.push("Puasa belum diisi");
+                errors.push("Puasa belum diisi (pilih Ya atau Tidak)");
             }
-            // Minimal 1 sholat wajib diisi
-            if (this.isSectionEnabled("sholat")) {
-                var anySholat = false;
-                for (var key in this.formData.sholat) {
-                    if (this.formData.sholat[key]) {
-                        anySholat = true;
-                        break;
+
+            if (!isHaid) {
+                // 2. Sholat Fardu wajib semua, berurutan
+                if (this.isSectionEnabled("sholat_fardu")) {
+                    var farduOrder = [
+                        "subuh",
+                        "dzuhur",
+                        "ashar",
+                        "maghrib",
+                        "isya",
+                    ];
+                    var farduLabels = {
+                        subuh: "Subuh",
+                        dzuhur: "Dzuhur",
+                        ashar: "Ashar",
+                        maghrib: "Maghrib",
+                        isya: "Isya",
+                    };
+                    var missingFardu = [];
+                    for (var i = 0; i < farduOrder.length; i++) {
+                        if (!this.formData.sholat[farduOrder[i]]) {
+                            missingFardu.push(farduLabels[farduOrder[i]]);
+                        }
+                    }
+                    if (missingFardu.length > 0) {
+                        errors.push(
+                            "Sholat Fardu belum lengkap: " +
+                                missingFardu.join(", "),
+                        );
                     }
                 }
-                if (!anySholat) errors.push("Sholat fardhu belum diisi");
+
+                // 3. Tarawih wajib
+                if (this.isSectionEnabled("tarawih")) {
+                    if (!this.formData.tarawih) {
+                        errors.push("Sholat Tarawih belum diisi");
+                    }
+                }
+
+                // 4. Sholat Sunat wajib semua
+                if (this.isSectionEnabled("sholat_sunat")) {
+                    var sunatLabels = {
+                        rowatib: "Rowatib",
+                        tahajud: "Tahajud",
+                        dhuha: "Dhuha",
+                    };
+                    var missingSunat = [];
+                    for (var sk in this.formData.sunat) {
+                        if (
+                            this.formData.sunat.hasOwnProperty(sk) &&
+                            !this.formData.sunat[sk]
+                        ) {
+                            missingSunat.push(sunatLabels[sk] || sk);
+                        }
+                    }
+                    if (missingSunat.length > 0) {
+                        errors.push(
+                            "Sholat Sunat belum lengkap: " +
+                                missingSunat.join(", "),
+                        );
+                    }
+                }
+
+                // 5. Tadarus ayat error check
+                if (this.isSectionEnabled("tadarus")) {
+                    var self = this;
+                    this.tadarusUI.forEach(function (ui, idx) {
+                        if (ui.ayatError) {
+                            errors.push(
+                                "Tadarus surat ke-" +
+                                    (idx + 1) +
+                                    ": " +
+                                    ui.ayatError,
+                            );
+                        }
+                    });
+                }
             }
-            // Validasi ayat tadarus
-            if (this.ayatError) {
-                errors.push(this.ayatError);
+
+            // 6. Kegiatan wajib minimal 2 total
+            if (this.isSectionEnabled("kegiatan")) {
+                var totalKegiatan = 0;
+                for (var kk in this.formData.kegiatan) {
+                    if (
+                        this.formData.kegiatan.hasOwnProperty(kk) &&
+                        this.formData.kegiatan[kk]
+                    ) {
+                        totalKegiatan++;
+                    }
+                }
+                if (totalKegiatan < 2) {
+                    errors.push(
+                        "Kegiatan Harian wajib diisi minimal 2 (saat ini: " +
+                            totalKegiatan +
+                            ")",
+                    );
+                }
+
+                // 7. Pancawaluya Singer wajib minimal 1
+                var singerCount = 0;
+                var self = this;
+                this.kegiatanGroupC.forEach(function (item) {
+                    if (self.formData.kegiatan[item.key]) singerCount++;
+                });
+                if (singerCount < 1) {
+                    errors.push(
+                        "Amaliyah Pancawaluya Singer wajib diisi minimal 1",
+                    );
+                }
             }
+
+            // 8. Ceramah wajib pilih mode, dan jika online/offline tema & ringkasan wajib diisi
+            if (this.isSectionEnabled("ceramah")) {
+                if (!this.formData.ceramah_mode) {
+                    errors.push(
+                        "Ringkasan Ceramah belum dipilih (Online, Offline, atau Tidak Ada)",
+                    );
+                } else if (
+                    this.formData.ceramah_mode === "online" ||
+                    this.formData.ceramah_mode === "offline"
+                ) {
+                    if (
+                        !this.formData.ceramah_tema ||
+                        !this.formData.ceramah_tema.trim()
+                    ) {
+                        errors.push(
+                            "Tema ceramah wajib diisi jika memilih " +
+                                this.formData.ceramah_mode,
+                        );
+                    }
+                    var ringkasan = this.formData.ringkasan_ceramah || "";
+                    if (this.$refs.ceramahEditor) {
+                        ringkasan = this.$refs.ceramahEditor.innerHTML || "";
+                    }
+                    var cleanRingkasan = ringkasan
+                        .replace(/<[^>]*>/g, "")
+                        .replace(/&nbsp;/g, " ")
+                        .trim();
+                    if (!cleanRingkasan) {
+                        errors.push(
+                            "Ringkasan ceramah wajib diisi jika memilih " +
+                                this.formData.ceramah_mode,
+                        );
+                    }
+                }
+            }
+
             return errors;
         },
-
         submitForm() {
             if (this.formDisabled) {
-                this.validationMessage = this.formDisabledMessage;
-                this.showValidationError = true;
-                var self = this;
-                setTimeout(function () {
-                    self.showValidationError = false;
-                }, 4000);
+                this.errorMessages = [this.formDisabledMessage];
+                this.showErrorPopup = true;
                 return;
             }
-            // Validate first
-            var errors = this.validateForm();
-            if (errors.length > 0) {
-                this.validationMessage = errors.join(", ");
-                this.showValidationError = true;
-                var self = this;
-                setTimeout(function () {
-                    self.showValidationError = false;
-                }, 4000);
-                return;
-            }
-
-            this.formSaving = true;
-            // Capture editor content before saving
+            // Sync editor content before validation
             if (this.$refs.ceramahEditor) {
                 this.formData.ringkasan_ceramah =
                     this.$refs.ceramahEditor.innerHTML;
             }
+            var errors = this.validateForm();
+            if (errors.length > 0) {
+                this.errorMessages = errors;
+                this.showErrorPopup = true;
+                return;
+            }
+            this.formSaving = true;
             localStorage.setItem(
                 this._lsKey("ramadhan_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
@@ -946,31 +1056,33 @@ function formulirHarian() {
                 );
             }
             this.formSubmitted = true;
-
-            // POST to backend
             var self = this;
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            fetch("/api/formulir", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                        ? csrfToken.getAttribute("content")
-                        : "",
+            _throttledFetch(
+                "submitForm",
+                "/api/formulir",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        hari_ke: self.formDay,
+                        data: self.formData,
+                    }),
                 },
-                body: JSON.stringify({
-                    hari_ke: self.formDay,
-                    data: self.formData,
-                }),
-            })
+                3000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
                 .catch(function (e) {
                     console.warn("Formulir gagal disimpan ke server:", e);
                 });
-
             setTimeout(function () {
                 self.formSaving = false;
                 self.successDay = self.formDay;
@@ -978,43 +1090,40 @@ function formulirHarian() {
                 setTimeout(function () {
                     self.showSuccessPopup = false;
                 }, 3000);
-
-                // Auto-advance to the next unfilled day (sequential enforcement)
                 var next = self.getFirstUnfilledDay();
                 if (next !== self.formDay) {
                     setTimeout(function () {
-                        // There is still a day that needs filling
                         self.formDay = next;
                         self.formSubmitted = false;
                         self.resetFormData();
-                        self.checkFormSubmitted(); // loads saved data if any
+                        self.checkFormSubmitted();
                     }, 2000);
                 }
             }, 600);
         },
-
         editForm() {
             this.formSubmitted = false;
         },
-
-        /* ── Sync submitted days from server ── */
         syncFromServer() {
             var self = this;
-            fetch("/api/formulir", {
-                headers: { Accept: "application/json" },
-            })
+            _throttledFetch(
+                "sync",
+                "/api/formulir",
+                {
+                    headers: { Accept: "application/json" },
+                },
+                10000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
-                        // Replace local data with server data (authoritative)
                         self.submittedDays = data.submitted_days.slice();
                         localStorage.setItem(
                             self._lsKey("ramadhan_submitted_days"),
                             JSON.stringify(self.submittedDays),
                         );
-                        // Track submission statuses
                         if (data.submissions) {
                             data.submissions.forEach(function (sub) {
                                 self.submissionStatuses[sub.hari_ke] = {
@@ -1032,8 +1141,6 @@ function formulirHarian() {
                                 }
                             });
                         }
-                        // Re-evaluate current day, but only if the user did NOT
-                        // explicitly navigate here with a ?hari= param (e.g. from calendar)
                         var urlParams = new URLSearchParams(
                             window.location.search,
                         );
@@ -1041,7 +1148,6 @@ function formulirHarian() {
                         if (!requestedHari) {
                             self.formDay = self.getFirstUnfilledDay();
                         } else {
-                            // Keep the requested day; if it's now in submittedDays, mark submitted
                             requestedHari = parseInt(requestedHari);
                             if (
                                 requestedHari >= 1 &&

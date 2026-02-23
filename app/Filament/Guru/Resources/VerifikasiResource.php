@@ -97,11 +97,6 @@ class VerifikasiResource extends Resource
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
           ]),
-        Tables\Filters\SelectFilter::make('hari_ke')
-          ->label('Hari Ke')
-          ->options(
-            collect(range(1, 30))->mapWithKeys(fn($d) => [$d => "Hari ke-{$d}"])->toArray()
-          ),
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([

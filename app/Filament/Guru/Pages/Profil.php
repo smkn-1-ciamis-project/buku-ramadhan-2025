@@ -73,7 +73,17 @@ class Profil extends Page
     }
 
     $guru->update([
-      'password' => Hash::make($this->new_password),
+      'password' => $this->new_password,
+    ]);
+
+    // Re-login agar session hash password diperbarui
+    // sehingga AuthenticateSession tidak logout user
+    Auth::login($guru);
+
+    // Update active_session_id agar EnsureSingleSession
+    // tidak menendang user karena session ID berubah
+    $guru->updateQuietly([
+      'active_session_id' => session()->getId(),
     ]);
 
     $this->reset(['current_password', 'new_password', 'new_password_confirmation']);

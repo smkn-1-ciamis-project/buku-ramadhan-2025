@@ -231,6 +231,8 @@
         .gd-missing-row + .gd-missing-row { margin-top:.375rem; }
         .gd-missing-row:hover { background:rgba(100,100,100,.04); }
         .dark .gd-missing-row:hover { background:rgba(100,100,100,.08); }
+        .gd-missing-info { min-width:0; flex-shrink:0; width:8rem; }
+        .gd-avatar-sm { width:2rem; height:2rem; font-size:.7rem; }
         .gd-missing-days {
             display:flex; flex-wrap:wrap; gap:.25rem; flex:1;
         }
@@ -246,6 +248,87 @@
         }
         .gd-two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
         @media(max-width:1024px) { .gd-two-col { grid-template-columns:1fr; } }
+
+        /* ═══ Mobile Responsive ═══ */
+        @media(max-width:640px) {
+            .gd-wrap { gap:1rem; }
+
+            /* Hero — stack vertically */
+            .gd-hero { padding:1.25rem; border-radius:.75rem; }
+            .gd-hero-content { flex-direction:column; align-items:stretch; gap:.75rem; }
+            .gd-hero-left h1 { font-size:1.35rem; word-break:break-word; }
+            .gd-hero-left .gd-sub { font-size:.75rem; }
+            .gd-hero-day { justify-content:center; padding:.75rem 1rem; border-radius:.75rem; }
+            .gd-hero-day .gd-day-num { font-size:1.75rem; }
+
+            /* Stats — 2 cols tighter */
+            .gd-stats { gap:.5rem; }
+            .gd-stat-card { padding:.75rem .625rem; gap:.5rem; flex-direction:column; align-items:flex-start; }
+            .gd-stat-icon { width:2.25rem; height:2.25rem; border-radius:.5rem; }
+            .gd-stat-icon svg { width:1rem; height:1rem; }
+            .gd-stat-label { font-size:.6rem; }
+            .gd-stat-value { font-size:1.25rem; }
+            .gd-stat-sub { font-size:.7rem; }
+
+            /* Kelas card — stack header */
+            .gd-kelas { border-radius:.75rem; }
+            .gd-kelas-header { padding:1rem; flex-direction:column; align-items:stretch; gap:.75rem; }
+            .gd-kelas-name { font-size:1rem; }
+            .gd-ring-wrap { justify-content:flex-start; }
+
+            /* Tabs */
+            .gd-tabs { padding:.75rem .75rem 0; gap:.25rem; }
+            .gd-tab { padding:.375rem .625rem; font-size:.7rem; }
+            .gd-tab-count { font-size:.6rem; }
+
+            /* Tab body */
+            .gd-tab-body { padding:.75rem; }
+
+            /* Student cards */
+            .gd-siswa-card { padding:.5rem .625rem; gap:.5rem; }
+            .gd-avatar { width:2rem; height:2rem; font-size:.7rem; }
+            .gd-siswa-name { font-size:.8rem; }
+            .gd-siswa-nisn { font-size:.65rem; }
+            .gd-badge { font-size:.6rem; padding:.2rem .375rem; }
+
+            /* Progress items */
+            .gd-progress-item { padding:.625rem; gap:.5rem; }
+            .gd-progress-header { flex-wrap:wrap; gap:.25rem; }
+            .gd-siswa-info .gd-siswa-name { font-size:.8rem; }
+            .gd-progress-label { font-size:.65rem; }
+
+            /* Section cards (Pending & Belum) */
+            .gd-section-card { border-radius:.75rem; }
+            .gd-section-header { padding:.75rem 1rem; gap:.5rem; }
+            .gd-section-title { font-size:.875rem; flex-wrap:wrap; }
+            .gd-section-body { padding:.75rem; }
+            .gd-section-link { font-size:.7rem; }
+
+            /* Pending table — horizontal scroll */
+            .gd-section-body { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+            .gd-table { min-width:30rem; }
+            .gd-table th { padding:.375rem .5rem; font-size:.6rem; }
+            .gd-table td { padding:.4rem .5rem; font-size:.7rem; }
+
+            /* Missing days row */
+            .gd-missing-row { flex-wrap:wrap; padding:.5rem; gap:.5rem; }
+            .gd-missing-info { width:100% !important; flex-shrink:1 !important; }
+            .gd-missing-days { width:100%; }
+            .gd-day-chip { min-width:1.25rem; height:1.25rem; font-size:.6rem; }
+            .gd-missing-count { font-size:.65rem; }
+        }
+
+        /* Extra small devices */
+        @media(max-width:380px) {
+            .gd-hero-left h1 { font-size:1.15rem; }
+            .gd-stats { grid-template-columns:1fr 1fr; gap:.375rem; }
+            .gd-stat-card { padding:.5rem; }
+            .gd-stat-value { font-size:1.1rem; }
+            .gd-ring { width:3.25rem; height:3.25rem; }
+            .gd-ring svg { width:3.25rem; height:3.25rem; }
+            .gd-ring-pct { font-size:.65rem; }
+            .gd-ring-stats { font-size:.7rem; }
+        }
     </style>
 
     <div class="gd-wrap" x-data="{}">
@@ -383,8 +466,8 @@
                     @else
                         @foreach ($belumMengisiDetail as $item)
                             <div class="gd-missing-row">
-                                <div class="gd-avatar {{ $item['jk'] === 'L' ? 'gd-avatar-l' : 'gd-avatar-p' }}" style="width:2rem;height:2rem;font-size:.7rem;">{{ $item['jk'] }}</div>
-                                <div style="min-width:0; flex-shrink:0; width:8rem;">
+                                <div class="gd-avatar gd-avatar-sm {{ $item['jk'] === 'L' ? 'gd-avatar-l' : 'gd-avatar-p' }}">{{ $item['jk'] }}</div>
+                                <div class="gd-missing-info">
                                     <div class="gd-siswa-name" style="font-size:.8rem;">{{ $item['name'] }}</div>
                                     <div class="gd-text-muted" style="font-size:.7rem;">{{ $item['nisn'] }}</div>
                                 </div>

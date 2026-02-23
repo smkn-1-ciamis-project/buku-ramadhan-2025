@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class FormSubmissionController extends Controller
 {
@@ -52,6 +53,12 @@ class FormSubmissionController extends Controller
 
     // ── Sync sholat data to prayer_checkins table ──
     $this->syncPrayerCheckins($user, $request->hari_ke, $request->data);
+
+    // Bust caches
+    Cache::forget("submissions_{$user->id}");
+    Cache::forget("submission_{$user->id}_{$request->hari_ke}");
+    Cache::forget("checkins_today_{$user->id}_" . now()->toDateString());
+    Cache::forget("checkins_date_{$user->id}_" . now()->toDateString());
 
     return response()->json([
       'success' => true,
@@ -109,14 +116,21 @@ class FormSubmissionController extends Controller
   {
     $user = Auth::user();
 
-    $submissions = FormSubmission::where('user_id', $user->id)
-      ->orderBy('hari_ke')
-      ->get();
+    $data = Cache::remember("submissions_{$user->id}", 180, function () use ($user) {
+      $submissions = FormSubmission::where('user_id', $user->id)
+        ->orderBy('hari_ke')
+        ->get();
+
+      return [
+        'submissions' => $submissions->toArray(),
+        'submitted_days' => $submissions->pluck('hari_ke')->toArray(),
+      ];
+    });
 
     return response()->json([
       'success' => true,
-      'submissions' => $submissions,
-      'submitted_days' => $submissions->pluck('hari_ke')->toArray(),
+      'submissions' => $data['submissions'],
+      'submitted_days' => $data['submitted_days'],
     ]);
   }
 
@@ -127,9 +141,11 @@ class FormSubmissionController extends Controller
   {
     $user = Auth::user();
 
-    $submission = FormSubmission::where('user_id', $user->id)
-      ->where('hari_ke', $hariKe)
-      ->first();
+    $submission = Cache::remember("submission_{$user->id}_{$hariKe}", 180, function () use ($user, $hariKe) {
+      return FormSubmission::where('user_id', $user->id)
+        ->where('hari_ke', $hariKe)
+        ->first();
+    });
 
     return response()->json([
       'success'    => true,

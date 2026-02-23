@@ -73,6 +73,8 @@ class SiswaResource extends Resource
             Forms\Components\TextInput::make('email')
               ->label('Email')
               ->email()
+              ->unique(ignoreRecord: true)
+              ->validationMessages(['unique' => 'Email sudah digunakan.'])
               ->helperText('Opsional. Jika dikosongkan, akan otomatis digenerate dari NISN (nisn@siswa.buku-ramadhan.id).'),
             Forms\Components\Select::make('jenis_kelamin')
               ->label('Jenis Kelamin')
@@ -173,6 +175,27 @@ class SiswaResource extends Resource
               Notification::make()
                 ->title('Password berhasil direset')
                 ->body("Password {$record->name} direset ke NISN: {$record->nisn}")
+                ->success()
+                ->send();
+            }),
+          Tables\Actions\Action::make('resetSession')
+            ->label('Reset Sesi Login')
+            ->icon('heroicon-o-arrow-path')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Sesi Login Siswa')
+            ->modalDescription(fn(User $record) => "Sesi login aktif siswa {$record->name} akan dihapus sehingga bisa login kembali. Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Reset Sesi')
+            ->disabled(fn(User $record) => empty($record->active_session_id))
+            ->tooltip(fn(User $record) => empty($record->active_session_id) ? 'Tidak ada sesi aktif' : 'Reset sesi login siswa')
+            ->action(function (User $record) {
+              $record->updateQuietly([
+                'active_session_id' => null,
+                'session_login_at'  => null,
+              ]);
+              Notification::make()
+                ->title('Sesi login berhasil direset')
+                ->body("{$record->name} sekarang bisa login kembali.")
                 ->success()
                 ->send();
             }),

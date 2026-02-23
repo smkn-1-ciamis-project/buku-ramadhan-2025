@@ -1,7 +1,26 @@
-/**
- * Calakan — Formulir Harian Hindu Alpine.js Component
- * Kegiatan Pembiasaan Positif & Pengendalian Diri
- */
+// ── API Throttle Helper ─────────────────────────────────────────────
+var _apiLastCall = {};
+function _throttledFetch(key, url, options, cooldownMs) {
+    cooldownMs = cooldownMs || 5000;
+    var now = Date.now();
+    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
+        return Promise.reject({ throttled: true });
+    }
+    _apiLastCall[key] = now;
+    return fetch(url, options).then(function (r) {
+        if (r.status === 429) {
+            return r.json().then(function (d) {
+                return Promise.reject({
+                    rateLimited: true,
+                    message:
+                        d.message ||
+                        "Terlalu banyak permintaan. Tunggu sebentar.",
+                });
+            });
+        }
+        return r;
+    });
+}
 
 function formulirHindu() {
     return {
@@ -21,12 +40,9 @@ function formulirHindu() {
         configLoaded: false,
         formDisabled: false,
         formDisabledMessage: "",
-
-        /* ── Dynamic config from server ── */
         sectionConfig: [],
         enabledSections: {},
         extraSections: [],
-
         editorFormats: {
             bold: false,
             italic: false,
@@ -34,7 +50,6 @@ function formulirHindu() {
             ul: false,
             ol: false,
         },
-
         updateEditorFormats() {
             this.editorFormats.bold = document.queryCommandState("bold");
             this.editorFormats.italic = document.queryCommandState("italic");
@@ -46,7 +61,6 @@ function formulirHindu() {
             this.editorFormats.ol =
                 document.queryCommandState("insertOrderedList");
         },
-
         pengendalianDiri: [
             {
                 key: "pengendalian_diri",
@@ -58,7 +72,6 @@ function formulirHindu() {
                 label: "Membaca buku inspiratif / nilai moral",
             },
         ],
-
         kegiatanGroupA: [
             {
                 key: "refleksi_pagi",
@@ -101,8 +114,6 @@ function formulirHindu() {
                 label: "Menetapkan target kebaikan harian",
             },
         ],
-
-        /* ── Section titles (dynamic from config) ── */
         sectionTitles: {
             pengendalian_diri: "Pembiasaan Pengendalian Diri",
             kegiatan: "Kegiatan Harian (Pembiasaan Positif)",
@@ -113,7 +124,6 @@ function formulirHindu() {
             'B. Pengembangan Diri "Pinter"',
             'C. Kemandirian "Mandiri & Disiplin"',
         ],
-
         formData: {
             pengendalian: {
                 pengendalian_diri: "",
@@ -139,7 +149,6 @@ function formulirHindu() {
             },
             catatan: "",
         },
-
         init() {
             this.calculateCurrentDay();
             this.loadSubmittedDays();
@@ -148,13 +157,16 @@ function formulirHindu() {
             this.formDay = this.getFirstUnfilledDay();
             this.checkFormSubmitted();
         },
-
-        /* ── Load dynamic form config from server ── */
         loadFormConfig() {
             var self = this;
-            fetch("/api/form-settings/Hindu", {
-                headers: { Accept: "application/json" },
-            })
+            _throttledFetch(
+                "formConfig",
+                "/api/form-settings/Hindu",
+                {
+                    headers: { Accept: "application/json" },
+                },
+                10000,
+            )
                 .then(function (r) {
                     if (r.status === 403) {
                         return r.json().then(function (d) {
@@ -170,18 +182,15 @@ function formulirHindu() {
                 .then(function (data) {
                     if (!data || !data.sections) return;
                     self.sectionConfig = data.sections;
-
                     var enabled = {};
                     data.sections.forEach(function (s) {
                         enabled[s.key] = s.enabled !== false;
                     });
                     self.enabledSections = enabled;
-
                     data.sections.forEach(function (section) {
                         if (section.title) {
                             self.sectionTitles[section.key] = section.title;
                         }
-
                         if (
                             section.key === "pengendalian_diri" &&
                             section.items
@@ -194,7 +203,6 @@ function formulirHindu() {
                             });
                             self.formData.pengendalian = newPengendalian;
                         }
-
                         if (section.key === "kegiatan" && section.groups) {
                             var allGroups = section.groups;
                             if (allGroups[0]) {
@@ -222,8 +230,6 @@ function formulirHindu() {
                             self.formData.kegiatan = newKegiatan;
                         }
                     });
-
-                    // Collect extra (dynamic) sections not handled by hardcoded keys
                     var knownKeys = [
                         "pengendalian_diri",
                         "kegiatan",
@@ -313,7 +319,6 @@ function formulirHindu() {
                         }
                     });
                     self.extraSections = extras;
-
                     self.configLoaded = true;
                     self.checkFormSubmitted();
                 })
@@ -322,13 +327,10 @@ function formulirHindu() {
                     self.configLoaded = true;
                 });
         },
-
-        /* Check if a section is enabled by key */
         isSectionEnabled(key) {
             if (Object.keys(this.enabledSections).length === 0) return true;
             return this.enabledSections[key] !== false;
         },
-
         calculateCurrentDay() {
             var startDate = new Date(2026, 1, 19);
             var now = new Date();
@@ -340,14 +342,12 @@ function formulirHindu() {
             var diff = Math.floor((today - startDate) / 86400000) + 1;
             this.currentDay = Math.max(1, Math.min(diff, 30));
         },
-
         getFirstUnfilledDay() {
             for (var d = 1; d <= this.currentDay; d++) {
                 if (!this.submittedDays.includes(d)) return d;
             }
             return this.currentDay;
         },
-
         getMissedCount() {
             var count = 0;
             for (var d = 1; d < this.currentDay; d++) {
@@ -355,7 +355,6 @@ function formulirHindu() {
             }
             return count;
         },
-
         resetFormData() {
             var pengendalian = {};
             this.pengendalianDiri.forEach(function (item) {
@@ -371,13 +370,11 @@ function formulirHindu() {
             this.kegiatanGroupC.forEach(function (item) {
                 kegiatan[item.key] = "";
             });
-
             this.formData = {
                 pengendalian: pengendalian,
                 kegiatan: kegiatan,
                 catatan: "",
             };
-            // Reset extra (dynamic) section formData
             var self = this;
             this.extraSections.forEach(function (section) {
                 if (section.type === "ya_tidak") {
@@ -414,19 +411,15 @@ function formulirHindu() {
             if (this.$refs.catatanEditor)
                 this.$refs.catatanEditor.innerHTML = "";
         },
-
         execCmd(cmd) {
             document.execCommand(cmd, false, null);
             if (this.$refs.catatanEditor) this.$refs.catatanEditor.focus();
             this.updateEditorFormats();
         },
-
-        /* ── Per-user localStorage helpers ── */
         _lsKey(base) {
             var uid = window.__siswaUserId || "unknown";
             return base + "_" + uid;
         },
-
         _clearOldUserData(prefix) {
             var toRemove = [];
             for (var i = 0; i < localStorage.length; i++) {
@@ -437,7 +430,6 @@ function formulirHindu() {
                 localStorage.removeItem(k);
             });
         },
-
         loadSubmittedDays() {
             try {
                 var lastUser = localStorage.getItem("hindu_last_user");
@@ -447,7 +439,6 @@ function formulirHindu() {
                     this._clearOldUserData("hindu_form_day_");
                 }
                 localStorage.setItem("hindu_last_user", currentUser);
-
                 var saved = localStorage.getItem(
                     this._lsKey("hindu_submitted_days"),
                 );
@@ -456,7 +447,6 @@ function formulirHindu() {
                 this.submittedDays = [];
             }
         },
-
         checkFormSubmitted() {
             this.formSubmitted = this.submittedDays.includes(this.formDay);
             var dayStatus = this.submissionStatuses[this.formDay];
@@ -484,7 +474,6 @@ function formulirHindu() {
                 }
             } catch (e) {}
         },
-
         _deepMerge(target, source) {
             var result = Object.assign({}, target);
             for (var key in source) {
@@ -504,7 +493,6 @@ function formulirHindu() {
             }
             return result;
         },
-
         validateForm() {
             var errors = [];
             var anyPengendalian = false;
@@ -527,7 +515,6 @@ function formulirHindu() {
                 errors.push("Kegiatan harian belum diisi satupun");
             return errors;
         },
-
         submitForm() {
             if (this.formDisabled) {
                 this.validationMessage = this.formDisabledMessage;
@@ -548,7 +535,6 @@ function formulirHindu() {
                 }, 4000);
                 return;
             }
-
             this.formSaving = true;
             if (this.$refs.catatanEditor) {
                 this.formData.catatan = this.$refs.catatanEditor.innerHTML;
@@ -565,30 +551,33 @@ function formulirHindu() {
                 );
             }
             this.formSubmitted = true;
-
             var self = this;
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            fetch("/api/formulir", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                        ? csrfToken.getAttribute("content")
-                        : "",
+            _throttledFetch(
+                "submitForm",
+                "/api/formulir",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        hari_ke: self.formDay,
+                        data: self.formData,
+                    }),
                 },
-                body: JSON.stringify({
-                    hari_ke: self.formDay,
-                    data: self.formData,
-                }),
-            })
+                3000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
                 .catch(function (e) {
                     console.warn("Formulir gagal disimpan ke server:", e);
                 });
-
             setTimeout(function () {
                 self.formSaving = false;
                 self.successDay = self.formDay;
@@ -596,7 +585,6 @@ function formulirHindu() {
                 setTimeout(function () {
                     self.showSuccessPopup = false;
                 }, 3000);
-
                 var next = self.getFirstUnfilledDay();
                 if (next !== self.formDay) {
                     setTimeout(function () {
@@ -608,14 +596,17 @@ function formulirHindu() {
                 }
             }, 600);
         },
-
         editForm() {
             this.formSubmitted = false;
         },
-
         syncFromServer() {
             var self = this;
-            fetch("/api/formulir", { headers: { Accept: "application/json" } })
+            _throttledFetch(
+                "sync",
+                "/api/formulir",
+                { headers: { Accept: "application/json" } },
+                10000,
+            )
                 .then(function (r) {
                     return r.json();
                 })

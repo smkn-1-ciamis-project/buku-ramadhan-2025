@@ -8,6 +8,8 @@ use App\Models\RoleUser;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class CreateSiswa extends CreateRecord
 {
@@ -26,7 +28,15 @@ class CreateSiswa extends CreateRecord
 
     // Auto-generate email from NISN if not provided
     if (empty($data['email']) && !empty($data['nisn'])) {
-      $data['email'] = $data['nisn'] . '@siswa.buku-ramadhan.id';
+      $generatedEmail = $data['nisn'] . '@siswa.buku-ramadhan.id';
+
+      if (User::where('email', $generatedEmail)->exists()) {
+        throw ValidationException::withMessages([
+          'data.email' => 'Email ' . $generatedEmail . ' sudah digunakan. Silakan isi email secara manual.',
+        ]);
+      }
+
+      $data['email'] = $generatedEmail;
     }
 
     // Default password = nisn

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Kesiswaan\Pages\Auth\Login as KesiswaanLogin;
 use App\Filament\Kesiswaan\Pages\Dashboard as KesiswaanDashboard;
 use App\Http\Middleware\EnsureSingleSession;
 use Filament\Http\Middleware\Authenticate;
@@ -30,8 +31,9 @@ class KesiswaanPanelProvider extends PanelProvider
         return $panel
             ->id('kesiswaan')
             ->path('portal-kesiswaan-smkn1')
-            ->login()
+            ->login(KesiswaanLogin::class)
             ->brandName('Calakan')
+            ->favicon(asset('img/logo_smk.png'))
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -81,7 +83,7 @@ class KesiswaanPanelProvider extends PanelProvider
                 PanelsRenderHook::BODY_END,
                 fn() => new HtmlString('
                     <script>
-                        if ("serviceWorker" in navigator) {
+                        if ("serviceWorker" in navigator && !navigator.userAgent.includes("Calakan-Android")) {
                             window.addEventListener("load", () => {
                                 navigator.serviceWorker.register("/sw.js").catch(() => {});
                             });

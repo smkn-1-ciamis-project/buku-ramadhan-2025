@@ -1,11 +1,20 @@
 // Calakan - Service Worker
 // Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis
 
-const CACHE_NAME = "calakan-cache-v1";
+const CACHE_NAME = "calakan-cache-v6";
 const OFFLINE_URL = "/offline.html";
 
 // Assets yang selalu di-cache saat install
-const PRECACHE_ASSETS = [OFFLINE_URL, "/img/logo_smk.png", "/manifest.json"];
+// NOTE: In Android WebView (Calakan-Android), the SW is unregistered
+// by the native app to prevent stale cache issues.
+const PRECACHE_ASSETS = [
+    OFFLINE_URL,
+    "/img/logo_smk.png",
+    "/manifest.json",
+    "/themes/ramadhan/css/dashboard.css",
+    "/themes/ramadhan/css/login.css",
+    "/themes/ramadhan/css/formulir.css",
+];
 
 // ── Install Event ──────────────────────────────────────────────────
 self.addEventListener("install", (event) => {

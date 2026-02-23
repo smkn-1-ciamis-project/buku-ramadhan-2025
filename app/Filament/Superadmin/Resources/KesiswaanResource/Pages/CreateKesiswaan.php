@@ -4,6 +4,7 @@ namespace App\Filament\Superadmin\Resources\KesiswaanResource\Pages;
 
 use App\Filament\Superadmin\Resources\KesiswaanResource;
 use App\Models\RoleUser;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateKesiswaan extends CreateRecord
@@ -20,5 +21,10 @@ class CreateKesiswaan extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Kesiswaan berhasil ditambahkan';
     }
 }

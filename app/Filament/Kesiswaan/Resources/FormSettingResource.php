@@ -27,7 +27,8 @@ class FormSettingResource extends Resource
 
   public static function shouldRegisterNavigation(): bool
   {
-    return \App\Models\RoleUser::checkNav('kesiswaan_setting_formulir');
+    return false; // Hidden from sidebar
+    // return \App\Models\RoleUser::checkNav('kesiswaan_setting_formulir');
   }
 
   public static function canCreate(): bool

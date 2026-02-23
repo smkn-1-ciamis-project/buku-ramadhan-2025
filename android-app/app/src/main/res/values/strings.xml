@@ -3,7 +3,7 @@
     <string name="app_name">Calakan</string>
     <string name="app_full_name">Catatan Amaliyah Kegiatan Ramadan</string>
     <string name="school_name">SMKN 1 Ciamis</string>
-    <string name="app_version">v1.0</string>
+    <string name="app_version">v1.1</string>
 
     <!-- Error messages -->
     <string name="error_no_connection">Tidak Ada Koneksi</string>

@@ -71,6 +71,7 @@ class ActivityLog extends Model
 
   /**
    * Get location data from IP address (returns location string + lat/lon).
+   * Results are cached for 24 hours to avoid blocking HTTP calls.
    */
   protected static function getLocationFromIp(?string $ip): array
   {
@@ -87,27 +88,30 @@ class ActivityLog extends Model
       return ['location' => 'Jaringan Lokal', 'lat' => null, 'lon' => null];
     }
 
-    try {
-      $response = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country,lat,lon&lang=id", false, stream_context_create([
-        'http' => ['timeout' => 2],
-      ]));
+    // Cache IP→location for 24 hours to avoid repeated external HTTP calls
+    return \Illuminate\Support\Facades\Cache::remember("ip_loc_{$ip}", 86400, function () use ($ip) {
+      try {
+        $response = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country,lat,lon&lang=id", false, stream_context_create([
+          'http' => ['timeout' => 2],
+        ]));
 
-      if ($response) {
-        $data = json_decode($response, true);
-        if (($data['status'] ?? '') === 'success') {
-          $location = trim(($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ', ' . ($data['country'] ?? ''), ', ');
-          return [
-            'location' => $location ?: null,
-            'lat' => $data['lat'] ?? null,
-            'lon' => $data['lon'] ?? null,
-          ];
+        if ($response) {
+          $data = json_decode($response, true);
+          if (($data['status'] ?? '') === 'success') {
+            $location = trim(($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ', ' . ($data['country'] ?? ''), ', ');
+            return [
+              'location' => $location ?: null,
+              'lat' => $data['lat'] ?? null,
+              'lon' => $data['lon'] ?? null,
+            ];
+          }
         }
+      } catch (\Throwable $e) {
+        // Silently fail
       }
-    } catch (\Throwable $e) {
-      // Silently fail
-    }
 
-    return ['location' => null, 'lat' => null, 'lon' => null];
+      return ['location' => null, 'lat' => null, 'lon' => null];
+    });
   }
 
   /**

@@ -3,8 +3,10 @@
 namespace App\Filament\Superadmin\Resources\GuruResource\Pages;
 
 use App\Filament\Superadmin\Resources\GuruResource;
+use App\Models\User;
 use App\Services\ImportService;
 use App\Services\TemplateService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
@@ -42,7 +44,20 @@ class ListGuru extends ListRecords
         ->action(function (array $data) {
           $filePath = storage_path('app/' . $data['file']);
 
-          $result = ImportService::importGuru($filePath);
+          try {
+            $result = ImportService::importGuru($filePath);
+          } catch (\Throwable $e) {
+            if (file_exists($filePath)) {
+              unlink($filePath);
+            }
+            Notification::make()
+              ->title('Import Gagal')
+              ->body('Terjadi kesalahan: ' . $e->getMessage())
+              ->danger()
+              ->persistent()
+              ->send();
+            return;
+          }
 
           // Clean up uploaded file
           if (file_exists($filePath)) {
@@ -79,7 +94,60 @@ class ListGuru extends ListRecords
         ->label('Download Template')
         ->icon('heroicon-o-arrow-down-tray')
         ->color('gray')
-        ->action(fn() => TemplateService::downloadGuruTemplate()),
+        ->action(function () {
+          try {
+            return TemplateService::downloadGuruTemplate();
+          } catch (\Throwable $e) {
+            Notification::make()
+              ->title('Download Gagal')
+              ->body('Terjadi kesalahan: ' . $e->getMessage())
+              ->danger()
+              ->send();
+          }
+        }),
+
+      Actions\Action::make('exportPdf')
+        ->label('Export PDF')
+        ->icon('heroicon-o-document-arrow-down')
+        ->color('danger')
+        ->action(function () {
+          try {
+            $guru = User::whereHas('role_user', fn($q) => $q->where('name', 'Guru'))
+              ->with('kelasWali')
+              ->orderBy('name')
+              ->get();
+
+            $totalL = $guru->where('jenis_kelamin', 'L')->count();
+            $totalP = $guru->where('jenis_kelamin', 'P')->count();
+            $totalWali = $guru->filter(fn($g) => $g->kelasWali->isNotEmpty())->count();
+
+            $pdf = Pdf::loadView('pdf.data-guru', [
+              'guru'         => $guru,
+              'tahunAjaran'  => '2025/2026',
+              'tanggalCetak' => now()->translatedFormat('d F Y'),
+              'totalGuru'    => $guru->count(),
+              'totalL'       => $totalL,
+              'totalP'       => $totalP,
+              'totalWali'    => $totalWali,
+            ]);
+
+            $pdf->setPaper('a4', 'portrait');
+
+            $filename = 'Data_Guru_SMKN1_Ciamis_' . now()->format('Ymd_His') . '.pdf';
+
+            return response()->streamDownload(
+              fn() => print($pdf->output()),
+              $filename,
+              ['Content-Type' => 'application/pdf']
+            );
+          } catch (\Throwable $e) {
+            Notification::make()
+              ->title('Export Gagal')
+              ->body('Terjadi kesalahan: ' . $e->getMessage())
+              ->danger()
+              ->send();
+          }
+        }),
     ];
   }
 }

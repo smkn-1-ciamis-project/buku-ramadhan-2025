@@ -198,43 +198,57 @@
                     </div>
                 </div>
 
-                {{-- ═══ 5. TADARUS AL-QURAN ═══ --}}
+                {{-- ═══ 5. TADARUS AL-QURAN (Multi-Surat) ═══ --}}
                 <div class="f-section" x-show="isSectionEnabled('tadarus') && !(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid')" x-transition>
                     <h4 class="f-section-title">
                         <span class="f-section-num">5</span> <span x-text="sectionTitles.tadarus">Tadarus Al-Quran</span>
                     </h4>
-                    <div class="f-tadarus-grid">
-                        <div class="f-field">
-                            <label class="f-label">Surat</label>
-                            <div class="f-input-suggest-wrap">
-                                <input type="text" x-model="formData.tadarus_surat"
-                                       @input="filterSurah($event.target.value)"
-                                       @focus="showSurahList = true"
-                                       @blur="setTimeout(() => showSurahList = false, 200)"
-                                       placeholder="Cari surat..."
-                                       class="f-input">
-                                <div x-show="showSurahList && filteredSurahs.length > 0" class="f-suggest-list f-suggest-list-tall">
-                                    <template x-for="s in filteredSurahs" :key="s.number">
-                                        <button type="button" class="f-suggest-item f-suggest-surah"
-                                                @mousedown.prevent="selectSurah(s)">
-                                            <span class="f-suggest-surah-num" x-text="s.number"></span>
-                                            <span class="f-suggest-surah-name" x-text="s.name"></span>
-                                            <span class="f-suggest-surah-ayat" x-text="s.ayat + ' ayat'"></span>
-                                        </button>
-                                    </template>
+                    <template x-for="(entry, tIdx) in formData.tadarus_entries" :key="tIdx">
+                        <div class="f-tadarus-entry">
+                            <div class="f-tadarus-entry-header" x-show="formData.tadarus_entries.length > 1">
+                                <span class="f-tadarus-entry-label" x-text="'Surat ke-' + (tIdx + 1)"></span>
+                                <button type="button" class="f-tadarus-remove-btn" @click="removeTadarusEntry(tIdx)" title="Hapus surat">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                            <div class="f-tadarus-grid">
+                                <div class="f-field">
+                                    <label class="f-label">Surat</label>
+                                    <div class="f-input-suggest-wrap">
+                                        <input type="text" x-model="entry.surat"
+                                               @input="filterSurahForEntry(tIdx, $event.target.value)"
+                                               @focus="tadarusUI[tIdx] && (tadarusUI[tIdx].showSurahList = true)"
+                                               @blur="setTimeout(() => { if(tadarusUI[tIdx]) tadarusUI[tIdx].showSurahList = false }, 200)"
+                                               placeholder="Cari surat..."
+                                               class="f-input">
+                                        <div x-show="tadarusUI[tIdx] && tadarusUI[tIdx].showSurahList && tadarusUI[tIdx].filteredSurahs.length > 0" class="f-suggest-list f-suggest-list-tall">
+                                            <template x-for="s in (tadarusUI[tIdx] ? tadarusUI[tIdx].filteredSurahs : [])" :key="s.number">
+                                                <button type="button" class="f-suggest-item f-suggest-surah"
+                                                        @mousedown.prevent="selectSurahForEntry(tIdx, s)">
+                                                    <span class="f-suggest-surah-num" x-text="s.number"></span>
+                                                    <span class="f-suggest-surah-name" x-text="s.name"></span>
+                                                    <span class="f-suggest-surah-ayat" x-text="s.ayat + ' ayat'"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="f-field">
+                                    <label class="f-label">Ayat <span x-show="tadarusUI[tIdx] && tadarusUI[tIdx].maxAyat > 0" class="f-label-hint" x-text="'(maks. ' + (tadarusUI[tIdx] ? tadarusUI[tIdx].maxAyat : 0) + ')'"></span></label>
+                                    <input type="text" x-model="entry.ayat"
+                                           @input="validateAyatForEntry(tIdx, $event.target.value)"
+                                           placeholder="cth: 1-7 atau 15"
+                                           :class="(tadarusUI[tIdx] && tadarusUI[tIdx].ayatError) ? 'f-input f-input-error' : 'f-input'">
+                                    <p x-show="tadarusUI[tIdx] && tadarusUI[tIdx].ayatError" x-text="tadarusUI[tIdx] ? tadarusUI[tIdx].ayatError : ''" class="f-error-hint"></p>
                                 </div>
                             </div>
+                            <p x-show="tadarusUI[tIdx] && tadarusUI[tIdx].maxAyat > 0" class="f-hint" x-text="'Surat ' + entry.surat + ' memiliki ' + (tadarusUI[tIdx] ? tadarusUI[tIdx].maxAyat : 0) + ' ayat'"></p>
                         </div>
-                        <div class="f-field">
-                            <label class="f-label">Ayat <span x-show="selectedSurahAyat > 0" class="f-label-hint" x-text="'(maks. ' + selectedSurahAyat + ')'"></span></label>
-                            <input type="text" x-model="formData.tadarus_ayat"
-                                   @input="validateAyat($event.target.value)"
-                                   placeholder="cth: 1-7 atau 15"
-                                   :class="ayatError ? 'f-input f-input-error' : 'f-input'">
-                            <p x-show="ayatError" x-text="ayatError" class="f-error-hint"></p>
-                        </div>
-                    </div>
-                    <p x-show="selectedSurahAyat > 0" class="f-hint" x-text="'Surat ' + formData.tadarus_surat + ' memiliki ' + selectedSurahAyat + ' ayat'"></p>
+                    </template>
+                    <button type="button" class="f-tadarus-add-btn" @click="addTadarusEntry()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        <span>Tambah Surat</span>
+                    </button>
                 </div>
 
                 {{-- ═══ 6. KEGIATAN HARIAN ═══ --}}
@@ -496,10 +510,24 @@
                     </button>
                 </div>
 
-                {{-- Validation Error Toast --}}
-                <div x-show="showValidationError" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#ef4444;color:#fff;padding:18px 32px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;max-width:90vw;text-align:center;">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                    <span x-text="validationMessage"></span>
+                {{-- Validation Error Popup Modal --}}
+                <div x-show="showErrorPopup" x-transition.opacity class="f-error-overlay" @click.self="showErrorPopup = false" style="display:none;">
+                    <div class="f-error-modal" x-show="showErrorPopup" x-transition.scale.90>
+                        <div class="f-error-modal-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                        </div>
+                        <h3 class="f-error-modal-title">Formulir Belum Lengkap</h3>
+                        <p class="f-error-modal-subtitle">Mohon lengkapi data berikut sebelum mengirim:</p>
+                        <ul class="f-error-list">
+                            <template x-for="(err, ei) in errorMessages" :key="ei">
+                                <li class="f-error-list-item">
+                                    <svg class="f-error-list-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span x-text="err"></span>
+                                </li>
+                            </template>
+                        </ul>
+                        <button type="button" @click="showErrorPopup = false" class="f-error-modal-btn">Mengerti</button>
+                    </div>
                 </div>
 
                 {{-- Success Popup Toast --}}
@@ -516,12 +544,12 @@
         </div>
 
     </div>
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/formulir.css')) }}">
+    @endpush
+
+    @push('scripts')
+        <script src="{{ asset('themes/ramadhan/js/muslim/formulir.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/muslim/formulir.js')) }}" defer></script>
+    @endpush
 </x-filament-panels::page>
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/formulir.css') }}?v={{ time() }}">
-@endpush
-
-@push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/muslim/formulir.js') }}?v={{ time() }}"></script>
-@endpush

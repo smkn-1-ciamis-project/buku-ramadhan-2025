@@ -1,12 +1,29 @@
-// @ts-nocheck
-/**
- * Calakan — Dashboard Hindu Alpine.js Component
- * Includes: Calendar, Progress, Hindu Prayers/Mantras, Bhagavad Gita Sloka.
- */
+// ── API Throttle Helper ─────────────────────────────────────────────
+var _apiLastCall = {};
+function _throttledFetch(key, url, options, cooldownMs) {
+    cooldownMs = cooldownMs || 5000;
+    var now = Date.now();
+    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
+        return Promise.reject({ throttled: true });
+    }
+    _apiLastCall[key] = now;
+    return fetch(url, options).then(function (r) {
+        if (r.status === 429) {
+            return r.json().then(function (d) {
+                return Promise.reject({
+                    rateLimited: true,
+                    message:
+                        d.message ||
+                        "Terlalu banyak permintaan. Tunggu sebentar.",
+                });
+            });
+        }
+        return r;
+    });
+}
 
 function hinduDashboard() {
     return {
-        // ── State ──────────────────────────────────────────────────────
         activeTab: "calendar",
         showChangePassword: false,
         showLogoutConfirm: false,
@@ -41,18 +58,12 @@ function hinduDashboard() {
         calendarMonthLabel: "",
         isHolyDay: false,
         motivationalBadge: "",
-
-        // ── Form State ─────────────────────────────────────────────────
         submittedDays: [],
         submissionStatuses: {},
-
-        // ── Notification Modal State ───────────────────────────────────
         showNotifModal: false,
         notifTitle: "",
         notifMessage: "",
         notifRedirectUrl: "",
-
-        // ── Lifecycle ──────────────────────────────────────────────────
         init() {
             this.setDates();
             this.calculateRamadhanDay();
@@ -64,8 +75,6 @@ function hinduDashboard() {
             this.startClock();
             this.setMotivationalBadge();
         },
-
-        // ── Clock ──────────────────────────────────────────────────────
         startClock() {
             var self = this;
             function tick() {
@@ -89,18 +98,13 @@ function hinduDashboard() {
                         fmt2(d.getSeconds())
                     );
                 };
-
-                // Main clock follows selected timezone
                 if (self.selectedTz === "WIB") self.clockMain = fmtFull(wib);
                 else if (self.selectedTz === "WITA")
                     self.clockMain = fmtFull(wita);
                 else self.clockMain = fmtFull(wit);
-
                 self.clockWIB = fmtTime(wib);
                 self.clockWITA = fmtTime(wita);
                 self.clockWIT = fmtTime(wit);
-
-                // Greeting
                 var h = wib.getHours();
                 if (h >= 3 && h < 11) self.greeting = "Selamat Pagi ☀️";
                 else if (h >= 11 && h < 15) self.greeting = "Selamat Siang 🌤️";
@@ -110,7 +114,6 @@ function hinduDashboard() {
             tick();
             setInterval(tick, 1000);
         },
-
         setDates() {
             var now = new Date();
             var days = [
@@ -145,9 +148,8 @@ function hinduDashboard() {
                 " " +
                 now.getFullYear();
         },
-
         calculateRamadhanDay() {
-            var startDate = new Date(2026, 1, 19); // Feb 19 2026 = day 1
+            var startDate = new Date(2026, 1, 19);
             var now = new Date();
             var today = new Date(
                 now.getFullYear(),
@@ -157,12 +159,9 @@ function hinduDashboard() {
             var diff = Math.floor((today - startDate) / 86400000) + 1;
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
         },
-
         checkHolyDay() {
-            // General holy day check — no specific day
             this.isHolyDay = false;
         },
-
         setMotivationalBadge() {
             var badges = [
                 "Semangat berkegiatan positif!",
@@ -175,17 +174,13 @@ function hinduDashboard() {
             ];
             this.motivationalBadge = badges[this.ramadhanDay % badges.length];
         },
-
-        // ── Calendar ───────────────────────────────────────────────────
         buildCalendar() {
             var startDate = new Date(2026, 1, 19);
-            var endDate = new Date(2026, 2, 20); // 30 days
-            // Find the Monday of the week containing startDate
-            var startDow = startDate.getDay(); // 0=Sun
+            var endDate = new Date(2026, 2, 20);
+            var startDow = startDate.getDay();
             var mondayOffset = startDow === 0 ? -6 : 1 - startDow;
             var calStart = new Date(startDate);
             calStart.setDate(calStart.getDate() + mondayOffset);
-
             var today = new Date();
             today = new Date(
                 today.getFullYear(),
@@ -194,8 +189,6 @@ function hinduDashboard() {
             );
             var days = [];
             var d = new Date(calStart);
-
-            // Month label
             var months = [
                 "Januari",
                 "Februari",
@@ -216,8 +209,6 @@ function hinduDashboard() {
                 months[endDate.getMonth()] +
                 " " +
                 endDate.getFullYear();
-
-            // Generate 5 weeks (35 cells max) to cover 30 days
             for (var i = 0; i < 42; i++) {
                 var cur = new Date(d);
                 var hijriDay = Math.floor((cur - startDate) / 86400000) + 1;
@@ -235,7 +226,6 @@ function hinduDashboard() {
                 var isRejected = isCompleted && statusStr === "rejected";
                 var isPastUnfilled =
                     isPast && !isCompleted && !isToday && inRange;
-
                 days.push({
                     key: "d" + i,
                     masehiDay: cur.getDate(),
@@ -248,20 +238,15 @@ function hinduDashboard() {
                     isRejected: isRejected,
                     isPastUnfilled: isPastUnfilled,
                 });
-
                 d.setDate(d.getDate() + 1);
-                // Stop after enough rows
                 if (i > 27 && hijriDay >= 30 && d.getDay() === 1) break;
             }
             this.calendarDays = days;
         },
-
-        // ── Per-user localStorage helpers ─────────────────────────────
         _lsKey(base) {
             var uid = window.__siswaUserId || "unknown";
             return base + "_" + uid;
         },
-
         _clearOldUserData(prefix) {
             var toRemove = [];
             for (var i = 0; i < localStorage.length; i++) {
@@ -272,8 +257,6 @@ function hinduDashboard() {
                 localStorage.removeItem(k);
             });
         },
-
-        // ── Submitted Days ─────────────────────────────────────────────
         loadSubmittedDays() {
             try {
                 var lastUser = localStorage.getItem("hindu_last_user");
@@ -283,7 +266,6 @@ function hinduDashboard() {
                     this._clearOldUserData("hindu_form_day_");
                 }
                 localStorage.setItem("hindu_last_user", currentUser);
-
                 var saved = localStorage.getItem(
                     this._lsKey("hindu_submitted_days"),
                 );
@@ -291,9 +273,13 @@ function hinduDashboard() {
             } catch (e) {
                 this.submittedDays = [];
             }
-            // Sync from server
             var self = this;
-            fetch("/api/formulir", { headers: { Accept: "application/json" } })
+            _throttledFetch(
+                "sync",
+                "/api/formulir",
+                { headers: { Accept: "application/json" } },
+                10000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
@@ -315,13 +301,13 @@ function hinduDashboard() {
                         self.buildCalendar();
                     }
                 })
-                .catch(function () {});
+                .catch(function (e) {
+                    if (e && e.rateLimited) console.warn(e.message);
+                });
         },
-
         getProgressPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getVerifiedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -329,7 +315,6 @@ function hinduDashboard() {
             }
             return count;
         },
-
         getPendingCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -338,7 +323,6 @@ function hinduDashboard() {
             }
             return count;
         },
-
         getRejectedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -346,23 +330,17 @@ function hinduDashboard() {
             }
             return count;
         },
-
         getVerifiedPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getPendingPercent() {
             return Math.round((this.getPendingCount() / 30) * 100);
         },
-
         getRejectedPercent() {
             return Math.round((this.getRejectedCount() / 30) * 100);
         },
-
-        // ── Hindu Prayers & Mantras (Doa & Mantra Hindu) ──────────────
         loadDoas() {
             this.allDuas = [
-                // === Doa Harian ===
                 {
                     id: 1,
                     title: "Doa Pagi (Prātaḥ Prārthanā)",
@@ -395,8 +373,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, terima kasih atas rejeki makanan yang telah hamba nikmati. Semoga makanan ini menjadi kekuatan bagi hamba untuk melakukan kebajikan dan menjalankan Dharma. Om Shanti, Shanti, Shanti. Om.",
                     verse: '"Makhluk hidup ada karena makanan, makanan ada karena hujan, hujan ada karena yajna (persembahan)." — Bhagavad Gita 3:14',
                 },
-
-                // === Doa Syukur (Gratitude) ===
                 {
                     id: 5,
                     title: "Doa Ucapan Syukur (Dhanyavāda Prārthanā)",
@@ -421,8 +397,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, terima kasih untuk keluarga yang Engkau anugerahkan. Berkatilah ayah, ibu, saudara, dan seluruh keluarga hamba. Jadikanlah keluarga hamba tempat di mana Dharma dan kasih sayang-Mu tumbuh subur. Om Shanti, Shanti, Shanti. Om.",
                     verse: '"Dari Dharma lahir kebahagiaan, dan dari Dharma lahir segala yang baik." — Bhagavad Gita 14:16',
                 },
-
-                // === Puja (Worship) ===
                 {
                     id: 8,
                     title: "Tri Sandhya",
@@ -447,8 +421,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, hamba datang dengan hati yang tulus untuk memuja keagungan-Mu. Terimalah persembahan dan bakti hamba yang sederhana ini. Tuntunlah hamba selalu di jalan Dharma. Om Dewa Suksma Paramacintya Ya Namah Svaha. Om Shanti, Shanti, Shanti. Om.",
                     verse: '"Orang yang mempersembahkan segala perbuatannya kepada-Ku dan menjadikan-Ku tujuan tertinggi, memuja-Ku dengan meditasi yang tidak terbagi." — Bhagavad Gita 12:6',
                 },
-
-                // === Mantra ===
                 {
                     id: 11,
                     title: "Gayatri Mantra",
@@ -481,8 +453,6 @@ function hinduDashboard() {
                     text: "Om Asato Ma Sadgamaya\nTamaso Ma Jyotir Gamaya\nMrityor Ma Amritam Gamaya.\nOm Shanti, Shanti, Shanti. Om.\n\nArtinya: Tuntunlah hamba dari ketidaknyataan menuju kenyataan. Tuntunlah hamba dari kegelapan menuju cahaya. Tuntunlah hamba dari kematian menuju keabadian. Om Damai, Damai, Damai.",
                     verse: '"Aku adalah cahaya matahari dan bulan, Aku adalah suku kata Om dalam mantra-mantra Veda." — Bhagavad Gita 7:8',
                 },
-
-                // === Belajar (Study) ===
                 {
                     id: 15,
                     title: "Doa Sebelum Belajar (Vidyārambha)",
@@ -507,8 +477,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, hamba akan menghadapi ujian. Berilah hamba ketenangan pikiran, konsentrasi, dan kebijaksanaan untuk menjawab setiap pertanyaan. Semoga Dewi Saraswati memberikan terang pada pikiran hamba. Om Aim Saraswatyai Namah. Om.",
                     verse: '"Yogasthah Kuru Karmani — Bertindaklah dalam ketetapan yoga, lepaskan kelekatan." — Bhagavad Gita 2:48',
                 },
-
-                // === Keluarga (Family) ===
                 {
                     id: 18,
                     title: "Doa untuk Orang Tua",
@@ -541,8 +509,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, berkatilah guru-guru kami yang dengan sabar mendidik dan mengajar kami. Sebagaimana Acarya Devo Bhava — Guru adalah Dewa. Berilah mereka kesehatan dan semangat. Berkatilah sekolah kami agar menjadi tempat yang baik untuk belajar dan bertumbuh. Om Shanti, Shanti, Shanti. Om.",
                     verse: '"Acarya Devo Bhava — Hormati gurumu sebagai Tuhan." — Taittiriya Upanishad 1:11',
                 },
-
-                // === Meditasi (Meditation) ===
                 {
                     id: 22,
                     title: "Doa Sebelum Meditasi (Dhyāna)",
@@ -567,8 +533,6 @@ function hinduDashboard() {
                     text: "Om Sang Hyang Widhi Wasa, terima kasih atas saat-saat ketenangan yang telah hamba rasakan. Biarlah kedamaian ini hamba bawa dalam setiap langkah dan perbuatan hamba. Semoga semua makhluk hidup merasakan kedamaian. Om Sarve Bhavantu Sukhinah, Sarve Santu Niramayah. Om Shanti, Shanti, Shanti. Om.",
                     verse: '"Semoga semua makhluk berbahagia, semoga semua bebas dari penyakit." — Shanti Mantra',
                 },
-
-                // === Umum (General) ===
                 {
                     id: 25,
                     title: "Doa untuk Kedamaian Dunia (Loka Samastha)",
@@ -602,8 +566,6 @@ function hinduDashboard() {
                     verse: '"Tinggalkan semua bentuk Dharma dan menyerahlah kepada-Ku semata. Aku akan membebaskanmu dari segala dosa; jangan bersedih." — Bhagavad Gita 18:66',
                 },
             ];
-
-            // Build category counts
             var catMap = {};
             this.allDuas.forEach(function (d) {
                 catMap[d.category] = (catMap[d.category] || 0) + 1;
@@ -631,11 +593,9 @@ function hinduDashboard() {
                 },
                 { id: "umum", label: "Umum", count: catMap["umum"] || 0 },
             ];
-
             this.filteredDuas = this.allDuas.slice();
             this.paginateDuas();
         },
-
         filterDuas() {
             var self = this;
             var search = this.doaSearch.toLowerCase();
@@ -653,7 +613,6 @@ function hinduDashboard() {
             this.doaPage = 1;
             this.paginateDuas();
         },
-
         paginateDuas() {
             var start = (this.doaPage - 1) * this.doaPerPage;
             this.paginatedDuas = this.filteredDuas.slice(
@@ -664,7 +623,6 @@ function hinduDashboard() {
                 1,
                 Math.ceil(this.filteredDuas.length / this.doaPerPage),
             );
-            // Build page numbers
             var pages = [];
             var total = this.doaTotalPages;
             if (total <= 5) {
@@ -681,13 +639,11 @@ function hinduDashboard() {
             }
             this.doaPageNumbers = pages;
         },
-
         toggleDoaExpand(id) {
             var idx = this.expandedDoas.indexOf(id);
             if (idx === -1) this.expandedDoas.push(id);
             else this.expandedDoas.splice(idx, 1);
         },
-
         getCategoryLabel(catId) {
             var map = {
                 harian: "Harian",
@@ -701,8 +657,6 @@ function hinduDashboard() {
             };
             return map[catId] || catId;
         },
-
-        // ── Holy Verses (Bhagavad Gita Sloka) ─────────────────────────
         holyVerses: [
             {
                 text: "Kamu tidak perlu bersedih atas apa yang tidak patut disedihkan. Orang bijak tidak bersedih baik untuk yang hidup maupun yang mati.",
@@ -785,39 +739,28 @@ function hinduDashboard() {
                 source: "Bhagavad Gita 2:23",
             },
         ],
-
         setDailyVerse() {
-            // Pick verse based on day number
             var idx = (this.ramadhanDay - 1) % this.holyVerses.length;
             this.dailyVerse = this.holyVerses[idx];
         },
-
         refreshVerse() {
             var idx = Math.floor(Math.random() * this.holyVerses.length);
             this.dailyVerse = this.holyVerses[idx];
         },
-
-        /**
-         * Navigate to formulir when clicking calendar cell.
-         */
         navigateToFormulir(item) {
             if (item.hijriDay <= 0) return;
-
             var day = item.hijriDay;
             var formulirUrl = document.querySelector("[data-formulir-url]");
             var baseUrl = formulirUrl
                 ? formulirUrl.dataset.formulirUrl
                 : "/siswa/formulir-harian";
-
             if (!item.isPast && !item.isToday) {
                 return;
             }
-
             if (item.isCompleted) {
                 window.open(baseUrl + "?hari=" + day, "_blank");
                 return;
             }
-
             var firstUnfilled = null;
             for (var d = 1; d <= this.ramadhanDay; d++) {
                 if (!this.submittedDays.includes(d)) {
@@ -825,7 +768,6 @@ function hinduDashboard() {
                     break;
                 }
             }
-
             if (firstUnfilled && firstUnfilled < day) {
                 this.notifTitle = "Isi Formulir Secara Berurutan";
                 this.notifMessage =
@@ -840,7 +782,6 @@ function hinduDashboard() {
                 window.open(baseUrl + "?hari=" + day, "_blank");
             }
         },
-
         closeNotifModal(redirect) {
             this.showNotifModal = false;
             if (redirect && this.notifRedirectUrl) {
@@ -850,12 +791,10 @@ function hinduDashboard() {
             this.notifMessage = "";
             this.notifRedirectUrl = "";
         },
-
         changePassword() {
             var self = this;
             self.pwMessage = "";
             self.pwSuccess = false;
-
             if (!self.pwOld || !self.pwNew || !self.pwConfirm) {
                 self.pwMessage = "Semua field harus diisi.";
                 return;
@@ -868,25 +807,28 @@ function hinduDashboard() {
                 self.pwMessage = "Konfirmasi password tidak cocok.";
                 return;
             }
-
             self.pwLoading = true;
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
-
-            fetch("/api/change-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                        ? csrfToken.getAttribute("content")
-                        : "",
+            _throttledFetch(
+                "changePw",
+                "/api/change-password",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        current_password: self.pwOld,
+                        new_password: self.pwNew,
+                        new_password_confirmation: self.pwConfirm,
+                    }),
                 },
-                body: JSON.stringify({
-                    current_password: self.pwOld,
-                    new_password: self.pwNew,
-                    new_password_confirmation: self.pwConfirm,
-                }),
-            })
+                3000,
+            )
                 .then(function (r) {
                     return r.json().then(function (d) {
                         return { ok: r.ok, data: d };
@@ -911,9 +853,13 @@ function hinduDashboard() {
                             res.data.message || "Gagal mengubah password.";
                     }
                 })
-                .catch(function () {
+                .catch(function (e) {
                     self.pwLoading = false;
-                    self.pwMessage = "Terjadi kesalahan. Coba lagi.";
+                    if (e && e.throttled) return;
+                    self.pwMessage =
+                        e && e.rateLimited
+                            ? e.message
+                            : "Terjadi kesalahan. Coba lagi.";
                 });
         },
     };

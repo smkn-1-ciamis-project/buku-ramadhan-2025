@@ -14,7 +14,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     {{-- Dashboard CSS --}}
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/dashboard.css')) }}">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -26,6 +26,6 @@
     {{ $slot }}
 
     {{-- Dashboard JS --}}
-    <script src="{{ asset('themes/ramadhan/js/dashboard.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/dashboard.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/dashboard.js')) }}" defer></script>
 </body>
 </html>

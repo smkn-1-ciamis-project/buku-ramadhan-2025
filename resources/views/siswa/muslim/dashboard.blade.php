@@ -442,17 +442,33 @@
                     <div x-show="activeTab === 'shalat'" x-transition.opacity.duration.200ms>
                         <div class="checkin-card">
                             {{-- Header --}}
-                            <div class="checkin-header">
-                                <div>
-                                    <h3 class="text-white font-bold text-sm lg:text-base">Check-in Shalat Hari Ini</h3>
-                                    <p class="text-white/80 text-[11px] mt-0.5" x-text="gregorianDate" style="color: rgba(255,255,255,0.8) !important;"></p>
+                            <div class="checkin-header" style="display:flex;align-items:center;gap:8px;">
+                                <button @click="checkinPrevDay()" :disabled="!canCheckinPrev()" class="checkin-nav-btn" :style="!canCheckinPrev() ? 'opacity:0.3;cursor:default' : ''">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                                </button>
+                                <div class="checkin-header-center">
+                                        <span class="checkin-header-title">
+                                        Check-in Shalat — <span x-show="!checkinLoading" x-text="'Hari ke-' + checkinHariKe"></span><span x-show="checkinLoading" class="checkin-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle;border-width:2px;"></span>
+                                    </span>
+                                    <span class="checkin-header-date" x-show="!checkinLoading" x-text="checkinDateLabel"></span>
                                 </div>
+                                <button @click="checkinNextDay()" :disabled="!canCheckinNext()" class="checkin-nav-btn" :style="!canCheckinNext() ? 'opacity:0.3;cursor:default' : ''">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                                </button>
                                 <div class="checkin-counter">
                                     <span x-text="getCheckinCount()"></span>/<span x-text="9"></span>
                                 </div>
                             </div>
 
                             <div class="checkin-body">
+                                {{-- Loading state --}}
+                                <div x-show="checkinLoading" class="checkin-loading-wrap">
+                                    <div class="checkin-spinner"></div>
+                                    <span>Memuat data check-in...</span>
+                                </div>
+
+                                <template x-if="!checkinLoading">
+                                <div>
                                 {{-- Shalat Wajib Section --}}
                                 <div class="checkin-section">
                                     <div class="checkin-section-title">
@@ -460,17 +476,19 @@
                                         <span>Shalat Wajib</span>
                                     </div>
                                     <div class="checkin-grid">
-                                        <template x-for="prayer in checkinWajib" :key="prayer.id">
-                                            <button class="checkin-item" :class="getCheckinClass(prayer.id)" @click="openCheckinModal(prayer)">
+                                        <template x-for="(prayer, pIdx) in checkinWajib" :key="prayer.id">
+                                            <button class="checkin-item" :class="[getCheckinClass(prayer.id), isWajibLocked(prayer.id) ? 'checkin-locked' : '']" :disabled="isWajibLocked(prayer.id)" @click="openCheckinModal(prayer)">
                                                 <div class="checkin-item-icon" :class="getCheckinIconClass(prayer.id)">
-                                                    <svg x-show="!getCheckinStatus(prayer.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-                                                    <svg x-show="getCheckinStatus(prayer.id) === 'jamaah'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                                                    <svg x-show="getCheckinStatus(prayer.id) === 'munfarid'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                                                    <svg x-show="getCheckinStatus(prayer.id) === 'tidak'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+                                                    <svg x-show="isWajibLocked(prayer.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="color:#cbd5e1;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                                                    <svg x-show="!isWajibLocked(prayer.id) && !getCheckinStatus(prayer.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                                                    <svg x-show="!isWajibLocked(prayer.id) && getCheckinStatus(prayer.id) === 'jamaah'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg x-show="!isWajibLocked(prayer.id) && getCheckinStatus(prayer.id) === 'munfarid'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg x-show="!isWajibLocked(prayer.id) && getCheckinStatus(prayer.id) === 'tidak'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
                                                 </div>
                                                 <div class="checkin-item-info">
                                                     <span class="checkin-item-name" x-text="prayer.name"></span>
-                                                    <span class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
+                                                    <span x-show="!isWajibLocked(prayer.id)" class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
+                                                    <span x-show="isWajibLocked(prayer.id)" class="checkin-item-status" style="color:#cbd5e1;font-size:10px;">🔒 Isi shalat sebelumnya dulu</span>
                                                 </div>
                                                 <div class="checkin-item-time" x-show="getCheckinTime(prayer.id)" x-text="getCheckinTime(prayer.id)"></div>
                                             </button>
@@ -517,6 +535,8 @@
                                         <span>Tidak</span>
                                     </div>
                                 </div>
+                                </div>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -882,7 +902,8 @@
                     </div>
 
                     {{-- DOA HARIAN --}}
-                    <div x-show="activeTab === 'dua'" x-transition.opacity.duration.200ms>
+                    <div x-show="activeTab === 'dua'" x-transition.opacity.duration.200ms
+                         x-init="$watch('activeTab', v => { if(v === 'dua' && allDuas.length === 0) loadDoas(); })">
                         <div class="doa-card">
                             {{-- Header --}}
                             <div class="doa-header">
@@ -1182,7 +1203,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v1.0 - SMKN 1 Ciamis</p>
+                                        <p class="akun-menu-sub">Calakan v2.0 - SMKN 1 Ciamis</p>
                                     </div>
                                 </div>
 
@@ -1303,9 +1324,9 @@
 </x-filament-panels::page>
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/dashboard.css') }}?v={{ filemtime(public_path('themes/ramadhan/css/dashboard.css')) }}">
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('themes/ramadhan/js/muslim/dashboard.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('themes/ramadhan/js/muslim/dashboard.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/muslim/dashboard.js')) }}" defer></script>
 @endpush

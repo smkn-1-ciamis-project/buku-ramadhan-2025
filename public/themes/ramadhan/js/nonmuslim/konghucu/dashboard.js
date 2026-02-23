@@ -1,12 +1,29 @@
-// @ts-nocheck
-/**
- * Calakan — Dashboard Konghucu Alpine.js Component
- * Includes: Calendar, Progress, Konghucu Prayers/Teachings, Confucian Quotes.
- */
+// ── API Throttle Helper ─────────────────────────────────────────────
+var _apiLastCall = {};
+function _throttledFetch(key, url, options, cooldownMs) {
+    cooldownMs = cooldownMs || 5000;
+    var now = Date.now();
+    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
+        return Promise.reject({ throttled: true });
+    }
+    _apiLastCall[key] = now;
+    return fetch(url, options).then(function (r) {
+        if (r.status === 429) {
+            return r.json().then(function (d) {
+                return Promise.reject({
+                    rateLimited: true,
+                    message:
+                        d.message ||
+                        "Terlalu banyak permintaan. Tunggu sebentar.",
+                });
+            });
+        }
+        return r;
+    });
+}
 
 function konghucuDashboard() {
     return {
-        // ── State ──────────────────────────────────────────────────────
         activeTab: "calendar",
         showChangePassword: false,
         showLogoutConfirm: false,
@@ -41,18 +58,12 @@ function konghucuDashboard() {
         calendarMonthLabel: "",
         isSunday: false,
         motivationalBadge: "",
-
-        // ── Form State ─────────────────────────────────────────────────
         submittedDays: [],
         submissionStatuses: {},
-
-        // ── Notification Modal State ───────────────────────────────────
         showNotifModal: false,
         notifTitle: "",
         notifMessage: "",
         notifRedirectUrl: "",
-
-        // ── Lifecycle ──────────────────────────────────────────────────
         init() {
             this.setDates();
             this.calculateRamadhanDay();
@@ -64,8 +75,6 @@ function konghucuDashboard() {
             this.startClock();
             this.setMotivationalBadge();
         },
-
-        // ── Clock ──────────────────────────────────────────────────────
         startClock() {
             var self = this;
             function tick() {
@@ -89,18 +98,13 @@ function konghucuDashboard() {
                         fmt2(d.getSeconds())
                     );
                 };
-
-                // Main clock follows selected timezone
                 if (self.selectedTz === "WIB") self.clockMain = fmtFull(wib);
                 else if (self.selectedTz === "WITA")
                     self.clockMain = fmtFull(wita);
                 else self.clockMain = fmtFull(wit);
-
                 self.clockWIB = fmtTime(wib);
                 self.clockWITA = fmtTime(wita);
                 self.clockWIT = fmtTime(wit);
-
-                // Greeting
                 var h = wib.getHours();
                 if (h >= 3 && h < 11) self.greeting = "Selamat Pagi ☀️";
                 else if (h >= 11 && h < 15) self.greeting = "Selamat Siang 🌤️";
@@ -110,7 +114,6 @@ function konghucuDashboard() {
             tick();
             setInterval(tick, 1000);
         },
-
         setDates() {
             var now = new Date();
             var days = [
@@ -145,9 +148,8 @@ function konghucuDashboard() {
                 " " +
                 now.getFullYear();
         },
-
         calculateRamadhanDay() {
-            var startDate = new Date(2026, 1, 19); // Feb 19 2026 = day 1
+            var startDate = new Date(2026, 1, 19);
             var now = new Date();
             var today = new Date(
                 now.getFullYear(),
@@ -157,11 +159,9 @@ function konghucuDashboard() {
             var diff = Math.floor((today - startDate) / 86400000) + 1;
             this.ramadhanDay = Math.max(1, Math.min(diff, 30));
         },
-
         checkSunday() {
             this.isSunday = new Date().getDay() === 0;
         },
-
         setMotivationalBadge() {
             if (this.isSunday) {
                 this.motivationalBadge = "Hari Minggu — Waktunya sembahyang 🙏";
@@ -177,17 +177,13 @@ function konghucuDashboard() {
                     badges[this.ramadhanDay % badges.length];
             }
         },
-
-        // ── Calendar ───────────────────────────────────────────────────
         buildCalendar() {
             var startDate = new Date(2026, 1, 19);
-            var endDate = new Date(2026, 2, 20); // 30 days
-            // Find the Monday of the week containing startDate
-            var startDow = startDate.getDay(); // 0=Sun
+            var endDate = new Date(2026, 2, 20);
+            var startDow = startDate.getDay();
             var mondayOffset = startDow === 0 ? -6 : 1 - startDow;
             var calStart = new Date(startDate);
             calStart.setDate(calStart.getDate() + mondayOffset);
-
             var today = new Date();
             today = new Date(
                 today.getFullYear(),
@@ -196,8 +192,6 @@ function konghucuDashboard() {
             );
             var days = [];
             var d = new Date(calStart);
-
-            // Month label
             var months = [
                 "Januari",
                 "Februari",
@@ -218,8 +212,6 @@ function konghucuDashboard() {
                 months[endDate.getMonth()] +
                 " " +
                 endDate.getFullYear();
-
-            // Generate 5 weeks (35 cells max) to cover 30 days
             for (var i = 0; i < 42; i++) {
                 var cur = new Date(d);
                 var hijriDay = Math.floor((cur - startDate) / 86400000) + 1;
@@ -237,7 +229,6 @@ function konghucuDashboard() {
                 var isRejected = isCompleted && statusStr === "rejected";
                 var isPastUnfilled =
                     isPast && !isCompleted && !isToday && inRange;
-
                 days.push({
                     key: "d" + i,
                     masehiDay: cur.getDate(),
@@ -250,20 +241,15 @@ function konghucuDashboard() {
                     isRejected: isRejected,
                     isPastUnfilled: isPastUnfilled,
                 });
-
                 d.setDate(d.getDate() + 1);
-                // Stop after enough rows
                 if (i > 27 && hijriDay >= 30 && d.getDay() === 1) break;
             }
             this.calendarDays = days;
         },
-
-        // ── Per-user localStorage helpers ─────────────────────────────
         _lsKey(base) {
             var uid = window.__siswaUserId || "unknown";
             return base + "_" + uid;
         },
-
         _clearOldUserData(prefix) {
             var toRemove = [];
             for (var i = 0; i < localStorage.length; i++) {
@@ -274,8 +260,6 @@ function konghucuDashboard() {
                 localStorage.removeItem(k);
             });
         },
-
-        // ── Submitted Days ─────────────────────────────────────────────
         loadSubmittedDays() {
             try {
                 var lastUser = localStorage.getItem("konghucu_last_user");
@@ -285,7 +269,6 @@ function konghucuDashboard() {
                     this._clearOldUserData("konghucu_form_day_");
                 }
                 localStorage.setItem("konghucu_last_user", currentUser);
-
                 var saved = localStorage.getItem(
                     this._lsKey("konghucu_submitted_days"),
                 );
@@ -293,9 +276,13 @@ function konghucuDashboard() {
             } catch (e) {
                 this.submittedDays = [];
             }
-            // Sync from server
             var self = this;
-            fetch("/api/formulir", { headers: { Accept: "application/json" } })
+            _throttledFetch(
+                "sync",
+                "/api/formulir",
+                { headers: { Accept: "application/json" } },
+                10000,
+            )
                 .then(function (r) {
                     return r.json();
                 })
@@ -317,13 +304,13 @@ function konghucuDashboard() {
                         self.buildCalendar();
                     }
                 })
-                .catch(function () {});
+                .catch(function (e) {
+                    if (e && e.rateLimited) console.warn(e.message);
+                });
         },
-
         getProgressPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getVerifiedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -331,7 +318,6 @@ function konghucuDashboard() {
             }
             return count;
         },
-
         getPendingCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -340,7 +326,6 @@ function konghucuDashboard() {
             }
             return count;
         },
-
         getRejectedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
@@ -348,23 +333,17 @@ function konghucuDashboard() {
             }
             return count;
         },
-
         getVerifiedPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
         },
-
         getPendingPercent() {
             return Math.round((this.getPendingCount() / 30) * 100);
         },
-
         getRejectedPercent() {
             return Math.round((this.getRejectedCount() / 30) * 100);
         },
-
-        // ── Konghucu Prayers & Teachings (Doa & Ajaran Konghucu) ──────
         loadDoas() {
             this.allDuas = [
-                // === Doa Harian ===
                 {
                     id: 1,
                     title: "Doa Harian Konghucu",
@@ -405,8 +384,6 @@ function konghucuDashboard() {
                     text: "Terima kasih ya Tian, atas makanan yang telah hamba nikmati. Semoga kekuatan dari makanan ini hamba gunakan untuk melakukan perbuatan baik dan berbakti kepada sesama. Xian You Yi De.",
                     verse: "",
                 },
-
-                // === Doa Syukur ===
                 {
                     id: 6,
                     title: "Doa Syukur kepada Tian",
@@ -431,8 +408,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, di pagi yang baru ini hamba mengucap syukur. Setiap hari adalah kesempatan untuk mendengar tentang Dao dan menjalaninya. Bimbinglah hamba agar hari ini dipenuhi dengan kebaikan, kebijaksanaan, dan cinta kasih. Xian You Yi De.",
                     verse: '"Pagi hari mendengar Dao, sore hari mati pun tiada penyesalan." — Lunyu 4:8',
                 },
-
-                // === Doa Sembahyang ===
                 {
                     id: 9,
                     title: "Doa Sembahyang kepada Tian",
@@ -457,8 +432,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, hamba persembahkan doa ini untuk para leluhur yang telah mendahului. Semoga arwah mereka berada dalam kedamaian. Hamba berterima kasih atas jasa dan pengorbanan mereka. Semoga hamba dapat meneruskan kebajikan yang mereka wariskan. Xian You Yi De.",
                     verse: '"Berhati-hatilah di saat akhir hayat dan kenangkanlah yang jauh sudah tiada, niscaya kebajikan rakyat akan tebal kembali." — Lunyu 1:9',
                 },
-
-                // === Doa Kebajikan ===
                 {
                     id: 12,
                     title: "Delapan Kebajikan (Ba De)",
@@ -491,8 +464,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, berilah hamba keberanian untuk selalu menegakkan Yi (kebenaran). Jadikanlah hamba orang yang mengerti kebenaran, bukan orang yang hanya mengejar keuntungan. Semoga hamba selalu memilih jalan yang benar meskipun sulit. Xian You Yi De.",
                     verse: '"Junzi (manusia berbudi luhur) memahami kebenaran (Yi), Xiaoren (orang kecil) memahami keuntungan (Li)." — Lunyu 4:16',
                 },
-
-                // === Doa Belajar ===
                 {
                     id: 16,
                     title: "Doa Sebelum Belajar (Konghucu)",
@@ -525,8 +496,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, jadikanlah hamba orang yang tekun dalam menuntut ilmu. Hamba tidak ingin hanya berpikir tanpa belajar, karena itu tidak akan membawa hasil. Bimbinglah hamba untuk terus belajar dengan semangat dan rendah hati. Xian You Yi De.",
                     verse: '"Aku pernah seharian penuh berpikir tanpa makan dan semalam suntuk tanpa tidur, tetapi tidak ada hasilnya. Lebih baik belajar." — Lunyu 15:30',
                 },
-
-                // === Doa Keluarga ===
                 {
                     id: 20,
                     title: "Doa untuk Orang Tua & Leluhur",
@@ -551,8 +520,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, berkatilah guru-guru hamba yang dengan sabar mendidik dan mengajar. Ajarlah hamba untuk menghormati mereka dan mengamalkan ilmu yang mereka berikan. Semoga sekolah hamba menjadi tempat yang baik untuk menuntut ilmu dan membentuk budi pekerti. Xian You Yi De.",
                     verse: '"Diam-diam menghimpun ilmu, belajar tidak pernah merasa puas, mengajar orang lain tidak pernah merasa lelah — hal itu apakah ada padaku?" — Lunyu 7:2',
                 },
-
-                // === Doa Keharmonisan ===
                 {
                     id: 23,
                     title: "Zhongyong (Jalan Tengah)",
@@ -577,8 +544,6 @@ function konghucuDashboard() {
                     text: "Ya Tian, berilah hamba kemampuan untuk mengendalikan diri dan kembali kepada kesusilaan. Ajarlah hamba agar tidak melihat, tidak mendengar, tidak berkata, dan tidak melakukan sesuatu yang melanggar Li (kesusilaan). Xian You Yi De.",
                     verse: '"Yan Yuan bertanya tentang Ren. Nabi bersabda: Mengendalikan diri dan kembali pada Li (kesusilaan), itulah Ren." — Lunyu 12:1',
                 },
-
-                // === Doa Umum ===
                 {
                     id: 26,
                     title: "Doa untuk Bangsa & Negara",
@@ -604,8 +569,6 @@ function konghucuDashboard() {
                     verse: '"Orang yang memiliki Ren (cinta kasih), jika dirinya ingin tegak maka ia menegakkan orang lain, jika dirinya ingin berhasil maka ia menunjukkan jalan bagi orang lain untuk berhasil." — Lunyu 6:30',
                 },
             ];
-
-            // Build category counts
             var catMap = {};
             this.allDuas.forEach(function (d) {
                 catMap[d.category] = (catMap[d.category] || 0) + 1;
@@ -641,11 +604,9 @@ function konghucuDashboard() {
                 },
                 { id: "umum", label: "Umum", count: catMap["umum"] || 0 },
             ];
-
             this.filteredDuas = this.allDuas.slice();
             this.paginateDuas();
         },
-
         filterDuas() {
             var self = this;
             var search = this.doaSearch.toLowerCase();
@@ -663,7 +624,6 @@ function konghucuDashboard() {
             this.doaPage = 1;
             this.paginateDuas();
         },
-
         paginateDuas() {
             var start = (this.doaPage - 1) * this.doaPerPage;
             this.paginatedDuas = this.filteredDuas.slice(
@@ -674,7 +634,6 @@ function konghucuDashboard() {
                 1,
                 Math.ceil(this.filteredDuas.length / this.doaPerPage),
             );
-            // Build page numbers
             var pages = [];
             var total = this.doaTotalPages;
             if (total <= 5) {
@@ -691,13 +650,11 @@ function konghucuDashboard() {
             }
             this.doaPageNumbers = pages;
         },
-
         toggleDoaExpand(id) {
             var idx = this.expandedDoas.indexOf(id);
             if (idx === -1) this.expandedDoas.push(id);
             else this.expandedDoas.splice(idx, 1);
         },
-
         getCategoryLabel(catId) {
             var map = {
                 harian: "Harian",
@@ -711,8 +668,6 @@ function konghucuDashboard() {
             };
             return map[catId] || catId;
         },
-
-        // ── Confucian Quotes (Ajaran Konghucu) ─────────────────────────
         holyVerses: [
             {
                 text: "Belajar dan terus-menerus mengulang, bukankah itu menyenangkan? Ada kawan datang dari jauh, bukankah itu membahagiakan? Orang lain tidak mengenal, namun tidak merasa kecewa, bukankah itu seorang Junzi?",
@@ -795,39 +750,28 @@ function konghucuDashboard() {
                 source: "Lunyu 7:6",
             },
         ],
-
         setDailyVerse() {
-            // Pick verse based on day number
             var idx = (this.ramadhanDay - 1) % this.holyVerses.length;
             this.dailyVerse = this.holyVerses[idx];
         },
-
         refreshVerse() {
             var idx = Math.floor(Math.random() * this.holyVerses.length);
             this.dailyVerse = this.holyVerses[idx];
         },
-
-        /**
-         * Navigate to formulir when clicking calendar cell.
-         */
         navigateToFormulir(item) {
             if (item.hijriDay <= 0) return;
-
             var day = item.hijriDay;
             var formulirUrl = document.querySelector("[data-formulir-url]");
             var baseUrl = formulirUrl
                 ? formulirUrl.dataset.formulirUrl
                 : "/siswa/formulir-harian";
-
             if (!item.isPast && !item.isToday) {
                 return;
             }
-
             if (item.isCompleted) {
                 window.open(baseUrl + "?hari=" + day, "_blank");
                 return;
             }
-
             var firstUnfilled = null;
             for (var d = 1; d <= this.ramadhanDay; d++) {
                 if (!this.submittedDays.includes(d)) {
@@ -835,7 +779,6 @@ function konghucuDashboard() {
                     break;
                 }
             }
-
             if (firstUnfilled && firstUnfilled < day) {
                 this.notifTitle = "Isi Formulir Secara Berurutan";
                 this.notifMessage =
@@ -850,7 +793,6 @@ function konghucuDashboard() {
                 window.open(baseUrl + "?hari=" + day, "_blank");
             }
         },
-
         closeNotifModal(redirect) {
             this.showNotifModal = false;
             if (redirect && this.notifRedirectUrl) {
@@ -860,12 +802,10 @@ function konghucuDashboard() {
             this.notifMessage = "";
             this.notifRedirectUrl = "";
         },
-
         changePassword() {
             var self = this;
             self.pwMessage = "";
             self.pwSuccess = false;
-
             if (!self.pwOld || !self.pwNew || !self.pwConfirm) {
                 self.pwMessage = "Semua field harus diisi.";
                 return;
@@ -878,25 +818,28 @@ function konghucuDashboard() {
                 self.pwMessage = "Konfirmasi password tidak cocok.";
                 return;
             }
-
             self.pwLoading = true;
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
-
-            fetch("/api/change-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                        ? csrfToken.getAttribute("content")
-                        : "",
+            _throttledFetch(
+                "changePw",
+                "/api/change-password",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        current_password: self.pwOld,
+                        new_password: self.pwNew,
+                        new_password_confirmation: self.pwConfirm,
+                    }),
                 },
-                body: JSON.stringify({
-                    current_password: self.pwOld,
-                    new_password: self.pwNew,
-                    new_password_confirmation: self.pwConfirm,
-                }),
-            })
+                3000,
+            )
                 .then(function (r) {
                     return r.json().then(function (d) {
                         return { ok: r.ok, data: d };
@@ -921,9 +864,13 @@ function konghucuDashboard() {
                             res.data.message || "Gagal mengubah password.";
                     }
                 })
-                .catch(function () {
+                .catch(function (e) {
                     self.pwLoading = false;
-                    self.pwMessage = "Terjadi kesalahan. Coba lagi.";
+                    if (e && e.throttled) return;
+                    self.pwMessage =
+                        e && e.rateLimited
+                            ? e.message
+                            : "Terjadi kesalahan. Coba lagi.";
                 });
         },
     };
