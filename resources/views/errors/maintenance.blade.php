@@ -2,9 +2,16 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Maintenance — Calakan</title>
     <link rel="icon" href="{{ asset('img/logo_smk.png') }}" type="image/png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calakan">
+    <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/img/icons/icon-192x192.png">
     <style>
         :root {
             --navy: #1e3a5f;
@@ -286,7 +293,7 @@
         {{-- ── Footer ── --}}
         <div class="maint-footer">
             <p class="maint-footer-text">
-                &copy; {{ date('Y') }} <a href="#">Calakan</a> — SMKN 1 Ciamis
+                &copy; {{ date('Y') }} <a href="{{ url('/tim-pengembang') }}">Calakan</a> — SMKN 1 Ciamis
             </p>
         </div>
 

@@ -13,6 +13,7 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
@@ -292,7 +293,7 @@ class ListSiswa extends ListRecords
 
               // Validate agama
               $validAgama = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'];
-              $matchedAgama = collect($validAgama)->first(fn($a) => strtolower($a) === strtolower($agama));
+              $matchedAgama = \App\Models\User::normalizeAgama($agama);
               if (!$matchedAgama) {
                 $errors[] = "Baris {$rowNum}: Agama '{$agama}' tidak valid.";
                 $skipped++;
@@ -325,8 +326,9 @@ class ListSiswa extends ListRecords
                 'jenis_kelamin' => $jk,
                 'agama' => $matchedAgama,
                 'kelas_id' => $kelas->id,
-                'password' => Hash::make($password ?: $nisn),
+                'password' => $password ?: $nisn,
                 'role_user_id' => $siswaRole->id,
+                'must_change_password' => true,
               ]);
 
               $imported++;
@@ -354,6 +356,15 @@ class ListSiswa extends ListRecords
             $notification->success();
           }
 
+          if ($imported > 0) {
+            ActivityLog::log('import_siswa', Auth::user(), [
+              'description' => 'Import ' . $imported . ' siswa ke kelas ' . ($kelas->nama ?? '-'),
+              'imported' => $imported,
+              'skipped' => $skipped,
+              'kelas' => $kelas->nama ?? '-',
+            ]);
+          }
+
           $notification->send();
         }),
 
@@ -364,9 +375,19 @@ class ListSiswa extends ListRecords
         ->action(function () {
           $guru = Auth::user();
           $kelas = Kelas::where('wali_id', $guru->id)->first();
-          $namaKelas = $kelas?->nama ?? '-';
 
-          $siswa = User::where('kelas_id', $kelas?->id)
+          if (! $kelas) {
+            Notification::make()
+              ->title('Gagal Export')
+              ->body('Anda belum ditugaskan sebagai wali kelas.')
+              ->danger()
+              ->send();
+            return;
+          }
+
+          $namaKelas = $kelas->nama ?? '-';
+
+          $siswa = User::where('kelas_id', $kelas->id)
             ->whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))
             ->orderBy('name')
             ->get();
@@ -388,6 +409,12 @@ class ListSiswa extends ListRecords
           $pdf->setPaper('a4', 'portrait');
 
           $filename = 'Data_Siswa_' . str_replace(' ', '_', $namaKelas) . '_' . now()->format('Ymd_His') . '.pdf';
+
+          ActivityLog::log('export_siswa', Auth::user(), [
+            'description' => 'Export PDF data siswa kelas ' . $namaKelas . ' (' . $siswa->count() . ' siswa)',
+            'kelas' => $namaKelas,
+            'total' => $siswa->count(),
+          ]);
 
           return response()->streamDownload(
             fn() => print($pdf->output()),

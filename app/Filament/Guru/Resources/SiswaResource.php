@@ -3,6 +3,7 @@
 namespace App\Filament\Guru\Resources;
 
 use App\Filament\Guru\Resources\SiswaResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\Kelas;
 use App\Models\User;
 use Filament\Forms;
@@ -97,7 +98,6 @@ class SiswaResource extends Resource
             Forms\Components\TextInput::make('password')
               ->label('Password')
               ->password()
-              ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
               ->dehydrated(fn($state) => filled($state))
               ->helperText('Kosongkan jika tidak ingin mengubah. Default: NISN siswa.'),
           ])
@@ -120,12 +120,12 @@ class SiswaResource extends Resource
         Tables\Columns\TextColumn::make('jenis_kelamin')
           ->label('JK')
           ->badge()
-          ->color(fn(string $state): string => match ($state) {
+          ->color(fn(?string $state): string => match ($state) {
             'L' => 'info',
             'P' => 'danger',
             default => 'gray',
           })
-          ->formatStateUsing(fn(string $state): string => match ($state) {
+          ->formatStateUsing(fn(?string $state): string => match ($state) {
             'L' => 'Laki-laki',
             'P' => 'Perempuan',
             default => '-',
@@ -158,7 +158,14 @@ class SiswaResource extends Resource
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
+          Tables\Actions\EditAction::make()
+            ->after(function (User $record) {
+              ActivityLog::log('edit_siswa', Auth::user(), [
+                'description' => 'Mengedit data siswa ' . $record->name,
+                'target_id' => $record->id,
+                'target_name' => $record->name,
+              ]);
+            }),
           Tables\Actions\Action::make('resetPassword')
             ->label('Reset Password')
             ->icon('heroicon-o-key')
@@ -169,8 +176,13 @@ class SiswaResource extends Resource
             ->modalSubmitActionLabel('Ya, Reset')
             ->action(function (User $record) {
               $record->update([
-                'password' => Hash::make($record->nisn),
+                'password' => $record->nisn,
                 'must_change_password' => true,
+              ]);
+              ActivityLog::log('reset_password', Auth::user(), [
+                'description' => 'Reset password siswa ' . $record->name . ' ke NISN',
+                'target_id' => $record->id,
+                'target_name' => $record->name,
               ]);
               Notification::make()
                 ->title('Password berhasil direset')
@@ -193,6 +205,11 @@ class SiswaResource extends Resource
                 'active_session_id' => null,
                 'session_login_at'  => null,
               ]);
+              ActivityLog::log('reset_session', Auth::user(), [
+                'description' => 'Reset sesi login siswa ' . $record->name,
+                'target_id' => $record->id,
+                'target_name' => $record->name,
+              ]);
               Notification::make()
                 ->title('Sesi login berhasil direset')
                 ->body("{$record->name} sekarang bisa login kembali.")
@@ -200,6 +217,14 @@ class SiswaResource extends Resource
                 ->send();
             }),
           Tables\Actions\DeleteAction::make()
+            ->before(function (User $record) {
+              ActivityLog::log('delete_siswa', Auth::user(), [
+                'description' => 'Menghapus siswa ' . $record->name . ' (NISN: ' . $record->nisn . ')',
+                'target_id' => $record->id,
+                'target_name' => $record->name,
+                'target_nisn' => $record->nisn,
+              ]);
+            })
             ->requiresConfirmation()
             ->modalHeading('Hapus Siswa')
             ->modalDescription('Apakah Anda yakin ingin menghapus siswa ini? Data yang sudah dihapus tidak dapat dikembalikan.')
@@ -211,6 +236,13 @@ class SiswaResource extends Resource
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make()
+            ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+              ActivityLog::log('bulk_delete_siswa', Auth::user(), [
+                'description' => 'Menghapus massal ' . $records->count() . ' siswa',
+                'count' => $records->count(),
+                'names' => $records->pluck('name')->toArray(),
+              ]);
+            })
             ->requiresConfirmation()
             ->modalHeading('Hapus Siswa Terpilih')
             ->modalDescription('Apakah Anda yakin ingin menghapus semua siswa yang dipilih?')

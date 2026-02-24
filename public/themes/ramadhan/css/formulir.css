@@ -1,6 +1,8 @@
 .formulir-page {
     min-height: 100vh;
+    min-height: 100dvh;
     background: #f1f5f9;
+    overscroll-behavior: none;
 }
 .formulir-topbar {
     display: flex;
@@ -66,6 +68,7 @@
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px);
     padding: 2rem 1rem;
 }
 .formulir-disabled-card {
@@ -769,6 +772,14 @@
     transform: none;
     box-shadow: none;
 }
+.f-submit-btn-draft {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+.f-submit-btn-draft:hover {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
 @keyframes f-spin-anim {
     from {
         transform: rotate(0deg);
@@ -821,6 +832,7 @@ html.fi .fi-page > section > * {
 }
 .fi-layout {
     min-height: 100vh;
+    min-height: 100dvh;
 }
 .f-kegiatan-list-yatidak {
     display: flex;

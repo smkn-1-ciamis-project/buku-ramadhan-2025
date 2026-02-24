@@ -3,6 +3,7 @@
 namespace App\Filament\Superadmin\Resources;
 
 use App\Filament\Superadmin\Resources\SiswaResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\Kelas;
 use App\Models\RoleUser;
 use App\Models\User;
@@ -11,7 +12,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaResource extends Resource
@@ -124,8 +127,12 @@ class SiswaResource extends Resource
         Tables\Columns\TextColumn::make('jenis_kelamin')
           ->label('JK')
           ->badge()
-          ->color(fn(string $state): string => $state === 'L' ? 'info' : 'danger')
-          ->formatStateUsing(fn(string $state): string => $state === 'L' ? 'L' : 'P'),
+          ->color(fn(?string $state): string => $state === 'L' ? 'info' : 'danger')
+          ->formatStateUsing(fn(?string $state): string => match ($state) {
+            'L' => 'L',
+            'P' => 'P',
+            default => '-'
+          }),
         Tables\Columns\TextColumn::make('agama')
           ->label('Agama')
           ->sortable(),
@@ -158,13 +165,87 @@ class SiswaResource extends Resource
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
-          Tables\Actions\EditAction::make(),
-          Tables\Actions\DeleteAction::make(),
+          Tables\Actions\EditAction::make()
+            ->after(function (User $record) {
+              ActivityLog::log('edit_siswa', Auth::user(), [
+                'description' => 'Mengedit data siswa ' . $record->name . ' (NISN: ' . ($record->nisn ?? '-') . ')',
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+                'nisn' => $record->nisn,
+              ]);
+            }),
+          Tables\Actions\Action::make('resetPassword')
+            ->label('Reset Password')
+            ->icon('heroicon-o-key')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Password Siswa')
+            ->modalDescription(fn(User $record) => "Password siswa {$record->name} akan direset ke NISN ({$record->nisn}). Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Reset')
+            ->action(function (User $record) {
+              $record->update([
+                'password' => Hash::make($record->nisn),
+                'must_change_password' => true,
+              ]);
+              ActivityLog::log('reset_password', Auth::user(), [
+                'description' => 'Mereset password siswa ' . $record->name . ' (NISN: ' . ($record->nisn ?? '-') . ')',
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+                'nisn' => $record->nisn,
+              ]);
+              Notification::make()
+                ->title('Password berhasil direset')
+                ->body("Password {$record->name} direset ke NISN: {$record->nisn}")
+                ->success()
+                ->send();
+            }),
+          Tables\Actions\Action::make('resetSession')
+            ->label('Reset Sesi Login')
+            ->icon('heroicon-o-arrow-path')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Sesi Login Siswa')
+            ->modalDescription(fn(User $record) => "Sesi login aktif siswa {$record->name} akan dihapus sehingga bisa login kembali. Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Reset Sesi')
+            ->disabled(fn(User $record) => empty($record->active_session_id))
+            ->tooltip(fn(User $record) => empty($record->active_session_id) ? 'Tidak ada sesi aktif' : 'Reset sesi login siswa')
+            ->action(function (User $record) {
+              $record->updateQuietly([
+                'active_session_id' => null,
+                'session_login_at'  => null,
+              ]);
+              ActivityLog::log('reset_session', Auth::user(), [
+                'description' => 'Mereset sesi login siswa ' . $record->name,
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+              ]);
+              Notification::make()
+                ->title('Sesi login berhasil direset')
+                ->body("{$record->name} sekarang bisa login kembali.")
+                ->success()
+                ->send();
+            }),
+          Tables\Actions\DeleteAction::make()
+            ->before(function (User $record) {
+              ActivityLog::log('delete_siswa', Auth::user(), [
+                'description' => 'Menghapus siswa ' . $record->name . ' (NISN: ' . ($record->nisn ?? '-') . ')',
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+                'nisn' => $record->nisn,
+              ]);
+            }),
         ]),
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
+          Tables\Actions\DeleteBulkAction::make()
+            ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+              ActivityLog::log('bulk_delete_siswa', Auth::user(), [
+                'description' => 'Menghapus ' . $records->count() . ' siswa sekaligus',
+                'count' => $records->count(),
+                'names' => $records->pluck('name')->toArray(),
+              ]);
+            }),
         ]),
       ]);
   }

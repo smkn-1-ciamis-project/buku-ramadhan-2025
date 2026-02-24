@@ -226,12 +226,17 @@ function hinduDashboard() {
                     isCompleted &&
                     statusStr === "verified" &&
                     kesiswaanStr === "validated";
+                var isRejected =
+                    isCompleted &&
+                    (statusStr === "rejected" || kesiswaanStr === "rejected");
                 var isVerified =
-                    isCompleted && statusStr === "verified" && !isValidated;
+                    isCompleted &&
+                    statusStr === "verified" &&
+                    !isValidated &&
+                    !isRejected;
                 var isPending =
                     isCompleted &&
                     (statusStr === "pending" || statusStr === "");
-                var isRejected = isCompleted && statusStr === "rejected";
                 var isPastUnfilled =
                     isPast && !isCompleted && !isToday && inRange;
                 days.push({

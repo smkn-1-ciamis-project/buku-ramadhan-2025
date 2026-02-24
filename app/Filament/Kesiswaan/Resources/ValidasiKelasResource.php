@@ -134,13 +134,7 @@ class ValidasiKelasResource extends Resource
       ])
       ->defaultSort('nama')
       ->filters([])
-      ->actions([
-        Tables\Actions\Action::make('validasi')
-          ->label('Lihat & Validasi')
-          ->icon('heroicon-o-shield-check')
-          ->color('info')
-          ->url(fn(Kelas $record) => static::getUrl('validasi-kelas', ['record' => $record])),
-      ])
+      ->actions([])
       ->bulkActions([])
       ->recordUrl(fn(Kelas $record) => static::getUrl('validasi-kelas', ['record' => $record]));
   }

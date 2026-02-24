@@ -104,7 +104,9 @@ class SiswaRelationManager extends RelationManager
           ->mutateFormDataUsing(function (array $data): array {
             $siswaRole = RoleUser::where('name', 'Siswa')->first();
             $data['role_user_id'] = $siswaRole?->id;
-            $data['password'] = Hash::make($data['password'] ?? $data['nisn']);
+            if (empty($data['password'])) {
+              $data['password'] = $data['nisn'];
+            }
             $data['must_change_password'] = true;
             if (empty($data['email'])) {
               $data['email'] = $data['nisn'] . '@siswa.buku-ramadhan.id';
@@ -355,7 +357,7 @@ class SiswaRelationManager extends RelationManager
                 }
 
                 $validAgama = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'];
-                $matchedAgama = collect($validAgama)->first(fn($a) => strtolower($a) === strtolower($agama));
+                $matchedAgama = \App\Models\User::normalizeAgama($agama);
                 if (!$matchedAgama) {
                   $errors[] = "Baris {$rowNum}: Agama '{$agama}' tidak valid.";
                   $skipped++;

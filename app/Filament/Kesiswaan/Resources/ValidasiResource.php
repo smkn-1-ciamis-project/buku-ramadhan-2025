@@ -3,6 +3,7 @@
 namespace App\Filament\Kesiswaan\Resources;
 
 use App\Filament\Kesiswaan\Resources\ValidasiResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
 use Filament\Forms;
@@ -154,7 +155,7 @@ class ValidasiResource extends Resource
             ->color('success')
             ->requiresConfirmation()
             ->modalHeading('Validasi Formulir')
-            ->modalDescription(fn(FormSubmission $record) => "Validasi formulir hari ke-{$record->hari_ke} dari {$record->user->name}?")
+            ->modalDescription(fn(FormSubmission $record) => 'Validasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-') . '?')
             ->modalSubmitActionLabel('Ya, Validasi')
             ->form([
               Forms\Components\Textarea::make('catatan_kesiswaan')
@@ -171,6 +172,12 @@ class ValidasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('validate_submission', Auth::user(), [
+                'description' => 'Memvalidasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Formulir berhasil divalidasi')
                 ->success()
@@ -183,7 +190,7 @@ class ValidasiResource extends Resource
             ->color('danger')
             ->requiresConfirmation()
             ->modalHeading('Tolak Formulir')
-            ->modalDescription(fn(FormSubmission $record) => "Tolak formulir hari ke-{$record->hari_ke} dari {$record->user->name}?")
+            ->modalDescription(fn(FormSubmission $record) => 'Tolak formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-') . '?')
             ->modalSubmitActionLabel('Ya, Tolak')
             ->form([
               Forms\Components\Textarea::make('catatan_kesiswaan')
@@ -201,6 +208,13 @@ class ValidasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('reject_validation', Auth::user(), [
+                'description' => 'Menolak formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+                'alasan' => $data['catatan_kesiswaan'],
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Formulir ditolak')
                 ->warning()
@@ -224,6 +238,12 @@ class ValidasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('reset_validation', Auth::user(), [
+                'description' => 'Reset status validasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Status validasi direset')
                 ->info()
@@ -262,6 +282,10 @@ class ValidasiResource extends Resource
               foreach (array_keys($bustedUsers) as $userId) {
                 Cache::forget("submissions_{$userId}");
               }
+              ActivityLog::log('bulk_validate_submission', Auth::user(), [
+                'description' => 'Validasi massal ' . $count . ' formulir',
+                'count' => $count,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title("{$count} formulir berhasil divalidasi")
                 ->success()
@@ -301,6 +325,10 @@ class ValidasiResource extends Resource
               foreach (array_keys($bustedUsers) as $userId) {
                 Cache::forget("submissions_{$userId}");
               }
+              ActivityLog::log('bulk_reject_validation', Auth::user(), [
+                'description' => 'Menolak massal ' . $count . ' formulir',
+                'count' => $count,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title("{$count} formulir ditolak")
                 ->warning()

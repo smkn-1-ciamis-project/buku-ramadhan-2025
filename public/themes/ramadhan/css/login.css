@@ -26,13 +26,16 @@
 }
 .login-page {
     height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
     background: var(--login-gray-100);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     overflow: hidden;
+    overscroll-behavior: none;
     font-family:
         "Segoe UI",
         system-ui,
@@ -43,6 +46,7 @@
     width: 100%;
     max-width: 900px;
     max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
     background: var(--login-white);
     border-radius: var(--login-radius-lg);
     box-shadow:

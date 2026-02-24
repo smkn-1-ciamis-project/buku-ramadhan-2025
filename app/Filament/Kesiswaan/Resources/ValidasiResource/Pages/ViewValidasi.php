@@ -4,6 +4,7 @@ namespace App\Filament\Kesiswaan\Resources\ValidasiResource\Pages;
 
 use App\Filament\Kesiswaan\Resources\ValidasiKelasResource;
 use App\Filament\Kesiswaan\Resources\ValidasiResource;
+use App\Models\ActivityLog;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
@@ -44,11 +45,13 @@ class ViewValidasi extends ViewRecord
                 'pending' => 'warning',
                 'verified' => 'success',
                 'rejected' => 'danger',
+                default => 'gray',
               })
               ->formatStateUsing(fn(string $state): string => match ($state) {
                 'pending' => 'Menunggu',
                 'verified' => 'Diverifikasi',
                 'rejected' => 'Ditolak',
+                default => ucfirst($state),
               }),
             Infolists\Components\TextEntry::make('verifier.name')
               ->label('Diverifikasi Oleh')
@@ -129,6 +132,12 @@ class ViewValidasi extends ViewRecord
           ]);
           Cache::forget("submissions_{$this->record->user_id}");
           Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
+          ActivityLog::log('validate_submission', Auth::user(), [
+            'description' => 'Memvalidasi formulir hari ke-' . $this->record->hari_ke . ' dari ' . ($this->record->user?->name ?? '-'),
+            'submission_id' => $this->record->id,
+            'target_user' => $this->record->user?->name,
+            'hari_ke' => $this->record->hari_ke,
+          ]);
           \Filament\Notifications\Notification::make()
             ->title('Formulir berhasil divalidasi')
             ->success()
@@ -162,6 +171,13 @@ class ViewValidasi extends ViewRecord
           ]);
           Cache::forget("submissions_{$this->record->user_id}");
           Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
+          ActivityLog::log('reject_validation', Auth::user(), [
+            'description' => 'Menolak formulir hari ke-' . $this->record->hari_ke . ' dari ' . ($this->record->user?->name ?? '-'),
+            'submission_id' => $this->record->id,
+            'target_user' => $this->record->user?->name,
+            'hari_ke' => $this->record->hari_ke,
+            'alasan' => $data['catatan_kesiswaan'],
+          ]);
           \Filament\Notifications\Notification::make()
             ->title('Formulir ditolak')
             ->warning()

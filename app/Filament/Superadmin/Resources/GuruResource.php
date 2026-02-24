@@ -3,6 +3,7 @@
 namespace App\Filament\Superadmin\Resources;
 
 use App\Filament\Superadmin\Resources\GuruResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\Kelas;
 use App\Models\RoleUser;
 use App\Models\User;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class GuruResource extends Resource
@@ -101,8 +103,12 @@ class GuruResource extends Resource
         Tables\Columns\TextColumn::make('jenis_kelamin')
           ->label('JK')
           ->badge()
-          ->color(fn(string $state): string => $state === 'L' ? 'info' : 'danger')
-          ->formatStateUsing(fn(string $state): string => $state === 'L' ? 'Laki-laki' : 'Perempuan'),
+          ->color(fn(?string $state): string => $state === 'L' ? 'info' : 'danger')
+          ->formatStateUsing(fn(?string $state): string => match ($state) {
+            'L' => 'Laki-laki',
+            'P' => 'Perempuan',
+            default => '-'
+          }),
         Tables\Columns\TextColumn::make('no_hp')
           ->label('No. HP')
           ->placeholder('-'),
@@ -125,29 +131,58 @@ class GuruResource extends Resource
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
-          Tables\Actions\EditAction::make(),
+          Tables\Actions\EditAction::make()
+            ->after(function (User $record) {
+              ActivityLog::log('edit_guru', Auth::user(), [
+                'description' => 'Mengedit data guru ' . $record->name,
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+              ]);
+            }),
           Tables\Actions\Action::make('resetPassword')
             ->label('Reset Password')
             ->icon('heroicon-o-key')
             ->color('warning')
             ->requiresConfirmation()
             ->modalHeading('Reset Password Guru')
-            ->modalDescription(fn($record) => "Password akun {$record->name} akan direset ke default (guru123). Lanjutkan?")
+            ->modalDescription(fn($record) => "Password akun {$record->name} akan direset ke email ({$record->email}). Lanjutkan?")
             ->modalSubmitActionLabel('Ya, Reset')
             ->action(function ($record) {
-              $record->update(['password' => Hash::make('guru123')]);
+              $record->update([
+                'password' => $record->email,
+                'must_change_password' => true,
+              ]);
+              ActivityLog::log('reset_password', Auth::user(), [
+                'description' => 'Mereset password guru ' . $record->name,
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+              ]);
               Notification::make()
                 ->title('Password berhasil direset')
-                ->body("Password {$record->name} telah direset ke guru123")
+                ->body("Password {$record->name} telah direset ke email: {$record->email}")
                 ->success()
                 ->send();
             }),
-          Tables\Actions\DeleteAction::make(),
+          Tables\Actions\DeleteAction::make()
+            ->before(function (User $record) {
+              ActivityLog::log('delete_guru', Auth::user(), [
+                'description' => 'Menghapus guru ' . $record->name,
+                'target_user_id' => $record->id,
+                'target_user' => $record->name,
+              ]);
+            }),
         ]),
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
+          Tables\Actions\DeleteBulkAction::make()
+            ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+              ActivityLog::log('bulk_delete_guru', Auth::user(), [
+                'description' => 'Menghapus ' . $records->count() . ' guru sekaligus',
+                'count' => $records->count(),
+                'names' => $records->pluck('name')->toArray(),
+              ]);
+            }),
         ]),
       ]);
   }

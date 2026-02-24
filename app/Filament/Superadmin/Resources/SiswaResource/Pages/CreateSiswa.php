@@ -3,9 +3,11 @@
 namespace App\Filament\Superadmin\Resources\SiswaResource\Pages;
 
 use App\Filament\Superadmin\Resources\SiswaResource;
+use App\Models\ActivityLog;
 use App\Models\RoleUser;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateSiswa extends CreateRecord
 {
@@ -33,5 +35,15 @@ class CreateSiswa extends CreateRecord
   protected function getCreatedNotificationTitle(): ?string
   {
     return 'Siswa berhasil ditambahkan';
+  }
+
+  protected function afterCreate(): void
+  {
+    ActivityLog::log('create_siswa', Auth::user(), [
+      'description' => 'Menambahkan siswa baru: ' . $this->record->name . ' (NISN: ' . ($this->record->nisn ?? '-') . ')',
+      'target_user_id' => $this->record->id,
+      'target_user' => $this->record->name,
+      'nisn' => $this->record->nisn,
+    ]);
   }
 }

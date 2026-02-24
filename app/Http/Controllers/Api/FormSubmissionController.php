@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\FormSetting;
 use App\Models\FormSubmission;
 use App\Models\PrayerCheckin;
@@ -28,7 +29,8 @@ class FormSubmissionController extends Controller
 
     // Check if form is active for user's religion
     $agama = $user->agama ?? 'Islam';
-    $setting = FormSetting::where('agama', $agama)->first();
+    $isMuslim = \App\Models\User::isMuslimAgama($agama);
+    $setting = FormSetting::getForAgama($agama);
 
     if ($setting && !$setting->is_active) {
       return response()->json([
@@ -68,14 +70,23 @@ class FormSubmissionController extends Controller
       ]
     );
 
-    // ── Sync sholat data to prayer_checkins table ──
-    $this->syncPrayerCheckins($user, $request->hari_ke, $request->data);
+    // ── Sync sholat data to prayer_checkins table (Muslim only) ──
+    if ($isMuslim) {
+      $this->syncPrayerCheckins($user, $request->hari_ke, $request->data);
+    }
 
     // Bust caches
     Cache::forget("submissions_{$user->id}");
     Cache::forget("submission_{$user->id}_{$request->hari_ke}");
     Cache::forget("checkins_today_{$user->id}_" . now()->toDateString());
     Cache::forget("checkins_date_{$user->id}_" . now()->toDateString());
+
+    ActivityLog::log('submit_form', $user, [
+      'description' => 'Mengirim formulir hari ke-' . $request->hari_ke,
+      'hari_ke' => $request->hari_ke,
+      'submission_id' => $submission->id,
+      'is_update' => $existing ? true : false,
+    ]);
 
     return response()->json([
       'success' => true,

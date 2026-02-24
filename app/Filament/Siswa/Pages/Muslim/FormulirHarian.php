@@ -19,7 +19,7 @@ class FormulirHarian extends Page
     {
         $user = Auth::user();
         $agama = $user->agama ?? 'Islam';
-        $setting = FormSetting::where('agama', $agama)->first();
+        $setting = FormSetting::getForAgama($agama);
 
         if ($setting && !$setting->is_active) {
             abort(403, 'Formulir untuk agama ' . $agama . ' sedang dinonaktifkan oleh kesiswaan.');

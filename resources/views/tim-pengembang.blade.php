@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Tim Pengembang — Calakan SMKN 1 Ciamis</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Calakan">
     <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/img/icons/icon-192x192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -19,7 +20,9 @@
             font-family: 'Inter', system-ui, sans-serif;
             background: #f1f5f9;
             min-height: 100vh;
+            min-height: 100dvh;
             color: #1e293b;
+            overscroll-behavior: none;
         }
 
         /* -- Header -- */

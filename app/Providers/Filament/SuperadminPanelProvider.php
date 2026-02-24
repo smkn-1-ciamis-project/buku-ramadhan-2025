@@ -70,12 +70,18 @@ class SuperadminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn() => new HtmlString('
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
                     <link rel="manifest" href="/manifest.json">
                     <meta name="theme-color" content="#1e3a8a">
                     <meta name="apple-mobile-web-app-capable" content="yes">
                     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
                     <meta name="apple-mobile-web-app-title" content="Calakan">
                     <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
+                    <link rel="apple-touch-icon" sizes="192x192" href="/img/icons/icon-192x192.png">
+                    <style>
+                        html, body { overscroll-behavior: none; }
+                        body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+                    </style>
                 ')
             )
             ->renderHook(

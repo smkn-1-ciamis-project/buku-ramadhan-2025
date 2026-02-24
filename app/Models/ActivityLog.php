@@ -13,6 +13,7 @@ class ActivityLog extends Model
   protected $fillable = [
     'user_id',
     'activity',
+    'description',
     'role',
     'panel',
     'ip_address',
@@ -38,6 +39,10 @@ class ActivityLog extends Model
     $request = request();
     $ip = $request->ip();
 
+    // Extract description from extras
+    $description = $extra['description'] ?? null;
+    unset($extra['description']);
+
     // Detect panel from URL
     $panel = null;
     $path = $request->path();
@@ -60,6 +65,7 @@ class ActivityLog extends Model
     return self::create([
       'user_id' => $user?->id,
       'activity' => $activity,
+      'description' => $description,
       'role' => $user?->role_user?->name,
       'panel' => $panel ?? ($extra['panel'] ?? null),
       'ip_address' => $ip,

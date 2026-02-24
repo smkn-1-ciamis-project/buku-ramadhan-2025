@@ -3,6 +3,7 @@
 namespace App\Filament\Superadmin\Resources;
 
 use App\Filament\Superadmin\Resources\FormSubmissionResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\FormSubmission;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use App\Models\RoleUser;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class FormSubmissionResource extends Resource
 {
@@ -70,11 +72,13 @@ class FormSubmissionResource extends Resource
             'pending' => 'warning',
             'verified' => 'success',
             'rejected' => 'danger',
+            default => 'gray',
           })
           ->formatStateUsing(fn(string $state): string => match ($state) {
             'pending' => 'Menunggu',
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
+            default => ucfirst($state),
           })
           ->sortable(),
         Tables\Columns\TextColumn::make('verifier.name')
@@ -110,12 +114,26 @@ class FormSubmissionResource extends Resource
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\ViewAction::make(),
-          Tables\Actions\DeleteAction::make(),
+          Tables\Actions\DeleteAction::make()
+            ->before(function (FormSubmission $record) {
+              ActivityLog::log('delete_submission', Auth::user(), [
+                'description' => 'Menghapus formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
+            }),
         ]),
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
+          Tables\Actions\DeleteBulkAction::make()
+            ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+              ActivityLog::log('bulk_delete_submission', Auth::user(), [
+                'description' => 'Menghapus ' . $records->count() . ' formulir sekaligus',
+                'count' => $records->count(),
+              ]);
+            }),
         ]),
       ]);
   }
@@ -137,11 +155,13 @@ class FormSubmissionResource extends Resource
             'pending' => 'warning',
             'verified' => 'success',
             'rejected' => 'danger',
+            default => 'gray',
           })
           ->formatStateUsing(fn(string $state): string => match ($state) {
             'pending' => 'Menunggu',
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
+            default => ucfirst($state),
           }),
         Infolists\Components\TextEntry::make('created_at')
           ->label('Dikirim Pada')

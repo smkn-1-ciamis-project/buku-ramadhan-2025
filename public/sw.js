@@ -1,7 +1,7 @@
 // Calakan - Service Worker
 // Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis
 
-const CACHE_NAME = "calakan-cache-v6";
+const CACHE_NAME = "calakan-cache-v8";
 const OFFLINE_URL = "/offline.html";
 
 // Assets yang selalu di-cache saat install
@@ -14,6 +14,16 @@ const PRECACHE_ASSETS = [
     "/themes/ramadhan/css/dashboard.css",
     "/themes/ramadhan/css/login.css",
     "/themes/ramadhan/css/formulir.css",
+    "/themes/ramadhan/js/muslim/dashboard.js",
+    "/themes/ramadhan/js/muslim/formulir.js",
+    "/themes/ramadhan/js/nonmuslim/kristen/dashboard.js",
+    "/themes/ramadhan/js/nonmuslim/kristen/formulir.js",
+    "/themes/ramadhan/js/nonmuslim/hindu/dashboard.js",
+    "/themes/ramadhan/js/nonmuslim/hindu/formulir.js",
+    "/themes/ramadhan/js/nonmuslim/buddha/dashboard.js",
+    "/themes/ramadhan/js/nonmuslim/buddha/formulir.js",
+    "/themes/ramadhan/js/nonmuslim/konghucu/dashboard.js",
+    "/themes/ramadhan/js/nonmuslim/konghucu/formulir.js",
 ];
 
 // ── Install Event ──────────────────────────────────────────────────

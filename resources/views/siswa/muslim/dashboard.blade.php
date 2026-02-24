@@ -501,7 +501,8 @@
                                                 <div class="checkin-item-info">
                                                     <span class="checkin-item-name" x-text="prayer.name"></span>
                                                     <span x-show="!isWajibLocked(prayer.id)" class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
-                                                    <span x-show="isWajibLocked(prayer.id)" class="checkin-item-status" style="color:#cbd5e1;font-size:10px;">🔒 Isi shalat sebelumnya dulu</span>
+                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'sequence'" class="checkin-item-status" style="color:#cbd5e1;font-size:10px;">🔒 Isi shalat sebelumnya dulu</span>
+                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'time'" class="checkin-item-status" style="color:#9ca3af;font-size:10px;">🕐 Buka pukul <span x-text="getWajibUnlockTime(prayer.id)"></span></span>
                                                 </div>
                                                 <div class="checkin-item-time" x-show="getCheckinTime(prayer.id)" x-text="getCheckinTime(prayer.id)"></div>
                                             </button>

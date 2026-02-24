@@ -209,6 +209,11 @@
         .dark .sa-kelas-bar { background:rgba(100,100,100,.18); }
         .sa-kelas-bar-fill { height:100%; border-radius:.125rem; background:rgba(37,99,235,.7); transition:width .5s ease; }
 
+        /* Make Overview Kelas stretch full height */
+        .sa-bottom { align-items:stretch; }
+        .sa-bottom > .sa-card { display:flex; flex-direction:column; }
+        .sa-bottom > .sa-card > div:last-child { flex:1; }
+
         /* Empty state */
         .sa-empty { text-align:center; padding:2.5rem 1rem; }
         .sa-empty-icon { font-size:2.5rem; }
@@ -328,7 +333,7 @@
             <div class="sa-card">
                 <div class="sa-card-head">
                     <span class="sa-card-title">Status Formulir</span>
-                    <span style="font-size:.75rem; font-weight:700;">{{ $totalFormulir }}</span>
+                    <span style="font-size:.675rem; font-weight:600; color:#9ca3af;">{{ $totalFormulir }}</span>
                 </div>
                 <div class="sa-card-body">
                     <div class="sa-form-item">
@@ -345,6 +350,11 @@
                         <span class="sa-form-dot" style="background:#ef4444;"></span>
                         <span class="sa-form-label">Ditolak</span>
                         <span class="sa-form-count" style="color:#dc2626;">{{ $totalRejected }}</span>
+                    </div>
+                    <div class="sa-form-item">
+                        <span class="sa-form-dot" style="background:#8b5cf6;"></span>
+                        <span class="sa-form-label">Divalidasi Kesiswaan</span>
+                        <span class="sa-form-count" style="color:#7c3aed;">{{ $totalValidated }}</span>
                     </div>
                     @if ($totalFormulir > 0)
                         <div class="sa-form-bar-wrap" style="margin-top:1rem;">
@@ -407,6 +417,11 @@
                         <span class="sa-sys-label">Kelas Terdaftar</span>
                         <span class="sa-sys-val">{{ $totalKelas }}</span>
                     </div>
+                    <div class="sa-sys-item">
+                        <span class="sa-sys-dot" style="background:#8b5cf6;"></span>
+                        <span class="sa-sys-label">Kesiswaan Terdaftar</span>
+                        <span class="sa-sys-val">{{ $totalKesiswaan }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -468,7 +483,7 @@
                     <span class="sa-card-title">Overview Kelas</span>
                     <a href="{{ url('/portal-admin-smkn1/kelas') }}" class="sa-link">Kelola →</a>
                 </div>
-                <div class="sa-card-body" style="padding:.875rem 1.25rem; max-height:24rem; overflow-y:auto;">
+                <div class="sa-card-body" style="padding:.875rem 1.25rem; overflow-y:auto;">
                     @forelse ($kelasOverview as $k)
                         <div class="sa-kelas-item">
                             <div class="sa-kelas-info">

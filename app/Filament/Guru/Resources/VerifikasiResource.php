@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -68,11 +69,13 @@ class VerifikasiResource extends Resource
             'pending' => 'warning',
             'verified' => 'success',
             'rejected' => 'danger',
+            default => 'gray',
           })
           ->formatStateUsing(fn(string $state): string => match ($state) {
             'pending' => 'Menunggu',
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
+            default => ucfirst($state),
           })
           ->sortable(),
         Tables\Columns\TextColumn::make('created_at')
@@ -129,7 +132,7 @@ class VerifikasiResource extends Resource
             ->color('success')
             ->requiresConfirmation()
             ->modalHeading('Verifikasi Formulir')
-            ->modalDescription(fn(FormSubmission $record) => "Verifikasi formulir hari ke-{$record->hari_ke} dari {$record->user->name}?")
+            ->modalDescription(fn(FormSubmission $record) => 'Verifikasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-') . '?')
             ->modalSubmitActionLabel('Ya, Verifikasi')
             ->form([
               \Filament\Forms\Components\Textarea::make('catatan_guru')
@@ -146,6 +149,12 @@ class VerifikasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('verify_submission', Auth::user(), [
+                'description' => 'Memverifikasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Formulir berhasil diverifikasi')
                 ->success()
@@ -158,7 +167,7 @@ class VerifikasiResource extends Resource
             ->color('danger')
             ->requiresConfirmation()
             ->modalHeading('Tolak Formulir')
-            ->modalDescription(fn(FormSubmission $record) => "Tolak formulir hari ke-{$record->hari_ke} dari {$record->user->name}?")
+            ->modalDescription(fn(FormSubmission $record) => 'Tolak formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-') . '?')
             ->modalSubmitActionLabel('Ya, Tolak')
             ->form([
               \Filament\Forms\Components\Textarea::make('catatan_guru')
@@ -176,6 +185,13 @@ class VerifikasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('reject_submission', Auth::user(), [
+                'description' => 'Menolak formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+                'alasan' => $data['catatan_guru'],
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Formulir ditolak')
                 ->warning()
@@ -204,6 +220,12 @@ class VerifikasiResource extends Resource
               ]);
               Cache::forget("submissions_{$record->user_id}");
               Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('reset_submission', Auth::user(), [
+                'description' => 'Reset status formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title('Status direset ke pending')
                 ->info()
@@ -238,6 +260,10 @@ class VerifikasiResource extends Resource
                   $count++;
                 }
               }
+              ActivityLog::log('bulk_verify_submission', Auth::user(), [
+                'description' => 'Verifikasi massal ' . $count . ' formulir',
+                'count' => $count,
+              ]);
               \Filament\Notifications\Notification::make()
                 ->title("{$count} formulir berhasil diverifikasi")
                 ->success()

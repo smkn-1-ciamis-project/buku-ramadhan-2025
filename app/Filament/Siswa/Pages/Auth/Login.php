@@ -120,12 +120,21 @@ class Login extends BaseLogin
       return null;
     }
 
-    // Regenerate session to prevent session-fixation attacks
-    session()->regenerate();
-
-        // Save session tracking data (session ID reflects the NEW ID after regenerate)
     /** @var \App\Models\User $user */
     $user = Auth::user();
+
+    // Verify user has Siswa role — prevent non-siswa users from triggering session side-effects
+    if (! $user->canAccessPanel(\Filament\Facades\Filament::getCurrentPanel())) {
+      Auth::logout();
+      session()->invalidate();
+      session()->regenerateToken();
+      $this->errorPopupMessage = 'Akun Anda tidak memiliki akses ke panel Siswa.';
+      $this->showErrorPopup = true;
+      return null;
+    }
+
+    // Regenerate session to prevent session-fixation attacks
+    session()->regenerate();
     $user->update([
       'active_session_id' => session()->getId(),
       'session_login_at'  => now(),

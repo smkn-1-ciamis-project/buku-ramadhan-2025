@@ -52,7 +52,11 @@ class DataSiswaResource extends Resource
           ->color('info'),
         Tables\Columns\TextColumn::make('jenis_kelamin')
           ->label('JK')
-          ->formatStateUsing(fn(?string $state) => $state === 'P' ? 'Perempuan' : 'Laki-laki')
+          ->formatStateUsing(fn(?string $state) => match ($state) {
+            'P' => 'Perempuan',
+            'L' => 'Laki-laki',
+            default => '-'
+          })
           ->toggleable(),
         Tables\Columns\TextColumn::make('agama')
           ->label('Agama')
@@ -97,15 +101,9 @@ class DataSiswaResource extends Resource
             'P' => 'Perempuan',
           ]),
       ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->label('Lihat')
-            ->icon('heroicon-o-eye')
-            ->color('info'),
-        ]),
-      ])
-      ->bulkActions([]);
+      ->actions([])
+      ->bulkActions([])
+      ->recordUrl(fn(User $record) => static::getUrl('view', ['record' => $record]));
   }
 
   public static function getPages(): array

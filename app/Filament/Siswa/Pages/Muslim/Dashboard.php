@@ -30,7 +30,6 @@ class Dashboard extends Page
         $redirectMap = [
             'kristen' => KristenDashboard::getUrl(),
             'katolik' => KristenDashboard::getUrl(),
-            'kristen katolik' => KristenDashboard::getUrl(),
             'hindu' => HinduDashboard::getUrl(),
             'buddha' => BuddhaDashboard::getUrl(),
             'budha' => BuddhaDashboard::getUrl(),

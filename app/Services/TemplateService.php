@@ -469,4 +469,101 @@ class TemplateService
 
         return self::streamDownload($spreadsheet, 'template_import_kelas.xlsx');
     }
+
+    /**
+     * Generate & download Kesiswaan import template.
+     */
+    public static function downloadKesiswaanTemplate(): StreamedResponse
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Import Kesiswaan');
+
+        // Headers
+        $headers = [
+            'A1' => 'NAMA LENGKAP',
+            'B1' => 'EMAIL (OPSIONAL)',
+            'C1' => 'JENIS KELAMIN (L/P)',
+            'D1' => 'NO. HP',
+            'E1' => 'PASSWORD',
+        ];
+
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1D4ED8']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+        // Example data rows
+        $examples = [
+            ['Budi Santoso', 'budi@smkn1ciamis.sch.id', 'L', '081234567890', ''],
+            ['Sri Wahyuni', '', 'P', '081234567891', ''],
+        ];
+
+        $rowIndex = 2;
+        foreach ($examples as $example) {
+            $sheet->fromArray($example, null, "A{$rowIndex}");
+            $rowIndex++;
+        }
+
+        // Style example rows
+        $exampleStyle = [
+            'font' => ['italic' => true, 'color' => ['rgb' => '9CA3AF']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E5E7EB']]],
+        ];
+        $sheet->getStyle('A2:E3')->applyFromArray($exampleStyle);
+
+        // Column widths
+        $widths = ['A' => 28, 'B' => 35, 'C' => 22, 'D' => 18, 'E' => 20];
+        foreach ($widths as $col => $width) {
+            $sheet->getColumnDimension($col)->setWidth($width);
+        }
+
+        $sheet->getRowDimension(1)->setRowHeight(25);
+
+        // Instructions sheet
+        $instrSheet = $spreadsheet->createSheet();
+        $instrSheet->setTitle('Petunjuk Pengisian');
+
+        $instructions = [
+            ['PETUNJUK PENGISIAN TEMPLATE IMPORT KESISWAAN'],
+            [''],
+            ['Kolom', 'Keterangan', 'Wajib'],
+            ['NAMA LENGKAP', 'Nama lengkap petugas kesiswaan', 'Ya'],
+            ['EMAIL', 'Email petugas. Jika dikosongkan, otomatis dibuat dari nama.', 'Tidak'],
+            ['JENIS KELAMIN', 'Isi dengan L (Laki-laki) atau P (Perempuan)', 'Ya'],
+            ['NO. HP', 'Nomor HP petugas', 'Tidak'],
+            ['PASSWORD', 'Password login. Jika dikosongkan, default = email.', 'Tidak'],
+            [''],
+            ['CATATAN:'],
+            ['- Hapus contoh data sebelum mengisi data kesiswaan.'],
+            ['- Jika EMAIL dikosongkan, otomatis dibuat dari nama.'],
+            ['- Email tidak boleh duplikat.'],
+            ['- Jika kolom PASSWORD dikosongkan, default = email.'],
+        ];
+
+        foreach ($instructions as $i => $row) {
+            $instrSheet->fromArray($row, null, 'A' . ($i + 1));
+        }
+
+        $instrSheet->getStyle('A1')->applyFromArray(['font' => ['bold' => true, 'size' => 14]]);
+        $instrSheet->getStyle('A3:C3')->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DBEAFE']],
+        ]);
+        $instrSheet->getColumnDimension('A')->setWidth(25);
+        $instrSheet->getColumnDimension('B')->setWidth(55);
+        $instrSheet->getColumnDimension('C')->setWidth(10);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return self::streamDownload($spreadsheet, 'template_import_kesiswaan.xlsx');
+    }
 }

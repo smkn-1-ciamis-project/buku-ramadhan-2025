@@ -122,15 +122,9 @@ class RekapKelasResource extends Resource
       ])
       ->defaultSort('nama')
       ->filters([])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->label('Detail')
-            ->icon('heroicon-o-eye')
-            ->color('info'),
-        ]),
-      ])
-      ->bulkActions([]);
+      ->actions([])
+      ->bulkActions([])
+      ->recordUrl(fn(Kelas $record) => static::getUrl('view', ['record' => $record]));
   }
 
   public static function getPages(): array

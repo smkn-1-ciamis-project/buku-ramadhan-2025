@@ -3,16 +3,42 @@
 namespace App\Filament\Superadmin\Resources\KelasResource\Pages;
 
 use App\Filament\Superadmin\Resources\KelasResource;
+use App\Models\Kelas;
 use App\Services\ImportService;
 use App\Services\TemplateService;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListKelas extends ListRecords
 {
   protected static string $resource = KelasResource::class;
+
+  public function getTabs(): array
+  {
+    $tabs = [
+      'semua' => Tab::make('Semua')
+        ->badge(fn() => Kelas::count())
+        ->badgeColor('primary'),
+    ];
+
+    foreach (['10', '11', '12'] as $tingkat) {
+      $tabs["kelas_{$tingkat}"] = Tab::make("Kelas {$tingkat}")
+        ->modifyQueryUsing(fn(Builder $query) => $query->where('nama', 'like', "{$tingkat} %"))
+        ->badge(fn() => Kelas::where('nama', 'like', "{$tingkat} %")->count())
+        ->badgeColor('gray');
+    }
+
+    return $tabs;
+  }
+
+  public function getDefaultActiveTab(): string|int|null
+  {
+    return 'semua';
+  }
 
   protected function getHeaderActions(): array
   {

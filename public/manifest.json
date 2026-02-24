@@ -1,4 +1,5 @@
 {
+    "id": "/siswa/login",
     "name": "Calakan - Catatan Amaliyah Kegiatan Ramadan",
     "short_name": "Calakan",
     "description": "Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis",
@@ -6,10 +7,24 @@
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
-    "background_color": "#2563EB",
+    "background_color": "#1e3a8a",
     "theme_color": "#1e3a8a",
     "lang": "id",
     "categories": ["education"],
+    "shortcuts": [
+        {
+            "name": "Login Siswa",
+            "short_name": "Siswa",
+            "url": "/siswa/login",
+            "icons": [{ "src": "/img/icons/icon-96x96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Login Guru",
+            "short_name": "Guru",
+            "url": "/guru/login",
+            "icons": [{ "src": "/img/icons/icon-96x96.png", "sizes": "96x96" }]
+        }
+    ],
     "icons": [
         {
             "src": "/img/icons/icon-72x72.png",

@@ -23,11 +23,14 @@ class FormSetting extends Model
 
   /**
    * Get form setting for a specific religion, with caching (60 min TTL).
+   * Normalizes agama variant spellings (e.g. "Budha" → "Buddha").
    */
   public static function getForAgama(string $agama): ?self
   {
-    return Cache::remember("form_setting_{$agama}", 3600, function () use ($agama) {
-      return static::where('agama', $agama)->where('is_active', true)->first();
+    $normalized = \App\Models\User::normalizeAgama($agama) ?? $agama;
+
+    return Cache::remember("form_setting_{$normalized}", 3600, function () use ($normalized) {
+      return static::where('agama', $normalized)->first();
     });
   }
 

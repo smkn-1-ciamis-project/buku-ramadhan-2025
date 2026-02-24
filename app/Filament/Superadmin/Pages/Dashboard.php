@@ -34,6 +34,10 @@ class Dashboard extends Page
     $totalPending = FormSubmission::where('status', 'pending')->count();
     $totalVerified = FormSubmission::where('status', 'verified')->count();
     $totalRejected = FormSubmission::where('status', 'rejected')->count();
+    $totalValidated = FormSubmission::where('kesiswaan_status', 'validated')->count();
+
+    // Kesiswaan count
+    $totalKesiswaan = User::whereHas('role_user', fn($q) => $q->where('name', 'Kesiswaan'))->count();
 
     // Hitung hari Ramadhan
     $indonesiaRamadhanStart = Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
@@ -102,6 +106,8 @@ class Dashboard extends Page
       'totalPending' => $totalPending,
       'totalVerified' => $totalVerified,
       'totalRejected' => $totalRejected,
+      'totalValidated' => $totalValidated,
+      'totalKesiswaan' => $totalKesiswaan,
       'hariKe' => $hariKe,
       'isRamadhan' => $isRamadhan,
       'formulirHariIni' => $formulirHariIni,

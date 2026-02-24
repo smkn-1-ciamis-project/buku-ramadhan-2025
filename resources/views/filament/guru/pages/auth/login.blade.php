@@ -1,4 +1,4 @@
-<div class="login-page" x-data="{ showDevicePopup: $wire.entangle('showDevicePopup'), showErrorPopup: $wire.entangle('showErrorPopup') }">
+<div class="login-page" x-data="{ showErrorPopup: $wire.entangle('showErrorPopup') }">
 
   {{-- ── Inject Login CSS ── --}}
   @once
@@ -149,48 +149,6 @@
     </div>{{-- /.login-illust-col --}}
 
   </div>{{-- /.login-container --}}
-
-  {{-- ═══════════════════════════════
-       POPUP: Akun aktif di perangkat lain
-  ═══════════════════════════════ --}}
-  <div x-show="showDevicePopup"
-       x-cloak
-       class="login-popup-overlay"
-       @click.self="showDevicePopup = false"
-       x-transition:enter="popup-enter"
-       x-transition:enter-start="popup-enter-start"
-       x-transition:enter-end="popup-enter-end"
-       x-transition:leave="popup-leave"
-       x-transition:leave-start="popup-leave-start"
-       x-transition:leave-end="popup-leave-end">
-
-    <div class="login-popup-card">
-
-      {{-- Icon --}}
-      <div class="login-popup-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-          <path d="M7.5 10.5 L10 8 L7.5 5.5" stroke-width="2"/>
-          <circle cx="16" cy="8" r="2.5" fill="#ef4444" stroke="#ef4444"/>
-        </svg>
-      </div>
-
-      {{-- Title --}}
-      <div class="login-popup-title">Akun Sedang Aktif</div>
-
-      {{-- Message --}}
-      <div class="login-popup-message">
-        Akun ini sedang digunakan di perangkat lain. Silakan logout dari perangkat tersebut terlebih dahulu, atau tunggu hingga sesi berakhir otomatis.
-      </div>
-
-      {{-- Button --}}
-      <button type="button" class="login-popup-btn" @click="showDevicePopup = false">
-        Mengerti
-      </button>
-    </div>
-  </div>
 
   {{-- ═══════════════════════════════
        POPUP: Error / Validasi Gagal

@@ -50,11 +50,16 @@ Route::middleware(['auth', 'throttle:api-read'])->get('/api/form-settings/{agama
 // Export Rekap Siswa (Guru) — prefix berbeda dari panel agar tidak konflik dengan Filament routing
 Route::middleware(['auth'])->prefix('guru-exports')->group(function () {
     Route::get('/rekap-siswa', function () {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $roleName = strtolower(trim($user->role_user?->name ?? ''));
+        abort_unless($roleName === 'guru', 403);
         return \App\Services\RekapExportService::exportRekapSiswa();
     })->name('guru.rekap-siswa.export');
 
     Route::get('/rekap-siswa/{siswa}', function (\App\Models\User $siswa) {
         $guru = \Illuminate\Support\Facades\Auth::user();
+        $roleName = strtolower(trim($guru->role_user?->name ?? ''));
+        abort_unless($roleName === 'guru', 403);
         $kelasIds = \App\Models\Kelas::where('wali_id', $guru->id)->pluck('id')->toArray();
         abort_unless(in_array($siswa->kelas_id, $kelasIds), 403);
         return \App\Services\RekapExportService::exportDetailSiswa($siswa);

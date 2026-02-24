@@ -28,6 +28,7 @@ function formulirNonMuslim() {
         formSubmitted: false,
         formSaving: false,
         showSuccessPopup: false,
+        showSavePopup: false,
         successDay: 0,
         showValidationError: false,
         validationMessage: "",
@@ -179,7 +180,7 @@ function formulirNonMuslim() {
             var self = this;
             _throttledFetch(
                 "formConfig",
-                "/api/form-settings/Kristen",
+                "/api/form-settings/" + (window.__userAgama || "Kristen"),
                 {
                     headers: { Accept: "application/json" },
                 },
@@ -543,6 +544,41 @@ function formulirNonMuslim() {
                 errors.push("Kegiatan harian belum diisi satupun");
             return errors;
         },
+        isFormComplete() {
+            if (this.$refs.catatanEditor) {
+                this.formData.catatan = this.$refs.catatanEditor.innerHTML;
+            }
+            return this.validateForm().length === 0;
+        },
+        saveDraft() {
+            if (this.formDisabled) {
+                this.validationMessage = this.formDisabledMessage;
+                this.showValidationError = true;
+                var self = this;
+                setTimeout(function () {
+                    self.showValidationError = false;
+                }, 4000);
+                return;
+            }
+            this.formSaving = true;
+            if (this.$refs.catatanEditor) {
+                this.formData.catatan = this.$refs.catatanEditor.innerHTML;
+            }
+            localStorage.setItem(
+                this._lsKey("nonmuslim_form_day_" + this.formDay),
+                JSON.stringify(this.formData),
+            );
+            var self = this;
+            setTimeout(function () {
+                self.formSaving = false;
+                self.successDay = self.formDay;
+                self.showSavePopup = true;
+                setTimeout(function () {
+                    self.showSavePopup = false;
+                    window.location.href = "/siswa";
+                }, 1500);
+            }, 400);
+        },
         submitForm() {
             if (this.formDisabled) {
                 this.validationMessage = this.formDisabledMessage;
@@ -555,12 +591,8 @@ function formulirNonMuslim() {
             }
             var errors = this.validateForm();
             if (errors.length > 0) {
-                this.validationMessage = errors.join(", ");
-                this.showValidationError = true;
-                var self = this;
-                setTimeout(function () {
-                    self.showValidationError = false;
-                }, 4000);
+                // Form belum lengkap → simpan draft
+                this.saveDraft();
                 return;
             }
             this.formSaving = true;

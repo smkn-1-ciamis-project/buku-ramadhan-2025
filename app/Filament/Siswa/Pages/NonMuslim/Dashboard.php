@@ -3,6 +3,10 @@
 namespace App\Filament\Siswa\Pages\NonMuslim;
 
 use App\Filament\Siswa\Pages\Muslim\Dashboard as MuslimDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Kristen\Dashboard as KristenDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Hindu\Dashboard as HinduDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Buddha\Dashboard as BuddhaDashboard;
+use App\Filament\Siswa\Pages\NonMuslim\Konghucu\Dashboard as KonghucuDashboard;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -13,7 +17,7 @@ class Dashboard extends Page
     protected static ?string $navigationLabel = 'Dashboard';
     protected static ?string $title = '';
     protected static ?string $slug = 'home-nonmuslim';
-    protected static string $view = 'siswa.nonmuslim.dashboard';
+    protected static string $view = 'siswa.nonmuslim.kristen.dashboard';
     protected static bool $shouldRegisterNavigation = false;
 
     public function mount(): void
@@ -22,10 +26,25 @@ class Dashboard extends Page
         $user = Auth::user();
         $agama = strtolower($user->agama ?? '');
 
-        // If user is Muslim, redirect to the Muslim dashboard
-        if ($agama === 'islam') {
-            redirect()->to(MuslimDashboard::getUrl());
+        // Redirect ke dashboard yang sesuai agama user
+        $redirectMap = [
+            'islam' => MuslimDashboard::getUrl(),
+            'kristen' => KristenDashboard::getUrl(),
+            'katolik' => KristenDashboard::getUrl(),
+            'hindu' => HinduDashboard::getUrl(),
+            'buddha' => BuddhaDashboard::getUrl(),
+            'budha' => BuddhaDashboard::getUrl(),
+            'konghucu' => KonghucuDashboard::getUrl(),
+            'khonghucu' => KonghucuDashboard::getUrl(),
+        ];
+
+        if (isset($redirectMap[$agama])) {
+            redirect()->to($redirectMap[$agama]);
+            return;
         }
+
+        // Fallback: agama tidak dikenali → arahkan ke Kristen dashboard
+        redirect()->to(KristenDashboard::getUrl());
     }
 
     public function getHeading(): string

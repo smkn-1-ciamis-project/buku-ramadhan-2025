@@ -3,6 +3,7 @@
 namespace App\Filament\Guru\Pages;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -50,6 +51,10 @@ class Profil extends Page
       'no_hp' => $this->no_hp,
     ]);
 
+    ActivityLog::log('update_profile', $guru, [
+      'description' => 'Memperbarui profil guru',
+    ]);
+
     Notification::make()
       ->title('Profil berhasil diperbarui!')
       ->success()
@@ -74,6 +79,10 @@ class Profil extends Page
 
     $guru->update([
       'password' => $this->new_password,
+    ]);
+
+    ActivityLog::log('change_password', $guru, [
+      'description' => 'Mengubah password akun guru',
     ]);
 
     // Re-login agar session hash password diperbarui

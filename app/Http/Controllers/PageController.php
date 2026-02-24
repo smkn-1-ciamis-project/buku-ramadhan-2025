@@ -22,12 +22,12 @@ class PageController extends Controller
     return view('tim-pengembang');
   }
 
-  public function siswaDashboard(): RedirectResponse|View
+  public function siswaDashboard(): RedirectResponse
   {
     if (!Auth::check()) {
       return redirect('/siswa/login');
     }
-    return view('siswa.dashboard');
+    return redirect('/siswa/home');
   }
 
   public function changePassword(Request $request): JsonResponse

@@ -14,7 +14,6 @@ class Login extends BaseLogin
 {
   protected static string $view = 'filament.kesiswaan.pages.auth.login';
 
-  public bool $showDevicePopup = false;
   public bool $showErrorPopup = false;
   public string $errorPopupMessage = '';
 
@@ -81,22 +80,7 @@ class Login extends BaseLogin
 
     $credentials = $this->getCredentialsFromFormData($data);
 
-    // ── Single-session pre-check ───────────────────────────────────────
-    $existingUser = \App\Models\User::where('email', $credentials['email'])->first();
-
-    if ($existingUser) {
-      $hasActiveSession  = !empty($existingUser->active_session_id);
-      $isDifferentDevice = $existingUser->active_session_id !== session()->getId();
-      $maxMinutes = \App\Http\Middleware\EnsureSingleSession::getSessionDurationForRole($existingUser->role_user?->name ?? '');
-      $sessionStillValid = $existingUser->session_login_at &&
-        $existingUser->session_login_at->addMinutes($maxMinutes)->isFuture();
-
-      if ($hasActiveSession && $isDifferentDevice && $sessionStillValid) {
-        $this->showDevicePopup = true;
-
-        return null;
-      }
-    }
+    // Kesiswaan boleh multi-device, skip single-session pre-check
 
     // Attempt login
     $remember = $data['remember'] ?? false;
@@ -107,11 +91,21 @@ class Login extends BaseLogin
       return null;
     }
 
-    // Regenerate session
-    session()->regenerate();
-
     /** @var \App\Models\User $user */
     $user = Auth::user();
+
+    // Verify user has Kesiswaan/Kepala Sekolah role — prevent unauthorized session side-effects
+    if (! $user->canAccessPanel(\Filament\Facades\Filament::getCurrentPanel())) {
+      Auth::logout();
+      session()->invalidate();
+      session()->regenerateToken();
+      $this->errorPopupMessage = 'Akun Anda tidak memiliki akses ke panel Kesiswaan.';
+      $this->showErrorPopup = true;
+      return null;
+    }
+
+    // Regenerate session
+    session()->regenerate();
     $user->update([
       'active_session_id' => session()->getId(),
       'session_login_at'  => now(),

@@ -68,6 +68,7 @@
         .ks-stat-icon svg { width:1.25rem; height:1.25rem; color:rgba(255,255,255,.9); }
         .ks-stat-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
         .ks-stat-value { font-size:1.5rem; font-weight:700; }
+        .ks-stat-value-sm { font-size:1.25rem; font-weight:700; }
 
         .ks-bg-blue { background:rgba(37,99,235,.06); border-color:rgba(37,99,235,.2); }
         .ks-icon-blue { background:rgba(37,99,235,.85); }
@@ -135,7 +136,10 @@
         .ks-form-count { font-size:.875rem; font-weight:700; }
 
         /* Bottom section */
-        .ks-bottom { display:grid; grid-template-columns:1.2fr 0.8fr; gap:1rem; }
+        .ks-bottom { display:grid; grid-template-columns:1.2fr 0.8fr; gap:1rem; align-items:stretch; }
+        .ks-bottom > * { display:flex; flex-direction:column; }
+        .ks-bottom .ks-card { display:flex; flex-direction:column; flex:1; }
+        .ks-bottom .ks-card > div:last-child { flex:1; }
         @media(max-width:1024px) { .ks-bottom { grid-template-columns:1fr; } }
 
         /* Table styles */
@@ -280,7 +284,7 @@
                 </div>
                 <div>
                     <p class="ks-stat-label ks-text-muted">Total Formulir</p>
-                    <p class="ks-stat-value">{{ $totalFormulir }}</p>
+                    <p class="ks-stat-value-sm">{{ $totalFormulir }}</p>
                 </div>
             </div>
         </div>
@@ -523,7 +527,7 @@
                         <span class="ks-card-title">Overview Kelas</span>
                         <a href="{{ url('/portal-kesiswaan-smkn1/rekap-kelas') }}" class="ks-link">Detail →</a>
                     </div>
-                    <div class="ks-card-body" style="padding:.875rem 1.25rem; max-height:16rem; overflow-y:auto;">
+                    <div class="ks-card-body" style="padding:.875rem 1.25rem; overflow-y:auto;">
                         @forelse ($kelasOverview as $k)
                             <div class="ks-kelas-item">
                                 <div class="ks-kelas-info">

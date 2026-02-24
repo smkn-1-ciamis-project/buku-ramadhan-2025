@@ -35,6 +35,7 @@ function ramadhanDashboard() {
         pwSuccess: false,
         prayerTimes: [],
         fullPrayerSchedule: [],
+        _rawPrayerTimes: null,
         calendarDays: [],
         duas: [],
         allDuas: [],
@@ -261,12 +262,17 @@ function ramadhanDashboard() {
                     isCompleted &&
                     statusStr === "verified" &&
                     kesiswaanStr === "validated";
+                const isRejected =
+                    isCompleted &&
+                    (statusStr === "rejected" || kesiswaanStr === "rejected");
                 const isVerified =
-                    isCompleted && statusStr === "verified" && !isValidated;
+                    isCompleted &&
+                    statusStr === "verified" &&
+                    !isValidated &&
+                    !isRejected;
                 const isPending =
                     isCompleted &&
                     (statusStr === "pending" || statusStr === "");
-                const isRejected = isCompleted && statusStr === "rejected";
                 const isPast = date < today && !isToday;
                 const isPastUnfilled = (isPast || isToday) && !isCompleted;
                 days.push({
@@ -330,6 +336,8 @@ function ramadhanDashboard() {
             }
             this.imsakTime = times.imsak;
             this.maghribTime = times.maghrib;
+            // Store raw times for check-in time validation
+            this._rawPrayerTimes = times;
             const now = this.getNowInSelectedTz();
             const cm = now.getHours() * 60 + now.getMinutes();
             const tm = (t) => {
@@ -1992,10 +2000,10 @@ function ramadhanDashboard() {
             var s = this.getCheckinStatus(id);
             if (!s) return "Belum check-in";
             var labels = {
-                jamaah: "Jamaah ✓",
-                munfarid: "Munfarid ✓",
-                ya: "Sudah ✓",
-                tidak: "Tidak ✗",
+                jamaah: "Jamaah",
+                munfarid: "Munfarid",
+                ya: "Sudah",
+                tidak: "Tidak",
             };
             return labels[s] || s;
         },
@@ -2047,11 +2055,61 @@ function ramadhanDashboard() {
         // Urutan shalat wajib: harus berurutan dari subuh sampai tarawih
         _wajibOrder: ["subuh", "dzuhur", "ashar", "maghrib", "isya", "tarawih"],
         isWajibLocked(id) {
+            // Sudah diisi = tidak terkunci
+            if (this.getCheckinStatus(id)) return false;
             var idx = this._wajibOrder.indexOf(id);
-            if (idx <= 0) return false; // subuh selalu terbuka
-            // Cek apakah shalat sebelumnya sudah diisi
-            var prevId = this._wajibOrder[idx - 1];
-            return !this.getCheckinStatus(prevId);
+            if (idx < 0) return false;
+            // Cek urutan: shalat sebelumnya harus sudah diisi (kecuali subuh)
+            if (idx > 0) {
+                var prevId = this._wajibOrder[idx - 1];
+                if (!this.getCheckinStatus(prevId)) return true;
+            }
+            // Hari sebelumnya: tidak ada lock waktu
+            if (this.checkinHariKe < this.ramadhanDay) return false;
+            // Hari ini: cek apakah waktu sholat sudah tiba
+            if (
+                this.checkinHariKe === this.ramadhanDay &&
+                this._rawPrayerTimes
+            ) {
+                var timeKey = id === "tarawih" ? "isya" : id;
+                var timeStr = this._rawPrayerTimes[timeKey];
+                if (timeStr) {
+                    var parts = timeStr.split(":").map(Number);
+                    var prayerMinutes = parts[0] * 60 + parts[1];
+                    var now = new Date();
+                    var currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    if (currentMinutes < prayerMinutes) return true;
+                }
+            }
+            return false;
+        },
+        getWajibLockReason(id) {
+            if (this.getCheckinStatus(id)) return "";
+            var idx = this._wajibOrder.indexOf(id);
+            if (idx > 0) {
+                var prevId = this._wajibOrder[idx - 1];
+                if (!this.getCheckinStatus(prevId)) return "sequence";
+            }
+            if (
+                this.checkinHariKe === this.ramadhanDay &&
+                this._rawPrayerTimes
+            ) {
+                var timeKey = id === "tarawih" ? "isya" : id;
+                var timeStr = this._rawPrayerTimes[timeKey];
+                if (timeStr) {
+                    var parts = timeStr.split(":").map(Number);
+                    var prayerMinutes = parts[0] * 60 + parts[1];
+                    var now = new Date();
+                    var currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    if (currentMinutes < prayerMinutes) return "time";
+                }
+            }
+            return "";
+        },
+        getWajibUnlockTime(id) {
+            if (!this._rawPrayerTimes) return "";
+            var timeKey = id === "tarawih" ? "isya" : id;
+            return this._rawPrayerTimes[timeKey] || "";
         },
         openCheckinModal(prayer) {
             // Blokir jika shalat wajib terkunci (belum isi yang sebelumnya)

@@ -15,6 +15,16 @@ class CreateSiswa extends CreateRecord
 {
   protected static string $resource = SiswaResource::class;
 
+  protected function afterCreate(): void
+  {
+    \App\Models\ActivityLog::log('create_siswa', Auth::user(), [
+      'description' => 'Menambahkan siswa baru: ' . $this->record->name . ' (NISN: ' . $this->record->nisn . ')',
+      'target_id' => $this->record->id,
+      'target_name' => $this->record->name,
+      'target_nisn' => $this->record->nisn,
+    ]);
+  }
+
   protected function mutateFormDataBeforeCreate(array $data): array
   {
     // Auto-assign role Siswa

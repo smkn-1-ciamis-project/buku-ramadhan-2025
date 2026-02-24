@@ -59,6 +59,7 @@ class User extends Authenticatable implements FilamentUser
         'jenis_kelamin',
         'active_session_id',
         'session_login_at',
+        'email_verified_at',
     ];
 
     /**
@@ -111,5 +112,75 @@ class User extends Authenticatable implements FilamentUser
     public function formSubmissions(): HasMany
     {
         return $this->hasMany(FormSubmission::class, 'user_id');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Agama helpers                                                      */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Canonical religion values stored in the database.
+     */
+    public const VALID_AGAMA = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'];
+
+    /**
+     * Common alternate spellings → canonical mapping.
+     */
+    private const AGAMA_ALIASES = [
+        'budha'     => 'Buddha',
+        'budhha'    => 'Buddha',
+        'khonghucu' => 'Konghucu',
+        'kong hu cu' => 'Konghucu',
+    ];
+
+    /**
+     * Non-Muslim religion values (lowercase) for isMuslim checks.
+     */
+    private const NON_MUSLIM = [
+        'kristen',
+        'katolik',
+        'hindu',
+        'buddha',
+        'budha',
+        'konghucu',
+        'khonghucu',
+    ];
+
+    /**
+     * Normalize an agama string to its canonical form.
+     * Returns null if the value doesn't match any known religion.
+     *
+     * Example: "budha" → "Buddha", "ISLAM" → "Islam", "foo" → null
+     */
+    public static function normalizeAgama(?string $agama): ?string
+    {
+        if ($agama === null || trim($agama) === '') {
+            return null;
+        }
+
+        $lower = strtolower(trim($agama));
+
+        // Check aliases first
+        if (isset(self::AGAMA_ALIASES[$lower])) {
+            return self::AGAMA_ALIASES[$lower];
+        }
+
+        // Case-insensitive match against canonical list
+        foreach (self::VALID_AGAMA as $canonical) {
+            if (strtolower($canonical) === $lower) {
+                return $canonical;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check whether a given agama string is Muslim (Islam).
+     * Null / empty / unknown defaults to true (treated as Muslim).
+     */
+    public static function isMuslimAgama(?string $agama): bool
+    {
+        return !in_array(strtolower($agama ?? ''), self::NON_MUSLIM);
     }
 }

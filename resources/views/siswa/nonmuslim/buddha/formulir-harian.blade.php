@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
+    <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__userAgama = '{{ auth()->user()->agama ?? "Buddha" }}';</script>
     <div x-data="formulirBuddha()" x-init="init()" class="formulir-page">
         <style>
             html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
@@ -92,7 +92,7 @@
                         <svg width="30" height="30" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
                     </div>
                     <p style="margin:0 0 6px;font-weight:700;color:#92400e;font-size:17px;letter-spacing:-.2px;">Formulir Ditolak oleh Kesiswaan</p>
-                    <p style="margin:0 0 18px;color:#b45309;font-size:13px;">Hubungi guru wali untuk informasi lebih lanjut.</p>
+                    <p style="margin:0 0 18px;color:#b45309;font-size:13px;">Silakan perbaiki dan kirim ulang formulir ini.</p>
                     <div x-show="currentDayKesiswaanNote" style="background:#fff;border:1.5px solid #fbbf24;border-radius:10px;padding:14px 16px;text-align:left;">
                         <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.8px;">Catatan Kesiswaan</p>
                         <p style="margin:0;color:#b45309;font-size:13px;line-height:1.6;" x-text="currentDayKesiswaanNote"></p>
@@ -136,7 +136,7 @@
                     </div>
                 </div>
 
-                <fieldset :disabled="formSubmitted" class="f-fieldset">
+                <fieldset :disabled="formSubmitted && currentDayKesiswaanStatus !== 'rejected'" class="f-fieldset">
 
                 {{-- Section 1 --}}
                 <div class="f-section" x-show="isSectionEnabled('pengendalian_diri')" x-transition>
@@ -405,14 +405,15 @@
 
                 {{-- Submit button --}}
                 <div class="f-submit-wrap">
-                    <button @click="submitForm()" :disabled="formSubmitted || formSaving"
-                            class="f-submit-btn" :class="formSubmitted ? 'f-submit-btn-disabled' : ''">
+                    <button @click="submitForm()" :disabled="(formSubmitted && currentDayKesiswaanStatus !== 'rejected') || formSaving"
+                            class="f-submit-btn" :class="[(formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'f-submit-btn-disabled' : '', (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && !isFormComplete() ? 'f-submit-btn-draft' : '']">
                         <template x-if="formSaving">
                             <svg class="f-spin" fill="none" viewBox="0 0 24 24"><circle class="f-spin-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="f-spin-path" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         </template>
-                        <svg x-show="!formSaving && !formSubmitted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
-                        <svg x-show="formSubmitted && !formSaving" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span x-text="formSaving ? 'Menyimpan...' : (formSubmitted ? 'Sudah Dikirim' : 'Kirim Formulir')"></span>
+                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && !isFormComplete()" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 3v4H7"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 14h10M7 18h6"/></svg>
+                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && isFormComplete()" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                        <svg x-show="formSubmitted && currentDayKesiswaanStatus !== 'rejected' && !formSaving" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span x-text="formSaving ? 'Menyimpan...' : ((formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'Sudah Dikirim' : (isFormComplete() ? (currentDayKesiswaanStatus === 'rejected' ? 'Kirim Ulang Formulir' : 'Kirim Formulir') : 'Simpan'))"></span>
                     </button>
                 </div>
 
@@ -422,13 +423,23 @@
                     <span x-text="validationMessage"></span>
                 </div>
 
+                {{-- Save Draft Popup --}}
+                <div x-show="showSavePopup" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:20px;padding:36px 40px;box-shadow:0 12px 40px rgba(0,0,0,.2);text-align:center;min-width:300px;">
+                    <div style="width:64px;height:64px;margin:0 auto 16px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <svg width="32" height="32" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 3v4H7"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 14h10M7 18h6"/></svg>
+                    </div>
+                    <h3 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1e293b;">Tersimpan!</h3>
+                    <p style="margin:0;color:#64748b;font-size:14px;">Formulir <strong x-text="'Hari ke-' + successDay + ' Ramadhan'"></strong> disimpan sebagai draft. Lengkapi formulir untuk mengirim ke guru.</p>
+                </div>
+                <div x-show="showSavePopup" style="position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:9998;"></div>
+
                 {{-- Success Popup Toast --}}
                 <div x-show="showSuccessPopup" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:20px;padding:36px 40px;box-shadow:0 12px 40px rgba(0,0,0,.2);text-align:center;min-width:300px;">
                     <div style="width:64px;height:64px;margin:0 auto 16px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;">
                         <svg width="36" height="36" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                     </div>
                     <h3 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1e293b;">Berhasil Terkirim!</h3>
-                    <p style="margin:0;color:#64748b;font-size:14px;">Formulir <strong x-text="'Hari ke-' + successDay + ' Ramadhan'"></strong> sudah berhasil disimpan.</p>
+                    <p style="margin:0;color:#64748b;font-size:14px;">Formulir <strong x-text="'Hari ke-' + successDay + ' Ramadhan'"></strong> sudah berhasil dikirim ke guru.</p>
                 </div>
                 <div x-show="showSuccessPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:9998;"></div>
 

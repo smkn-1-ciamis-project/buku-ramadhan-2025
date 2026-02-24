@@ -14,12 +14,25 @@ use Illuminate\Support\Facades\Cache;
 class PrayerCheckinController extends Controller
 {
     /**
+     * Check if user is Muslim. Non-Muslim users should not access prayer check-in.
+     */
+    private function isMuslim($user): bool
+    {
+        return \App\Models\User::isMuslimAgama($user->agama);
+    }
+
+    /**
      * Cari hari Ramadhan pertama yang belum di-checkin lengkap (< 9 shalat).
      * Kalau semua sudah diisi, kembalikan hari ini.
      */
     public function firstUnfilled(): JsonResponse
     {
         $user = Auth::user();
+
+        if (!$this->isMuslim($user)) {
+            return response()->json(['success' => false, 'message' => 'Fitur check-in shalat hanya untuk siswa Muslim.'], 403);
+        }
+
         $ramadhanStart = Carbon::create(2026, 2, 19);
         $today = Carbon::today();
 
@@ -78,6 +91,11 @@ class PrayerCheckinController extends Controller
     public function today(): JsonResponse
     {
         $user = Auth::user();
+
+        if (!$this->isMuslim($user)) {
+            return response()->json(['success' => false, 'message' => 'Fitur check-in shalat hanya untuk siswa Muslim.'], 403);
+        }
+
         $today = now()->toDateString();
         $cacheKey = "checkins_today_{$user->id}_{$today}";
 
@@ -107,6 +125,11 @@ class PrayerCheckinController extends Controller
     public function forDate(string $date): JsonResponse
     {
         $user = Auth::user();
+
+        if (!$this->isMuslim($user)) {
+            return response()->json(['success' => false, 'message' => 'Fitur check-in shalat hanya untuk siswa Muslim.'], 403);
+        }
+
         $cacheKey = "checkins_date_{$user->id}_{$date}";
 
         $result = Cache::remember($cacheKey, 300, function () use ($user, $date) {
@@ -141,6 +164,11 @@ class PrayerCheckinController extends Controller
         ]);
 
         $user = Auth::user();
+
+        if (!$this->isMuslim($user)) {
+            return response()->json(['success' => false, 'message' => 'Fitur check-in shalat hanya untuk siswa Muslim.'], 403);
+        }
+
         $shalat = $request->shalat;
         $status = $request->status;
 

@@ -2,7 +2,7 @@
   $data = $getState() ?? [];
   $record = $getRecord();
   $agama = $record->user->agama ?? '';
-  $isMuslim = !in_array(strtolower($agama), ['kristen', 'katolik', 'hindu', 'budha', 'konghucu']);
+  $isMuslim = \App\Models\User::isMuslimAgama($agama);
 
   // Ambil data waktu check-in sholat dari prayer_checkins
   $checkinTimes = [];

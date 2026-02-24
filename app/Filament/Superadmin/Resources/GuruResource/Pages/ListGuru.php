@@ -3,6 +3,7 @@
 namespace App\Filament\Superadmin\Resources\GuruResource\Pages;
 
 use App\Filament\Superadmin\Resources\GuruResource;
+use App\Models\ActivityLog;
 use App\Models\User;
 use App\Services\ImportService;
 use App\Services\TemplateService;
@@ -11,10 +12,34 @@ use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListGuru extends ListRecords
 {
   protected static string $resource = GuruResource::class;
+
+  public function getTabs(): array
+  {
+    $tabs = [
+      'semua' => \Filament\Resources\Components\Tab::make('Semua')
+        ->badge(fn() => \App\Models\User::whereHas('role_user', fn($q) => $q->where('name', 'Guru'))->count())
+        ->badgeColor('primary'),
+    ];
+
+    foreach (['10', '11', '12'] as $tingkat) {
+      $tabs["kelas_{$tingkat}"] = \Filament\Resources\Components\Tab::make("Kelas {$tingkat}")
+        ->modifyQueryUsing(fn($query) => $query->whereHas('kelasWali', fn($q) => $q->where('nama', 'like', "{$tingkat} %")))
+        ->badge(fn() => \App\Models\User::whereHas('role_user', fn($q) => $q->where('name', 'Guru'))->whereHas('kelasWali', fn($q) => $q->where('nama', 'like', "{$tingkat} %"))->count())
+        ->badgeColor('gray');
+    }
+
+    return $tabs;
+  }
+
+  public function getDefaultActiveTab(): string|int|null
+  {
+    return 'semua';
+  }
 
   protected function getHeaderActions(): array
   {
@@ -65,6 +90,11 @@ class ListGuru extends ListRecords
           }
 
           if ($result['success'] > 0) {
+            ActivityLog::log('import_guru', Auth::user(), [
+              'description' => 'Mengimport ' . $result['success'] . ' data guru (gagal: ' . $result['failed'] . ')',
+              'success' => $result['success'],
+              'failed' => $result['failed'],
+            ]);
             Notification::make()
               ->title('Import Berhasil')
               ->body("Berhasil: {$result['success']} data. Gagal: {$result['failed']} data.")
@@ -116,6 +146,12 @@ class ListGuru extends ListRecords
               ->with('kelasWali')
               ->orderBy('name')
               ->get();
+
+            ActivityLog::log('export_guru', Auth::user(), [
+              'description' => 'Mengekspor data ' . $guru->count() . ' guru ke PDF',
+              'format' => 'pdf',
+              'total' => $guru->count(),
+            ]);
 
             $totalL = $guru->where('jenis_kelamin', 'L')->count();
             $totalP = $guru->where('jenis_kelamin', 'P')->count();

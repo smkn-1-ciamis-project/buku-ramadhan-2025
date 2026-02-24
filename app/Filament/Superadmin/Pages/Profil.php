@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superadmin\Pages;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
@@ -50,6 +51,10 @@ class Profil extends Page
       'no_hp' => $this->no_hp,
     ]);
 
+    ActivityLog::log('update_profile', Auth::user(), [
+      'description' => 'Memperbarui profil superadmin',
+    ]);
+
     Notification::make()
       ->title('Profil berhasil diperbarui!')
       ->success()
@@ -74,6 +79,7 @@ class Profil extends Page
 
     $user->update([
       'password' => $this->new_password,
+      'must_change_password' => false,
     ]);
 
     // Re-login agar session hash password diperbarui
@@ -87,6 +93,10 @@ class Profil extends Page
     ]);
 
     $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+
+    ActivityLog::log('change_password', Auth::user(), [
+      'description' => 'Mengubah password superadmin',
+    ]);
 
     Notification::make()
       ->title('Password berhasil diubah!')

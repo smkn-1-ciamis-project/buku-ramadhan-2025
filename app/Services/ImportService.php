@@ -52,6 +52,9 @@ class ImportService
                 continue;
             }
 
+            // Normalize agama alias (e.g. Budha → Buddha, Khonghucu → Konghucu)
+            $agama = \App\Models\User::normalizeAgama($agama) ?? $agama;
+
             // Validate
             $validator = Validator::make([
                 'nama' => $nama,
@@ -153,6 +156,11 @@ class ImportService
                 continue;
             }
 
+            // Normalize agama alias (Budha → Buddha, Khonghucu → Konghucu)
+            if (!empty($agama)) {
+                $agama = \App\Models\User::normalizeAgama($agama) ?? $agama;
+            }
+
             // Auto-generate email from name if not provided
             if (empty($email)) {
                 $email = self::generateGuruEmail($nama);
@@ -163,10 +171,12 @@ class ImportService
                 'nama' => $nama,
                 'email' => $email,
                 'jenis_kelamin' => $jk,
+                'agama' => $agama,
             ], [
                 'nama' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'jenis_kelamin' => 'required|in:L,P',
+                'agama' => 'nullable|in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu',
             ]);
 
             if ($validator->fails()) {
@@ -338,6 +348,11 @@ class ImportService
                     continue;
                 }
 
+                // Normalize agama alias (Budha → Buddha, Khonghucu → Konghucu)
+                if (!empty($agama)) {
+                    $agama = \App\Models\User::normalizeAgama($agama) ?? $agama;
+                }
+
                 // Auto-generate email if empty
                 if (empty($email)) {
                     $email = self::generateGuruEmail($nama);
@@ -348,10 +363,12 @@ class ImportService
                     'nama' => $nama,
                     'email' => $email,
                     'jenis_kelamin' => $jk,
+                    'agama' => $agama,
                 ], [
                     'nama' => 'required|string|max:255',
                     'email' => 'required|email|max:255',
                     'jenis_kelamin' => 'required|in:L,P',
+                    'agama' => 'nullable|in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu',
                 ]);
 
                 if ($validator->fails()) {
@@ -502,6 +519,9 @@ class ImportService
                     continue;
                 }
 
+                // Normalize agama alias (Budha → Buddha, Khonghucu → Konghucu)
+                $agama = \App\Models\User::normalizeAgama($agama) ?? $agama;
+
                 $validator = Validator::make([
                     'nama' => $nama,
                     'nisn' => $nisn,
@@ -561,5 +581,106 @@ class ImportService
         }
 
         return $result;
+    }
+
+    /**
+     * Import kesiswaan from Excel file.
+     *
+     * @return array{success: int, failed: int, errors: array}
+     */
+    public static function importKesiswaan(string $filePath): array
+    {
+        $spreadsheet = IOFactory::load($filePath);
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray(null, true, true, true);
+
+        $roleId = RoleUser::where('name', 'Kesiswaan')->first()?->id;
+
+        if (!$roleId) {
+            return ['success' => 0, 'failed' => 0, 'errors' => ['Role Kesiswaan tidak ditemukan di database.']];
+        }
+
+        $success = 0;
+        $failed = 0;
+        $errors = [];
+
+        // Skip header row (row 1)
+        $isFirstRow = true;
+        foreach ($rows as $rowIndex => $row) {
+            if ($isFirstRow) {
+                $isFirstRow = false;
+                continue;
+            }
+
+            $nama = trim($row['A'] ?? '');
+            $email = trim($row['B'] ?? '');
+            $jk = strtoupper(trim($row['C'] ?? ''));
+            $noHp = trim($row['D'] ?? '');
+            $password = trim($row['E'] ?? '');
+
+            // Skip empty rows
+            if (empty($nama) && empty($email)) {
+                continue;
+            }
+
+            // Auto-generate email if not provided
+            if (empty($email)) {
+                $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '.', trim($nama)));
+                $slug = trim($slug, '.');
+                $email = $slug . '@kesiswaan.smkn1ciamis.sch.id';
+                $counter = 1;
+                while (User::where('email', $email)->exists()) {
+                    $email = $slug . $counter . '@kesiswaan.smkn1ciamis.sch.id';
+                    $counter++;
+                }
+            }
+
+            // Default password = email
+            if (empty($password)) {
+                $password = $email;
+            }
+
+            // Validate
+            $validator = Validator::make([
+                'nama' => $nama,
+                'email' => $email,
+                'jenis_kelamin' => $jk,
+            ], [
+                'nama' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'jenis_kelamin' => 'required|in:L,P',
+            ]);
+
+            if ($validator->fails()) {
+                $failed++;
+                $errors[] = "Baris {$rowIndex}: " . implode(', ', $validator->errors()->all());
+                continue;
+            }
+
+            // Check duplicate email
+            if (User::where('email', $email)->exists()) {
+                $failed++;
+                $errors[] = "Baris {$rowIndex}: Email {$email} sudah terdaftar.";
+                continue;
+            }
+
+            try {
+                User::create([
+                    'name' => $nama,
+                    'email' => $email,
+                    'jenis_kelamin' => $jk,
+                    'no_hp' => $noHp ?: null,
+                    'password' => $password,
+                    'role_user_id' => $roleId,
+                    'email_verified_at' => now(),
+                ]);
+                $success++;
+            } catch (\Exception $e) {
+                $failed++;
+                $errors[] = "Baris {$rowIndex}: " . $e->getMessage();
+            }
+        }
+
+        return compact('success', 'failed', 'errors');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -92,6 +93,10 @@ trait HasPasswordChangeModal
         // tidak menendang user karena session ID berubah
         $user->updateQuietly([
             'active_session_id' => Session::getId(),
+        ]);
+
+        ActivityLog::log('change_password', $user, [
+            'description' => 'Siswa mengubah password (wajib ganti)',
         ]);
 
         $this->showPasswordModal = false;

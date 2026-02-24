@@ -144,6 +144,7 @@ function formulirHarian() {
         formSubmitted: false,
         formSaving: false,
         showSuccessPopup: false,
+        showSavePopup: false,
         successDay: 0,
         showErrorPopup: false,
         errorMessages: [],
@@ -160,6 +161,131 @@ function formulirHarian() {
         enabledSections: {},
         extraSections: [],
         allSurahs: QURAN_SURAHS,
+
+        // Jadwal waktu sholat - default Ciamis, akan diupdate dari API
+        prayerSchedule: {
+            subuh: { hour: 4, min: 23 },
+            dzuhur: { hour: 11, min: 52 },
+            ashar: { hour: 15, min: 13 },
+            maghrib: { hour: 17, min: 55 },
+            isya: { hour: 19, min: 8 },
+            tarawih: { hour: 19, min: 8 },
+        },
+
+        // Track sholat yang sudah di-checkin (dari check-in shalat page)
+        checkedInPrayers: {},
+
+        isPrayerCheckedIn(key) {
+            return !!this.checkedInPrayers[key];
+        },
+
+        isPrayerUnlocked(key) {
+            // Hari sebelumnya: semua sholat bisa diisi
+            if (this.formDay < this.ramadhanDay) return true;
+            // Hari depan: tidak bisa diisi
+            if (this.formDay > this.ramadhanDay) return false;
+            // Hari ini: cek berdasarkan jam
+            var schedule = this.prayerSchedule[key];
+            if (!schedule) return true;
+            var now = new Date();
+            var currentMinutes = now.getHours() * 60 + now.getMinutes();
+            var prayerMinutes = schedule.hour * 60 + schedule.min;
+            return currentMinutes >= prayerMinutes;
+        },
+
+        getPrayerUnlockTime(key) {
+            var schedule = this.prayerSchedule[key];
+            if (!schedule) return "";
+            var h = String(schedule.hour).padStart(2, "0");
+            var m = String(schedule.min).padStart(2, "0");
+            return h + ":" + m;
+        },
+
+        loadPrayerTimes() {
+            var self = this;
+            var cacheKey =
+                "formulir_prayer_times_" +
+                new Date().toISOString().slice(0, 10);
+            try {
+                var cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    var times = JSON.parse(cached);
+                    self._applyPrayerTimes(times);
+                    return;
+                }
+            } catch (e) {}
+            // Default koordinat Ciamis
+            var lat = -7.3305;
+            var lng = 108.3508;
+            var dateStr = new Date()
+                .toISOString()
+                .slice(0, 10)
+                .replace(/-/g, "-");
+            var url =
+                "https://api.aladhan.com/v1/timings/" +
+                dateStr +
+                "?latitude=" +
+                lat +
+                "&longitude=" +
+                lng +
+                "&method=20";
+            fetch(url, {
+                signal: AbortSignal.timeout
+                    ? AbortSignal.timeout(5000)
+                    : undefined,
+            })
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (
+                        data &&
+                        data.code === 200 &&
+                        data.data &&
+                        data.data.timings
+                    ) {
+                        var t = data.data.timings;
+                        var times = {
+                            subuh: t.Fajr.split(" ")[0],
+                            dzuhur: t.Dhuhr.split(" ")[0],
+                            ashar: t.Asr.split(" ")[0],
+                            maghrib: t.Maghrib.split(" ")[0],
+                            isya: t.Isha.split(" ")[0],
+                        };
+                        self._applyPrayerTimes(times);
+                        try {
+                            localStorage.setItem(
+                                cacheKey,
+                                JSON.stringify(times),
+                            );
+                        } catch (e) {}
+                    }
+                })
+                .catch(function () {});
+        },
+
+        _applyPrayerTimes(times) {
+            var self = this;
+            ["subuh", "dzuhur", "ashar", "maghrib", "isya"].forEach(
+                function (key) {
+                    if (times[key]) {
+                        var parts = times[key].split(":");
+                        self.prayerSchedule[key] = {
+                            hour: parseInt(parts[0]),
+                            min: parseInt(parts[1]),
+                        };
+                    }
+                },
+            );
+            // Tarawih = waktu isya
+            if (times.isya) {
+                var parts = times.isya.split(":");
+                self.prayerSchedule.tarawih = {
+                    hour: parseInt(parts[0]),
+                    min: parseInt(parts[1]),
+                };
+            }
+        },
         tadarusUI: [
             {
                 maxAyat: 0,
@@ -484,6 +610,7 @@ function formulirHarian() {
             this.calculateRamadhanDay();
             this.loadSubmittedDays();
             this.loadFormConfig();
+            this.loadPrayerTimes();
             this.syncFromServer();
             var urlParams = new URLSearchParams(window.location.search);
             var requestedDay = urlParams.get("hari");
@@ -798,6 +925,8 @@ function formulirHarian() {
         },
         loadCheckinForDay(day) {
             var self = this;
+            // Reset immediately so stale data from previous day is cleared
+            self.checkedInPrayers = {};
             var ramadhanStart = new Date(2026, 1, 19);
             var targetDate = new Date(
                 ramadhanStart.getTime() + (day - 1) * 86400000,
@@ -806,13 +935,14 @@ function formulirHarian() {
             var mm = String(targetDate.getMonth() + 1).padStart(2, "0");
             var dd = String(targetDate.getDate()).padStart(2, "0");
             var dateStr = yyyy + "-" + mm + "-" + dd;
+            // Use day-specific throttle key so different days don't block each other
             _throttledFetch(
-                "checkinDay",
+                "checkinDay_" + day,
                 "/api/prayer-checkins/date/" + dateStr,
                 {
                     headers: { Accept: "application/json" },
                 },
-                5000,
+                3000,
             )
                 .then(function (r) {
                     return r.json();
@@ -828,28 +958,21 @@ function formulirHarian() {
                         "isya",
                     ];
                     wajibKeys.forEach(function (key) {
-                        if (
-                            checkins[key] &&
-                            checkins[key].status &&
-                            !self.formData.sholat[key]
-                        ) {
+                        if (checkins[key] && checkins[key].status) {
+                            // Mark as checked-in so it becomes locked
+                            self.checkedInPrayers[key] = true;
+                            // Always use check-in value (official record)
                             self.formData.sholat[key] = checkins[key].status;
                         }
                     });
-                    if (
-                        checkins.tarawih &&
-                        checkins.tarawih.status &&
-                        !self.formData.tarawih
-                    ) {
+                    if (checkins.tarawih && checkins.tarawih.status) {
+                        self.checkedInPrayers["tarawih"] = true;
                         self.formData.tarawih = checkins.tarawih.status;
                     }
                     var sunnahKeys = ["rowatib", "tahajud", "dhuha"];
                     sunnahKeys.forEach(function (key) {
-                        if (
-                            checkins[key] &&
-                            checkins[key].status &&
-                            !self.formData.sunat[key]
-                        ) {
+                        if (checkins[key] && checkins[key].status) {
+                            self.checkedInPrayers[key] = true;
                             self.formData.sunat[key] = checkins[key].status;
                         }
                     });
@@ -887,7 +1010,7 @@ function formulirHarian() {
             }
 
             if (!isHaid) {
-                // 2. Sholat Fardu wajib semua, berurutan
+                // 2. Sholat Fardu wajib semua (yang sudah terbuka)
                 if (this.isSectionEnabled("sholat_fardu")) {
                     var farduOrder = [
                         "subuh",
@@ -905,6 +1028,7 @@ function formulirHarian() {
                     };
                     var missingFardu = [];
                     for (var i = 0; i < farduOrder.length; i++) {
+                        if (!this.isPrayerUnlocked(farduOrder[i])) continue;
                         if (!this.formData.sholat[farduOrder[i]]) {
                             missingFardu.push(farduLabels[farduOrder[i]]);
                         }
@@ -917,9 +1041,12 @@ function formulirHarian() {
                     }
                 }
 
-                // 3. Tarawih wajib
+                // 3. Tarawih wajib (jika sudah terbuka)
                 if (this.isSectionEnabled("tarawih")) {
-                    if (!this.formData.tarawih) {
+                    if (
+                        this.isPrayerUnlocked("tarawih") &&
+                        !this.formData.tarawih
+                    ) {
                         errors.push("Sholat Tarawih belum diisi");
                     }
                 }
@@ -1034,6 +1161,42 @@ function formulirHarian() {
 
             return errors;
         },
+        isFormComplete() {
+            // Sync editor content
+            if (this.$refs.ceramahEditor) {
+                this.formData.ringkasan_ceramah =
+                    this.$refs.ceramahEditor.innerHTML;
+            }
+            return this.validateForm().length === 0;
+        },
+        saveDraft() {
+            if (this.formDisabled) {
+                this.errorMessages = [this.formDisabledMessage];
+                this.showErrorPopup = true;
+                return;
+            }
+            // Sync editor content
+            if (this.$refs.ceramahEditor) {
+                this.formData.ringkasan_ceramah =
+                    this.$refs.ceramahEditor.innerHTML;
+            }
+            this.formSaving = true;
+            localStorage.setItem(
+                this._lsKey("ramadhan_form_day_" + this.formDay),
+                JSON.stringify(this.formData),
+            );
+            var self = this;
+            setTimeout(function () {
+                self.formSaving = false;
+                self.successDay = self.formDay;
+                self.showSavePopup = true;
+                setTimeout(function () {
+                    self.showSavePopup = false;
+                    // Redirect ke halaman utama
+                    window.location.href = "/siswa";
+                }, 1500);
+            }, 400);
+        },
         submitForm() {
             if (this.formDisabled) {
                 this.errorMessages = [this.formDisabledMessage];
@@ -1047,8 +1210,8 @@ function formulirHarian() {
             }
             var errors = this.validateForm();
             if (errors.length > 0) {
-                this.errorMessages = errors;
-                this.showErrorPopup = true;
+                // Form belum lengkap → simpan draft
+                this.saveDraft();
                 return;
             }
             this.formSaving = true;

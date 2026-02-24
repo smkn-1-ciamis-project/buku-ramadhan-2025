@@ -3,6 +3,7 @@
 namespace App\Filament\Superadmin\Resources\SiswaResource\Pages;
 
 use App\Filament\Superadmin\Resources\SiswaResource;
+use App\Models\ActivityLog;
 use App\Models\Kelas;
 use App\Models\User;
 use App\Services\ImportService;
@@ -11,6 +12,7 @@ use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Cell;
 use OpenSpout\Common\Entity\Style\Style;
@@ -21,6 +23,29 @@ use OpenSpout\Writer\XLSX\Options;
 class ListSiswa extends ListRecords
 {
   protected static string $resource = SiswaResource::class;
+
+  public function getTabs(): array
+  {
+    $tabs = [
+      'semua' => \Filament\Resources\Components\Tab::make('Semua')
+        ->badge(fn() => \App\Models\User::whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))->count())
+        ->badgeColor('primary'),
+    ];
+
+    foreach (['10', '11', '12'] as $tingkat) {
+      $tabs["kelas_{$tingkat}"] = \Filament\Resources\Components\Tab::make("Kelas {$tingkat}")
+        ->modifyQueryUsing(fn($query) => $query->whereHas('kelas', fn($q) => $q->where('nama', 'like', "{$tingkat} %")))
+        ->badge(fn() => \App\Models\User::whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))->whereHas('kelas', fn($q) => $q->where('nama', 'like', "{$tingkat} %"))->count())
+        ->badgeColor('gray');
+    }
+
+    return $tabs;
+  }
+
+  public function getDefaultActiveTab(): string|int|null
+  {
+    return 'semua';
+  }
 
   protected function getHeaderActions(): array
   {
@@ -71,6 +96,11 @@ class ListSiswa extends ListRecords
           }
 
           if ($result['success'] > 0) {
+            ActivityLog::log('import_siswa', Auth::user(), [
+              'description' => 'Mengimport ' . $result['success'] . ' data siswa (gagal: ' . $result['failed'] . ')',
+              'success' => $result['success'],
+              'failed' => $result['failed'],
+            ]);
             Notification::make()
               ->title('Import Berhasil')
               ->body("Berhasil: {$result['success']} data. Gagal: {$result['failed']} data.")
@@ -118,6 +148,12 @@ class ListSiswa extends ListRecords
         ->color('danger')
         ->action(function () {
           try {
+            $total = User::whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))->count();
+            ActivityLog::log('export_siswa', Auth::user(), [
+              'description' => 'Mengekspor data ' . $total . ' siswa ke Excel',
+              'format' => 'xlsx',
+              'total' => $total,
+            ]);
             return $this->exportSiswaExcel();
           } catch (\Throwable $e) {
             Notification::make()
@@ -187,7 +223,6 @@ class ListSiswa extends ListRecords
     $grandTotal = 0;
     $grandL = 0;
     $grandP = 0;
-    $isFirstSheet = true;
 
     // ═══ SHEET: REKAP ═══
     $writer->getCurrentSheet()->setName('Rekap');

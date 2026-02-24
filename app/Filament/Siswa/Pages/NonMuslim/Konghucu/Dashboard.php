@@ -33,7 +33,6 @@ class Dashboard extends Page
             'islam' => MuslimDashboard::getUrl(),
             'kristen' => KristenDashboard::getUrl(),
             'katolik' => KristenDashboard::getUrl(),
-            'kristen katolik' => KristenDashboard::getUrl(),
             'hindu' => HinduDashboard::getUrl(),
             'buddha' => BuddhaDashboard::getUrl(),
             'budha' => BuddhaDashboard::getUrl(),
