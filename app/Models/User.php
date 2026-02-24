@@ -25,21 +25,19 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Get role name
-        $roleName = $this->role_user?->name;
+        $roleName = strtolower(trim($this->role_user?->name ?? ''));
 
-        if (!$roleName) {
+        if ($roleName === '') {
             return false;
         }
 
-        // Panel access based on role
+        // Strict role-to-panel mapping — each role can ONLY access its own panel
         return match ($panel->getId()) {
-            'siswa' => str_contains(strtolower($roleName), 'siswa'),
-            'guru' => str_contains(strtolower($roleName), 'guru'),
-            'superadmin' => str_contains(strtolower($roleName), 'super admin') || str_contains(strtolower($roleName), 'superadmin'),
-            'kesiswaan' => str_contains(strtolower($roleName), 'kesiswaan') || str_contains(strtolower($roleName), 'kepala sekolah'),
-            'admin' => str_contains(strtolower($roleName), 'admin'),
-            default => false,
+            'siswa'      => $roleName === 'siswa',
+            'guru'       => $roleName === 'guru',
+            'superadmin' => in_array($roleName, ['super admin', 'superadmin']),
+            'kesiswaan'  => in_array($roleName, ['kesiswaan', 'kepala sekolah']),
+            default      => false,
         };
     }
 

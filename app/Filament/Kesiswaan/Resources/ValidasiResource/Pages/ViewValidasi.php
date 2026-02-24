@@ -2,11 +2,13 @@
 
 namespace App\Filament\Kesiswaan\Resources\ValidasiResource\Pages;
 
+use App\Filament\Kesiswaan\Resources\ValidasiKelasResource;
 use App\Filament\Kesiswaan\Resources\ValidasiResource;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ViewValidasi extends ViewRecord
 {
@@ -125,11 +127,16 @@ class ViewValidasi extends ViewRecord
             'validated_at' => now(),
             'catatan_kesiswaan' => $data['catatan_kesiswaan'] ?? null,
           ]);
+          Cache::forget("submissions_{$this->record->user_id}");
+          Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
           \Filament\Notifications\Notification::make()
             ->title('Formulir berhasil divalidasi')
             ->success()
             ->send();
-          $this->refreshFormData(['kesiswaan_status', 'validated_by', 'validated_at', 'catatan_kesiswaan']);
+          $kelasId = $this->record->user?->kelas_id;
+          return $kelasId
+            ? redirect(ValidasiKelasResource::getUrl('validasi-kelas', ['record' => $kelasId]))
+            : redirect(ValidasiKelasResource::getUrl());
         })
         ->visible(fn() => $this->record->kesiswaan_status !== 'validated'),
 
@@ -153,13 +160,18 @@ class ViewValidasi extends ViewRecord
             'validated_at' => now(),
             'catatan_kesiswaan' => $data['catatan_kesiswaan'],
           ]);
+          Cache::forget("submissions_{$this->record->user_id}");
+          Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
           \Filament\Notifications\Notification::make()
             ->title('Formulir ditolak')
             ->warning()
             ->send();
-          $this->refreshFormData(['kesiswaan_status', 'validated_by', 'validated_at', 'catatan_kesiswaan']);
+          $kelasId = $this->record->user?->kelas_id;
+          return $kelasId
+            ? redirect(ValidasiKelasResource::getUrl('validasi-kelas', ['record' => $kelasId]))
+            : redirect(ValidasiKelasResource::getUrl());
         })
-        ->visible(fn() => $this->record->kesiswaan_status !== 'rejected'),
+        ->visible(fn() => $this->record->kesiswaan_status === 'pending'),
     ];
   }
 }

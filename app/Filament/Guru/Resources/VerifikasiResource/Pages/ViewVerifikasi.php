@@ -49,6 +49,38 @@ class ViewVerifikasi extends ViewRecord
           ])
           ->columns(3),
 
+        Infolists\Components\Section::make('Validasi Kesiswaan')
+          ->schema([
+            Infolists\Components\TextEntry::make('kesiswaan_status')
+              ->label('Status Validasi')
+              ->badge()
+              ->color(fn(string $state): string => match ($state) {
+                'pending' => 'gray',
+                'validated' => 'success',
+                'rejected' => 'danger',
+                default => 'gray',
+              })
+              ->formatStateUsing(fn(string $state): string => match ($state) {
+                'pending' => 'Menunggu Validasi',
+                'validated' => 'Divalidasi',
+                'rejected' => 'Ditolak Kesiswaan',
+                default => $state,
+              }),
+            Infolists\Components\TextEntry::make('validator.name')
+              ->label('Divalidasi Oleh')
+              ->placeholder('-'),
+            Infolists\Components\TextEntry::make('validated_at')
+              ->label('Waktu Validasi')
+              ->dateTime('d M Y, H:i')
+              ->placeholder('-'),
+            Infolists\Components\TextEntry::make('catatan_kesiswaan')
+              ->label('Catatan Kesiswaan')
+              ->placeholder('Tidak ada catatan')
+              ->columnSpanFull(),
+          ])
+          ->columns(3)
+          ->visible(fn() => $this->record->status === 'verified'),
+
         Infolists\Components\Section::make('Isian Formulir')
           ->schema([
             Infolists\Components\ViewEntry::make('data')
@@ -81,11 +113,13 @@ class ViewVerifikasi extends ViewRecord
             'verified_at' => now(),
             'catatan_guru' => $data['catatan_guru'] ?? null,
           ]);
+          \Illuminate\Support\Facades\Cache::forget("submissions_{$this->record->user_id}");
+          \Illuminate\Support\Facades\Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
           \Filament\Notifications\Notification::make()
             ->title('Formulir berhasil diverifikasi')
             ->success()
             ->send();
-          $this->refreshFormData(['status', 'verified_by', 'verified_at', 'catatan_guru']);
+          return redirect(VerifikasiResource::getUrl('index'));
         })
         ->visible(fn() => $this->record->status !== 'verified'),
 
@@ -109,13 +143,15 @@ class ViewVerifikasi extends ViewRecord
             'verified_at' => now(),
             'catatan_guru' => $data['catatan_guru'],
           ]);
+          \Illuminate\Support\Facades\Cache::forget("submissions_{$this->record->user_id}");
+          \Illuminate\Support\Facades\Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
           \Filament\Notifications\Notification::make()
             ->title('Formulir ditolak')
             ->warning()
             ->send();
-          $this->refreshFormData(['status', 'verified_by', 'verified_at', 'catatan_guru']);
+          return redirect(VerifikasiResource::getUrl('index'));
         })
-        ->visible(fn() => $this->record->status !== 'rejected'),
+        ->visible(fn() => $this->record->status === 'pending'),
     ];
   }
 }

@@ -148,8 +148,7 @@ function ramadhanDashboard() {
             rowatib: "",
             tahajud: "",
             dhuha: "",
-            tadarus_surat: "",
-            tadarus_ayat: "",
+            tadarus_entries: [{ surat: "", ayat: "" }],
             kegiatan: {
                 dzikir_pagi: false,
                 olahraga: false,
@@ -255,7 +254,15 @@ function ramadhanDashboard() {
                 const isCompleted = this.submittedDays.includes(hijriDay);
                 const dayStatus = this.submissionStatuses[hijriDay];
                 const statusStr = dayStatus ? dayStatus.status : "";
-                const isVerified = isCompleted && statusStr === "verified";
+                const kesiswaanStr = dayStatus
+                    ? dayStatus.kesiswaan_status || ""
+                    : "";
+                const isValidated =
+                    isCompleted &&
+                    statusStr === "verified" &&
+                    kesiswaanStr === "validated";
+                const isVerified =
+                    isCompleted && statusStr === "verified" && !isValidated;
                 const isPending =
                     isCompleted &&
                     (statusStr === "pending" || statusStr === "");
@@ -270,6 +277,7 @@ function ramadhanDashboard() {
                     dayOfWeek: date.getDay(),
                     isToday: isToday,
                     isCompleted: isCompleted,
+                    isValidated: isValidated,
                     isVerified: isVerified,
                     isPending: isPending,
                     isRejected: isRejected,
@@ -1583,8 +1591,7 @@ function ramadhanDashboard() {
                 rowatib: "",
                 tahajud: "",
                 dhuha: "",
-                tadarus_surat: "",
-                tadarus_ayat: "",
+                tadarus_entries: [{ surat: "", ayat: "" }],
                 kegiatan: {
                     dzikir_pagi: false,
                     olahraga: false,
@@ -1649,6 +1656,10 @@ function ramadhanDashboard() {
                                 self.submissionStatuses[sub.hari_ke] = {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
+                                    kesiswaan_status:
+                                        sub.kesiswaan_status || "pending",
+                                    catatan_kesiswaan:
+                                        sub.catatan_kesiswaan || "",
                                 };
                             });
                         }
@@ -1660,12 +1671,32 @@ function ramadhanDashboard() {
                 });
         },
         getProgressPercent() {
-            return Math.round((this.getVerifiedCount() / 30) * 100);
+            return Math.round(
+                ((this.getVerifiedCount() + this.getValidatedCount()) / 30) *
+                    100,
+            );
+        },
+        getValidatedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                if (
+                    this.submissionStatuses[key].status === "verified" &&
+                    this.submissionStatuses[key].kesiswaan_status ===
+                        "validated"
+                )
+                    count++;
+            }
+            return count;
         },
         getVerifiedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
-                if (this.submissionStatuses[key].status === "verified") count++;
+                if (
+                    this.submissionStatuses[key].status === "verified" &&
+                    this.submissionStatuses[key].kesiswaan_status !==
+                        "validated"
+                )
+                    count++;
             }
             return count;
         },
@@ -1686,6 +1717,9 @@ function ramadhanDashboard() {
         },
         getVerifiedPercent() {
             return Math.round((this.getVerifiedCount() / 30) * 100);
+        },
+        getValidatedPercent() {
+            return Math.round((this.getValidatedCount() / 30) * 100);
         },
         getPendingPercent() {
             return Math.round((this.getPendingCount() / 30) * 100);

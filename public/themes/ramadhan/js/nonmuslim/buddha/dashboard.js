@@ -223,7 +223,15 @@ function buddhaDashboard() {
                     inRange && this.submittedDays.includes(hijriDay);
                 var dayStatus = this.submissionStatuses[hijriDay];
                 var statusStr = dayStatus ? dayStatus.status : "";
-                var isVerified = isCompleted && statusStr === "verified";
+                var kesiswaanStr = dayStatus
+                    ? dayStatus.kesiswaan_status || ""
+                    : "";
+                var isValidated =
+                    isCompleted &&
+                    statusStr === "verified" &&
+                    kesiswaanStr === "validated";
+                var isVerified =
+                    isCompleted && statusStr === "verified" && !isValidated;
                 var isPending =
                     isCompleted &&
                     (statusStr === "pending" || statusStr === "");
@@ -237,6 +245,7 @@ function buddhaDashboard() {
                     isToday: isToday,
                     isPast: isPast,
                     isCompleted: isCompleted,
+                    isValidated: isValidated,
                     isVerified: isVerified,
                     isPending: isPending,
                     isRejected: isRejected,
@@ -299,6 +308,10 @@ function buddhaDashboard() {
                                 self.submissionStatuses[sub.hari_ke] = {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
+                                    kesiswaan_status:
+                                        sub.kesiswaan_status || "pending",
+                                    catatan_kesiswaan:
+                                        sub.catatan_kesiswaan || "",
                                 };
                             });
                         }
@@ -310,12 +323,32 @@ function buddhaDashboard() {
                 });
         },
         getProgressPercent() {
-            return Math.round((this.getVerifiedCount() / 30) * 100);
+            return Math.round(
+                ((this.getVerifiedCount() + this.getValidatedCount()) / 30) *
+                    100,
+            );
+        },
+        getValidatedCount() {
+            var count = 0;
+            for (var key in this.submissionStatuses) {
+                var s = this.submissionStatuses[key];
+                if (
+                    s.status === "verified" &&
+                    s.kesiswaan_status === "validated"
+                )
+                    count++;
+            }
+            return count;
         },
         getVerifiedCount() {
             var count = 0;
             for (var key in this.submissionStatuses) {
-                if (this.submissionStatuses[key].status === "verified") count++;
+                var s = this.submissionStatuses[key];
+                if (
+                    s.status === "verified" &&
+                    s.kesiswaan_status !== "validated"
+                )
+                    count++;
             }
             return count;
         },
@@ -342,6 +375,9 @@ function buddhaDashboard() {
         },
         getRejectedPercent() {
             return Math.round((this.getRejectedCount() / 30) * 100);
+        },
+        getValidatedPercent() {
+            return Math.round((this.getValidatedCount() / 30) * 100);
         },
         loadDoas() {
             this.allDuas = [

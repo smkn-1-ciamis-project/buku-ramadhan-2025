@@ -35,6 +35,8 @@ function formulirNonMuslim() {
         submissionStatuses: {},
         currentDayStatus: "",
         currentDayNote: "",
+        currentDayKesiswaanStatus: "",
+        currentDayKesiswaanNote: "",
         currentDay: 1,
         isSunday: false,
         configLoaded: false,
@@ -155,7 +157,22 @@ function formulirNonMuslim() {
             this.loadSubmittedDays();
             this.loadFormConfig();
             this.syncFromServer();
-            this.formDay = this.getFirstUnfilledDay();
+            var urlParams = new URLSearchParams(window.location.search);
+            var requestedDay = urlParams.get("hari");
+            if (requestedDay) {
+                requestedDay = parseInt(requestedDay);
+                if (
+                    requestedDay >= 1 &&
+                    requestedDay <= 30 &&
+                    requestedDay <= this.currentDay
+                ) {
+                    this.formDay = requestedDay;
+                } else {
+                    this.formDay = this.getFirstUnfilledDay();
+                }
+            } else {
+                this.formDay = this.getFirstUnfilledDay();
+            }
             this.checkFormSubmitted();
         },
         loadFormConfig() {
@@ -457,6 +474,12 @@ function formulirNonMuslim() {
             var dayStatus = this.submissionStatuses[this.formDay];
             this.currentDayStatus = dayStatus ? dayStatus.status : "";
             this.currentDayNote = dayStatus ? dayStatus.catatan_guru || "" : "";
+            this.currentDayKesiswaanStatus = dayStatus
+                ? dayStatus.kesiswaan_status || ""
+                : "";
+            this.currentDayKesiswaanNote = dayStatus
+                ? dayStatus.catatan_kesiswaan || ""
+                : "";
             if (this.currentDayStatus === "rejected") {
                 this.formSubmitted = false;
             }
@@ -602,6 +625,9 @@ function formulirNonMuslim() {
             }, 600);
         },
         editForm() {
+            if (this.currentDayKesiswaanStatus === "validated") {
+                return;
+            }
             this.formSubmitted = false;
         },
         syncFromServer() {
@@ -627,6 +653,10 @@ function formulirNonMuslim() {
                                 self.submissionStatuses[sub.hari_ke] = {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
+                                    kesiswaan_status:
+                                        sub.kesiswaan_status || "pending",
+                                    catatan_kesiswaan:
+                                        sub.catatan_kesiswaan || "",
                                 };
                                 var key = self._lsKey(
                                     "nonmuslim_form_day_" + sub.hari_ke,
@@ -639,7 +669,22 @@ function formulirNonMuslim() {
                                 }
                             });
                         }
-                        self.formDay = self.getFirstUnfilledDay();
+                        var urlParams = new URLSearchParams(
+                            window.location.search,
+                        );
+                        var requestedHari = urlParams.get("hari");
+                        if (requestedHari) {
+                            requestedHari = parseInt(requestedHari);
+                            if (
+                                requestedHari >= 1 &&
+                                requestedHari <= 30 &&
+                                requestedHari <= self.currentDay
+                            ) {
+                                self.formDay = requestedHari;
+                            }
+                        } else {
+                            self.formDay = self.getFirstUnfilledDay();
+                        }
                         self.checkFormSubmitted();
                     }
                 })

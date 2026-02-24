@@ -10,6 +10,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class VerifikasiResource extends Resource
 {
@@ -41,7 +42,7 @@ class VerifikasiResource extends Resource
         $q->whereIn('kelas_id', $kelasIds)
           ->whereHas('role_user', fn(Builder $rq) => $rq->where('name', 'Siswa'));
       })
-      ->with(['user', 'verifier']);
+      ->with(['user', 'verifier', 'validator']);
   }
 
   public static function table(Table $table): Table
@@ -87,8 +88,26 @@ class VerifikasiResource extends Resource
           ->color('gray')
           ->sortable()
           ->placeholder('-'),
+        Tables\Columns\TextColumn::make('kesiswaan_status')
+          ->label('Validasi Kesiswaan')
+          ->badge()
+          ->color(fn(string $state): string => match ($state) {
+            'pending' => 'gray',
+            'validated' => 'success',
+            'rejected' => 'danger',
+            default => 'gray',
+          })
+          ->formatStateUsing(fn(string $state): string => match ($state) {
+            'pending' => 'Menunggu',
+            'validated' => 'Divalidasi',
+            'rejected' => 'Ditolak',
+            default => $state,
+          })
+          ->sortable()
+          ->toggleable(),
       ])
-      ->defaultSort('created_at', 'desc')
+      ->defaultSort('status', 'asc')
+      ->modifyQueryUsing(fn(Builder $query) => $query->reorder()->orderByRaw("FIELD(status, 'pending', 'rejected', 'verified')")->orderBy('created_at', 'desc'))
       ->filters([
         Tables\Filters\SelectFilter::make('status')
           ->label('Status')
@@ -125,6 +144,8 @@ class VerifikasiResource extends Resource
                 'verified_at' => now(),
                 'catatan_guru' => $data['catatan_guru'] ?? null,
               ]);
+              Cache::forget("submissions_{$record->user_id}");
+              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
               \Filament\Notifications\Notification::make()
                 ->title('Formulir berhasil diverifikasi')
                 ->success()
@@ -153,12 +174,14 @@ class VerifikasiResource extends Resource
                 'verified_at' => now(),
                 'catatan_guru' => $data['catatan_guru'],
               ]);
+              Cache::forget("submissions_{$record->user_id}");
+              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
               \Filament\Notifications\Notification::make()
                 ->title('Formulir ditolak')
                 ->warning()
                 ->send();
             })
-            ->visible(fn(FormSubmission $record) => $record->status !== 'rejected'),
+            ->visible(fn(FormSubmission $record) => $record->status === 'pending'),
           Tables\Actions\Action::make('resetStatus')
             ->label('Reset ke Pending')
             ->icon('heroicon-o-arrow-path')
@@ -173,7 +196,14 @@ class VerifikasiResource extends Resource
                 'verified_by' => null,
                 'verified_at' => null,
                 'catatan_guru' => null,
+                // Also reset kesiswaan validation
+                'kesiswaan_status' => 'pending',
+                'validated_by' => null,
+                'validated_at' => null,
+                'catatan_kesiswaan' => null,
               ]);
+              Cache::forget("submissions_{$record->user_id}");
+              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
               \Filament\Notifications\Notification::make()
                 ->title('Status direset ke pending')
                 ->info()
@@ -203,6 +233,8 @@ class VerifikasiResource extends Resource
                     'verified_by' => Auth::id(),
                     'verified_at' => now(),
                   ]);
+                  Cache::forget("submissions_{$record->user_id}");
+                  Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
                   $count++;
                 }
               }

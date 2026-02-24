@@ -151,6 +151,8 @@ function formulirHarian() {
         submissionStatuses: {},
         currentDayStatus: "",
         currentDayNote: "",
+        currentDayKesiswaanStatus: "",
+        currentDayKesiswaanNote: "",
         configLoaded: false,
         formDisabled: false,
         formDisabledMessage: "",
@@ -743,6 +745,12 @@ function formulirHarian() {
             var dayStatus = this.submissionStatuses[this.formDay];
             this.currentDayStatus = dayStatus ? dayStatus.status : "";
             this.currentDayNote = dayStatus ? dayStatus.catatan_guru || "" : "";
+            this.currentDayKesiswaanStatus = dayStatus
+                ? dayStatus.kesiswaan_status || ""
+                : "";
+            this.currentDayKesiswaanNote = dayStatus
+                ? dayStatus.catatan_kesiswaan || ""
+                : "";
             if (this.currentDayStatus === "rejected") {
                 this.formSubmitted = false;
             }
@@ -1102,6 +1110,9 @@ function formulirHarian() {
             }, 600);
         },
         editForm() {
+            if (this.currentDayKesiswaanStatus === "validated") {
+                return; // Cannot edit after kesiswaan validation
+            }
             this.formSubmitted = false;
         },
         syncFromServer() {
@@ -1129,6 +1140,10 @@ function formulirHarian() {
                                 self.submissionStatuses[sub.hari_ke] = {
                                     status: sub.status || "pending",
                                     catatan_guru: sub.catatan_guru || "",
+                                    kesiswaan_status:
+                                        sub.kesiswaan_status || "pending",
+                                    catatan_kesiswaan:
+                                        sub.catatan_kesiswaan || "",
                                 };
                                 var key = self._lsKey(
                                     "ramadhan_form_day_" + sub.hari_ke,
@@ -1145,19 +1160,20 @@ function formulirHarian() {
                             window.location.search,
                         );
                         var requestedHari = urlParams.get("hari");
-                        if (!requestedHari) {
-                            self.formDay = self.getFirstUnfilledDay();
-                        } else {
+                        if (requestedHari) {
                             requestedHari = parseInt(requestedHari);
                             if (
                                 requestedHari >= 1 &&
                                 requestedHari <= 30 &&
-                                self.submittedDays.includes(requestedHari)
+                                requestedHari <= self.ramadhanDay
                             ) {
                                 self.formDay = requestedHari;
                             }
+                        } else {
+                            self.formDay = self.getFirstUnfilledDay();
                         }
                         self.checkFormSubmitted();
+                        self._rebuildTadarusUI();
                     }
                 })
                 .catch(function (e) {

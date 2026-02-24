@@ -233,16 +233,32 @@
     <div class="fsd-card">
       <div class="fsd-card-header"><h3>Tadarus Al-Quran</h3></div>
       <div class="fsd-card-body">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <div>
-            <span class="fsd-label">Surat</span>
-            <span class="fsd-value">{{ $data['tadarus_surat'] ?? 'Belum diisi' }}</span>
-          </div>
-          <div>
-            <span class="fsd-label">Ayat</span>
-            <span class="fsd-value">{{ $data['tadarus_ayat'] ?? 'Belum diisi' }}</span>
-          </div>
-        </div>
+        @php
+          $tadarusEntries = $data['tadarus_entries'] ?? [];
+          // Fallback: support old flat key format
+          if (empty($tadarusEntries) && (!empty($data['tadarus_surat'] ?? '') || !empty($data['tadarus_ayat'] ?? ''))) {
+              $tadarusEntries = [['surat' => $data['tadarus_surat'] ?? '', 'ayat' => $data['tadarus_ayat'] ?? '']];
+          }
+          // Filter out empty entries
+          $tadarusEntries = array_filter($tadarusEntries, fn($e) => !empty($e['surat'] ?? '') || !empty($e['ayat'] ?? ''));
+        @endphp
+
+        @if(count($tadarusEntries) > 0)
+          @foreach($tadarusEntries as $idx => $entry)
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;{{ !$loop->last ? ' margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.08);' : '' }}">
+              <div>
+                <span class="fsd-label">Surat{{ count($tadarusEntries) > 1 ? ' ' . ($idx + 1) : '' }}</span>
+                <span class="fsd-value">{{ $entry['surat'] ?: 'Belum diisi' }}</span>
+              </div>
+              <div>
+                <span class="fsd-label">Ayat{{ count($tadarusEntries) > 1 ? ' ' . ($idx + 1) : '' }}</span>
+                <span class="fsd-value">{{ $entry['ayat'] ?: 'Belum diisi' }}</span>
+              </div>
+            </div>
+          @endforeach
+        @else
+          <p class="fsd-empty">Belum diisi</p>
+        @endif
       </div>
     </div>
 

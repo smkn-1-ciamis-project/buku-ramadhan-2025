@@ -48,7 +48,7 @@
             <div class="formulir-content">
 
                 {{-- Backfill warning --}}
-                <div x-show="formDay < currentDay" x-cloak
+                <div x-show="formDay < currentDay && getMissedCount() > 0" x-cloak
                      class="f-backfill-banner">
                     <div class="f-backfill-icon">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -75,19 +75,55 @@
                     </div>
                 </div>
 
-                {{-- Status badge --}}
-                <div x-show="formSubmitted && currentDayStatus !== 'rejected'" class="f-status-banner">
+                {{-- Status badge - Divalidasi Kesiswaan (cannot edit) --}}
+                <div x-show="formSubmitted && currentDayKesiswaanStatus === 'validated'" x-cloak class="f-status-banner" style="border-color:#059669;background:linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%);">
+                    <div class="f-status-icon" style="color:#059669;">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <div class="f-status-text">
+                        <p class="f-status-title" style="color:#065f46;">Formulir sudah divalidasi kesiswaan</p>
+                        <p class="f-status-sub" style="color:#047857;">Formulir ini telah final dan tidak dapat diubah lagi</p>
+                    </div>
+                </div>
+
+                {{-- Status badge - Kesiswaan Rejected --}}
+                <div x-show="formSubmitted && currentDayKesiswaanStatus === 'rejected' && currentDayStatus === 'verified'" x-cloak style="background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%);border:1.5px solid #fbbf24;border-radius:16px;padding:28px 24px 24px;margin-bottom:16px;text-align:center;">
+                    <div style="width:60px;height:60px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 16px rgba(245,158,11,.35);">
+                        <svg width="30" height="30" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+                    </div>
+                    <p style="margin:0 0 6px;font-weight:700;color:#92400e;font-size:17px;letter-spacing:-.2px;">Formulir Ditolak oleh Kesiswaan</p>
+                    <p style="margin:0 0 18px;color:#b45309;font-size:13px;">Hubungi guru wali untuk informasi lebih lanjut.</p>
+                    <div x-show="currentDayKesiswaanNote" style="background:#fff;border:1.5px solid #fbbf24;border-radius:10px;padding:14px 16px;text-align:left;">
+                        <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.8px;">Catatan Kesiswaan</p>
+                        <p style="margin:0;color:#b45309;font-size:13px;line-height:1.6;" x-text="currentDayKesiswaanNote"></p>
+                    </div>
+                </div>
+
+                {{-- Status badge - Diverifikasi Guru (can still edit) --}}
+                <div x-show="formSubmitted && currentDayStatus === 'verified' && currentDayKesiswaanStatus !== 'validated' && currentDayKesiswaanStatus !== 'rejected'" class="f-status-banner">
                     <div class="f-status-icon">
                         <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
                     </div>
                     <div class="f-status-text">
-                        <p class="f-status-title" x-text="currentDayStatus === 'verified' ? 'Formulir sudah diverifikasi guru' : 'Formulir hari ini sudah dikirim'"></p>
-                        <p class="f-status-sub" x-text="currentDayStatus === 'verified' ? 'Formulir ini telah disetujui oleh guru' : 'Kamu bisa mengedit kembali jika perlu'"></p>
+                        <p class="f-status-title">Formulir sudah diverifikasi guru</p>
+                        <p class="f-status-sub">Menunggu validasi kesiswaan — kamu masih bisa mengedit</p>
                     </div>
-                    <button x-show="currentDayStatus !== 'verified'" @click="editForm()" class="f-status-edit-btn">Edit</button>
+                    <button @click="editForm()" class="f-status-edit-btn">Edit</button>
                 </div>
 
-                {{-- Rejection banner --}}
+                {{-- Status badge - Pending (sudah dikirim, belum diverifikasi) --}}
+                <div x-show="formSubmitted && currentDayStatus === 'pending'" class="f-status-banner">
+                    <div class="f-status-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <div class="f-status-text">
+                        <p class="f-status-title">Formulir hari ini sudah dikirim</p>
+                        <p class="f-status-sub">Kamu bisa mengedit kembali jika perlu</p>
+                    </div>
+                    <button @click="editForm()" class="f-status-edit-btn">Edit</button>
+                </div>
+
+                {{-- Rejection banner - Guru --}}
                 <div x-show="currentDayStatus === 'rejected'" x-cloak style="background:linear-gradient(180deg,#fef2f2 0%,#fff5f5 100%);border:1.5px solid #fca5a5;border-radius:16px;padding:28px 24px 24px;margin-bottom:16px;text-align:center;">
                     <div style="width:60px;height:60px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 16px rgba(239,68,68,.35);">
                         <svg width="30" height="30" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>

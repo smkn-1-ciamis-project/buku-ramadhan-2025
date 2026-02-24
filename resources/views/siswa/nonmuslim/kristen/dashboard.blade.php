@@ -390,6 +390,7 @@
                                         <div class="cal-cell"
                                             :class="{
                                                 'cal-cell-today':     item.isToday,
+                                                'cal-cell-validated': item.isValidated && !item.isToday,
                                                 'cal-cell-done':      item.isVerified && !item.isToday,
                                                 'cal-cell-pending':   item.isPending && !item.isToday,
                                                 'cal-cell-rejected':  item.isRejected && !item.isToday,
@@ -404,6 +405,12 @@
                                                 <div class="cal-cell-inner">
                                                     <template x-if="item.isToday">
                                                         <span class="cal-today-label">Hari ini</span>
+                                                    </template>
+                                                    {{-- Validated double-check (kesiswaan) --}}
+                                                    <template x-if="item.isValidated && !item.isToday">
+                                                        <div class="cal-check-icon" style="color:#047857;">
+                                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+                                                        </div>
                                                     </template>
                                                     {{-- Verified checkmark --}}
                                                     <template x-if="item.isVerified && !item.isToday">
@@ -444,6 +451,10 @@
                                         <span class="cal-legend-text">Hari ini</span>
                                     </div>
                                     <div class="cal-legend-item">
+                                        <div class="cal-legend-dot cal-legend-dot-validated"></div>
+                                        <span class="cal-legend-text">Divalidasi</span>
+                                    </div>
+                                    <div class="cal-legend-item">
                                         <div class="cal-legend-dot cal-legend-dot-done"></div>
                                         <span class="cal-legend-text">Diverifikasi</span>
                                     </div>
@@ -476,25 +487,31 @@
                                     </div>
                                     <div>
                                         <h4 class="progress-title">Progress Kegiatan</h4>
-                                        <p class="progress-subtitle" x-text="getVerifiedCount() + ' diterima dari 30 hari'"></p>
+                                        <p class="progress-subtitle" x-text="(getVerifiedCount() + getValidatedCount()) + ' diterima dari 30 hari'"></p>
                                     </div>
                                 </div>
                                 <div class="progress-percent" x-text="getProgressPercent() + '%'"></div>
                             </div>
                             <div class="progress-bar-track">
+                                <div class="progress-bar-validated" :style="'width:'+getValidatedPercent()+'%'"></div>
                                 <div class="progress-bar-verified" :style="'width:'+getVerifiedPercent()+'%'"></div>
                                 <div class="progress-bar-pending" :style="'width:'+getPendingPercent()+'%'"></div>
                                 <div class="progress-bar-rejected" :style="'width:'+getRejectedPercent()+'%'"></div>
                             </div>
                             <div class="progress-bar-legend">
-                                <span class="legend-item"><span class="legend-dot legend-dot-verified"></span>Diterima</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-validated"></span>Divalidasi</span>
+                                <span class="legend-item"><span class="legend-dot legend-dot-verified"></span>Diverifikasi</span>
                                 <span class="legend-item"><span class="legend-dot legend-dot-pending"></span>Menunggu</span>
                                 <span class="legend-item"><span class="legend-dot legend-dot-rejected"></span>Ditolak</span>
                             </div>
                             <div class="progress-stats" style="grid-template-columns:repeat(5,1fr)">
                                 <div class="progress-stat">
+                                    <span class="progress-stat-num" style="color:#047857" x-text="getValidatedCount()"></span>
+                                    <span class="progress-stat-label">Divalidasi</span>
+                                </div>
+                                <div class="progress-stat">
                                     <span class="progress-stat-num" style="color:#16a34a" x-text="getVerifiedCount()"></span>
-                                    <span class="progress-stat-label">Diterima</span>
+                                    <span class="progress-stat-label">Diverifikasi</span>
                                 </div>
                                 <div class="progress-stat">
                                     <span class="progress-stat-num" style="color:#d97706" x-text="getPendingCount()"></span>
@@ -503,10 +520,6 @@
                                 <div class="progress-stat">
                                     <span class="progress-stat-num" style="color:#dc2626" x-text="getRejectedCount()"></span>
                                     <span class="progress-stat-label">Ditolak</span>
-                                </div>
-                                <div class="progress-stat">
-                                    <span class="progress-stat-num" x-text="ramadhanDay"></span>
-                                    <span class="progress-stat-label">Hari ke</span>
                                 </div>
                                 <div class="progress-stat">
                                     <span class="progress-stat-num" x-text="calendarDays.filter(d => d.isPastUnfilled).length"></span>

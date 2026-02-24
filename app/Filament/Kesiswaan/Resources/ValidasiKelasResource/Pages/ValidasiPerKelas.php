@@ -1,80 +1,84 @@
 <?php
 
-namespace App\Filament\Kesiswaan\Resources;
+namespace App\Filament\Kesiswaan\Resources\ValidasiKelasResource\Pages;
 
-use App\Filament\Kesiswaan\Resources\ValidasiResource\Pages;
+use App\Filament\Kesiswaan\Resources\ValidasiKelasResource;
+use App\Filament\Kesiswaan\Resources\ValidasiResource;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
+use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Resources\Resource;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Tables;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
-class ValidasiResource extends Resource
+class ValidasiPerKelas extends ViewRecord implements HasTable
 {
-  protected static ?string $model = FormSubmission::class;
+  use InteractsWithTable;
 
-  protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-  protected static ?string $navigationLabel = 'Validasi Formulir';
-  protected static ?string $navigationGroup = 'Validasi';
-  protected static ?string $modelLabel = 'Formulir';
-  protected static ?string $pluralModelLabel = 'Formulir';
-  protected static ?string $slug = 'validasi-formulir';
-  protected static ?int $navigationSort = 2;
+  protected static string $resource = ValidasiKelasResource::class;
 
-  public static function shouldRegisterNavigation(): bool
+  protected static string $view = 'filament.kesiswaan.pages.validasi-per-kelas';
+
+  public function mount(int|string $record): void
   {
-    // Hidden — navigasi dipindahkan ke ValidasiKelasResource (per kelas)
-    return false;
+    $this->record = $this->resolveRecord($record);
+    $this->record->load(['wali', 'siswa']);
+
+    $this->authorizeAccess();
   }
 
-  public static function getNavigationBadge(): ?string
+  public function getTitle(): string|Htmlable
   {
-    // Badge = jumlah formulir yang sudah diverifikasi guru tapi belum divalidasi kesiswaan
-    $count = FormSubmission::where('status', 'verified')
-      ->where('kesiswaan_status', 'pending')
-      ->count();
-    return $count > 0 ? (string) $count : null;
+    return "Validasi — {$this->record->nama}";
   }
 
-  public static function getNavigationBadgeColor(): ?string
+  public function getHeading(): string|Htmlable
   {
-    return 'warning';
+    return "Validasi — {$this->record->nama}";
   }
 
-  /**
-   * Kesiswaan hanya melihat formulir yang SUDAH diverifikasi oleh guru.
-   */
-  public static function getEloquentQuery(): Builder
+  public function getSubheading(): ?string
   {
-    return parent::getEloquentQuery()
-      ->where('status', 'verified')
-      ->whereHas('user', function (Builder $q) {
-        $q->whereHas('role_user', fn(Builder $rq) => $rq->where('name', 'Siswa'));
-      })
-      ->with(['user.kelas', 'user.role_user', 'verifier', 'validator']);
+    $wali = $this->record->wali?->name ?? '-';
+    $total = $this->record->siswa->count();
+    return "Wali Kelas: {$wali}  •  Total Siswa: {$total}";
   }
 
-  public static function table(Table $table): Table
+  public function getBreadcrumbs(): array
   {
+    return [
+      ValidasiKelasResource::getUrl() => 'Validasi Per Kelas',
+      '#' => $this->record->nama,
+    ];
+  }
+
+  public function table(Table $table): Table
+  {
+    $siswaIds = $this->record->siswa->pluck('id');
+
     return $table
+      ->query(
+        FormSubmission::query()
+          ->where('status', 'verified')
+          ->whereIn('user_id', $siswaIds)
+          ->with(['user.kelas', 'user.role_user', 'verifier', 'validator'])
+      )
       ->columns([
         Tables\Columns\TextColumn::make('user.name')
           ->label('Nama Siswa')
           ->searchable()
-          ->sortable()
-          ->description(fn($record) => $record->user?->kelas?->nama ?? '-'),
+          ->sortable(),
         Tables\Columns\TextColumn::make('user.nisn')
           ->label('NISN')
           ->searchable()
           ->toggleable(),
-        Tables\Columns\TextColumn::make('user.kelas.nama')
-          ->label('Kelas')
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('hari_ke')
           ->label('Hari Ke')
           ->sortable()
@@ -86,7 +90,7 @@ class ValidasiResource extends Resource
           ->placeholder('-')
           ->toggleable(),
         Tables\Columns\TextColumn::make('verified_at')
-          ->label('Tgl Verifikasi Guru')
+          ->label('Tgl Verifikasi')
           ->since()
           ->tooltip(fn($record) => $record->verified_at?->translatedFormat('d M Y, H:i'))
           ->color('gray')
@@ -131,11 +135,6 @@ class ValidasiResource extends Resource
             'validated' => 'Sudah Divalidasi',
             'rejected' => 'Ditolak',
           ]),
-        Tables\Filters\SelectFilter::make('kelas')
-          ->label('Kelas')
-          ->relationship('user.kelas', 'nama')
-          ->searchable()
-          ->preload(),
         Tables\Filters\SelectFilter::make('hari_ke')
           ->label('Hari Ke')
           ->options(
@@ -144,10 +143,11 @@ class ValidasiResource extends Resource
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
+          Tables\Actions\Action::make('view')
             ->label('Lihat Detail')
             ->icon('heroicon-o-eye')
-            ->color('info'),
+            ->color('info')
+            ->url(fn(FormSubmission $record) => ValidasiResource::getUrl('view', ['record' => $record])),
           Tables\Actions\Action::make('validate')
             ->label('Validasi')
             ->icon('heroicon-o-shield-check')
@@ -308,24 +308,10 @@ class ValidasiResource extends Resource
             })
             ->deselectRecordsAfterCompletion(),
         ]),
-      ]);
-  }
-
-  public static function getRelations(): array
-  {
-    return [];
-  }
-
-  public static function getPages(): array
-  {
-    return [
-      'index' => Pages\ListValidasi::route('/'),
-      'view'  => Pages\ViewValidasi::route('/{record}'),
-    ];
-  }
-
-  public static function canCreate(): bool
-  {
-    return false;
+      ])
+      ->recordUrl(fn(FormSubmission $record) => ValidasiResource::getUrl('view', ['record' => $record]))
+      ->emptyStateHeading('Belum ada formulir terverifikasi')
+      ->emptyStateDescription('Formulir siswa di kelas ini belum ada yang diverifikasi oleh guru.')
+      ->emptyStateIcon('heroicon-o-clipboard-document');
   }
 }

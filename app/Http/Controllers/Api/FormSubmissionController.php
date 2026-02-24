@@ -37,6 +37,18 @@ class FormSubmissionController extends Controller
       ], 403);
     }
 
+    // Block re-submission if already validated by kesiswaan
+    $existing = FormSubmission::where('user_id', $user->id)
+      ->where('hari_ke', $request->hari_ke)
+      ->first();
+
+    if ($existing && $existing->kesiswaan_status === 'validated') {
+      return response()->json([
+        'success' => false,
+        'message' => 'Formulir hari ke-' . $request->hari_ke . ' sudah divalidasi oleh kesiswaan dan tidak dapat diubah.',
+      ], 403);
+    }
+
     $submission = FormSubmission::updateOrCreate(
       [
         'user_id' => $user->id,
@@ -48,6 +60,11 @@ class FormSubmissionController extends Controller
         'verified_by' => null,
         'verified_at' => null,
         'catatan_guru' => null,
+        // Reset kesiswaan validation on re-submit
+        'kesiswaan_status' => 'pending',
+        'validated_by' => null,
+        'validated_at' => null,
+        'catatan_kesiswaan' => null,
       ]
     );
 

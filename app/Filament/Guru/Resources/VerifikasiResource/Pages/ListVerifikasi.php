@@ -12,6 +12,8 @@ class ListVerifikasi extends ListRecords
 {
   protected static string $resource = VerifikasiResource::class;
 
+  private const TABS_PER_PAGE = 7;
+
   protected function getHeaderActions(): array
   {
     return [];
@@ -22,9 +24,8 @@ class ListVerifikasi extends ListRecords
     // 1 Ramadhan 1447H = 19 Feb 2026
     $ramadhanStart = Carbon::create(2026, 2, 19);
     $today = Carbon::today();
-    $maxDay = max(0, min(30, $ramadhanStart->diffInDays($today) + 1));
+    $maxDay = max(0, (int) min(30, $ramadhanStart->diffInDays($today) + 1));
 
-    // Jika belum masuk Ramadhan, tampilkan tab "Semua" saja
     if ($maxDay < 1) {
       return [
         'semua' => Tab::make('Semua'),
@@ -33,15 +34,25 @@ class ListVerifikasi extends ListRecords
 
     $baseQuery = fn() => VerifikasiResource::getEloquentQuery();
 
+    // Determine which page of tabs to show (from URL query param)
+    $tabPage = (int) request()->query('tab_page', 1);
+    $totalPages = (int) ceil($maxDay / self::TABS_PER_PAGE);
+    $tabPage = max(1, min($tabPage, $totalPages));
+
+    // Calculate range: show days descending, paginated
+    // Page 1 = most recent days, Page N = oldest days
+    $endDay = $maxDay - (($tabPage - 1) * self::TABS_PER_PAGE);
+    $startDay = max(1, $endDay - self::TABS_PER_PAGE + 1);
+
     $tabs = [
       'semua' => Tab::make('Semua')
         ->badge(fn() => $baseQuery()->count())
         ->badgeColor('primary'),
     ];
 
-    // Tab bertahap: hanya muncul sampai hari yang sudah berjalan
-    for ($day = $maxDay; $day >= 1; $day--) {
-      $d = $day; // closure capture
+    // Daily tabs for current page
+    for ($day = $endDay; $day >= $startDay; $day--) {
+      $d = $day;
       $tabs["hari_{$d}"] = Tab::make("Hari ke-{$d}")
         ->modifyQueryUsing(fn(Builder $query) => $query->where('hari_ke', $d))
         ->badge(fn() => $baseQuery()->where('hari_ke', $d)->count())
@@ -52,6 +63,32 @@ class ListVerifikasi extends ListRecords
         });
     }
 
+    // Navigation tabs for pagination (if more than 1 page)
+    if ($totalPages > 1) {
+      if ($tabPage < $totalPages) {
+        $olderPage = $tabPage + 1;
+        $tabs['older'] = Tab::make("← Hari {$startDay} ke bawah")
+          ->modifyQueryUsing(fn(Builder $q) => $q->where('hari_ke', '<=', $startDay - 1))
+          ->badge(fn() => $baseQuery()->where('hari_ke', '<=', $startDay - 1)->count())
+          ->badgeColor('gray');
+      }
+      if ($tabPage > 1) {
+        $newerPage = $tabPage - 1;
+        $tabs['newer'] = Tab::make("Hari {$endDay} ke atas →")
+          ->modifyQueryUsing(fn(Builder $q) => $q->where('hari_ke', '>=', $endDay + 1))
+          ->badge(fn() => $baseQuery()->where('hari_ke', '>=', $endDay + 1)->count())
+          ->badgeColor('gray');
+      }
+    }
+
     return $tabs;
+  }
+
+  /**
+   * Override getDefaultActiveTab to default to 'semua'
+   */
+  public function getDefaultActiveTab(): string|int|null
+  {
+    return 'semua';
   }
 }

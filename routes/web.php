@@ -45,3 +45,18 @@ Route::middleware(['auth', 'throttle:api-password'])->post('/api/change-password
 
 // API Form Settings — serve dynamic form config per agama (throttle)
 Route::middleware(['auth', 'throttle:api-read'])->get('/api/form-settings/{agama}', [PageController::class, 'formSettings']);
+
+// Export Rekap Siswa (Guru)
+// Export Rekap Siswa (Guru) — prefix berbeda dari panel agar tidak konflik dengan Filament routing
+Route::middleware(['auth'])->prefix('guru-exports')->group(function () {
+    Route::get('/rekap-siswa', function () {
+        return \App\Services\RekapExportService::exportRekapSiswa();
+    })->name('guru.rekap-siswa.export');
+
+    Route::get('/rekap-siswa/{siswa}', function (\App\Models\User $siswa) {
+        $guru = \Illuminate\Support\Facades\Auth::user();
+        $kelasIds = \App\Models\Kelas::where('wali_id', $guru->id)->pluck('id')->toArray();
+        abort_unless(in_array($siswa->kelas_id, $kelasIds), 403);
+        return \App\Services\RekapExportService::exportDetailSiswa($siswa);
+    })->name('guru.rekap-siswa.export-detail');
+});
