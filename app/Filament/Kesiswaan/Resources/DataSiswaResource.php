@@ -68,6 +68,13 @@ class DataSiswaResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('no_hp')
           ->label('No. HP')
+          ->formatStateUsing(function (?string $state): ?string {
+            if (empty($state)) return null;
+            if (is_numeric($state) && str_starts_with($state, '8')) {
+              return '0' . $state;
+            }
+            return $state;
+          })
           ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('form_submissions_count')
           ->label('Total Formulir')

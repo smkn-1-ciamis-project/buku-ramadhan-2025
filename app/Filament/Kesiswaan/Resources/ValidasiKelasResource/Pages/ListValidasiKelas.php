@@ -5,6 +5,8 @@ namespace App\Filament\Kesiswaan\Resources\ValidasiKelasResource\Pages;
 use App\Filament\Kesiswaan\Resources\ValidasiKelasResource;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
+use Filament\Actions;
+use Filament\Forms;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +17,27 @@ class ListValidasiKelas extends ListRecords
 
   protected function getHeaderActions(): array
   {
-    return [];
+    return [
+      Actions\Action::make('exportExcel')
+        ->label('Export Excel')
+        ->icon('heroicon-o-arrow-down-tray')
+        ->color('success')
+        ->form([
+          Forms\Components\Select::make('kelas_id')
+            ->label('Filter Kelas')
+            ->placeholder('Semua Kelas')
+            ->options(fn() => Kelas::orderBy('nama')->pluck('nama', 'id')->toArray())
+            ->searchable()
+            ->preload(),
+        ])
+        ->action(function (array $data) {
+          $kelasId = $data['kelas_id'] ?? null;
+          $url = $kelasId
+            ? route('kesiswaan.validasi.export', ['kelas' => $kelasId])
+            : route('kesiswaan.validasi.export');
+          return redirect($url);
+        }),
+    ];
   }
 
   public function getTabs(): array

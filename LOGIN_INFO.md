@@ -33,6 +33,11 @@ Aplikasi ini memiliki **4 halaman login terpisah** untuk setiap role:
 - **Credentials**:
     - Email: `superadmin@smkn1ciamis.sch.id`
     - Password: `superadmin123`
+- **Akun Superadmin Lainnya**:
+    - Email: `admin2@smkn1ciamis.sch.id` | Password: `superadmin123` (Admin 2)
+    - Email: `admin3@smkn1ciamis.sch.id` | Password: `superadmin123` (Admin 3)
+    - Email: `admin4@smkn1ciamis.sch.id` | Password: `superadmin123` (Admin 4)
+    - Email: `admin5@smkn1ciamis.sch.id` | Password: `superadmin123` (Admin 5)
 
 ### 4. 🏫 Login Kesiswaan/Kepala Sekolah
 

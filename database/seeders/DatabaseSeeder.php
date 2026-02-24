@@ -31,11 +31,5 @@ class DatabaseSeeder extends Seeder
             FormSettingSeeder::class,
         ]);
         $this->command->info('sample user seeded.');
-
-        if ($this->command->confirm('Do You want to seed some sample product ?')) {
-            $this->call(CategorySeeder::class);
-            $this->call(ProductSeeder::class);
-            $this->command->info('10 sample products seeded.');
-        }
     }
 }

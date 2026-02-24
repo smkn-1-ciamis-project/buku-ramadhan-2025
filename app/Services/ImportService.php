@@ -11,6 +11,29 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportService
 {
     /**
+     * Normalize phone number — restore leading '0' stripped by Excel.
+     */
+    private static function normalizeNoHp(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+        // Remove any non-digit characters
+        $digits = preg_replace('/[^0-9]/', '', $value);
+        if (empty($digits)) {
+            return null;
+        }
+        // Indonesian mobile numbers: if starts with 8 and length 9-13, prepend 0
+        if (str_starts_with($digits, '8') && strlen($digits) >= 9 && strlen($digits) <= 13) {
+            $digits = '0' . $digits;
+        }
+        // If starts with 62 (country code), replace with 0
+        if (str_starts_with($digits, '62') && strlen($digits) >= 11) {
+            $digits = '0' . substr($digits, 2);
+        }
+        return $digits;
+    }
+    /**
      * Import siswa from Excel file.
      *
      * @return array{success: int, failed: int, errors: array}
@@ -44,7 +67,7 @@ class ImportService
             $jk = strtoupper(trim($row['C'] ?? ''));
             $agama = trim($row['D'] ?? '');
             $kelas = trim($row['E'] ?? '');
-            $noHp = trim($row['F'] ?? '');
+            $noHp = self::normalizeNoHp($row['F'] ?? '');
             $password = trim($row['G'] ?? 'siswa123');
 
             // Skip empty rows
@@ -148,7 +171,7 @@ class ImportService
             $email = trim($row['B'] ?? '');
             $jk = strtoupper(trim($row['C'] ?? ''));
             $agama = trim($row['D'] ?? '');
-            $noHp = trim($row['E'] ?? '');
+            $noHp = self::normalizeNoHp($row['E'] ?? '');
             $password = trim($row['F'] ?? 'guru123');
 
             // Skip empty rows
@@ -341,7 +364,7 @@ class ImportService
                 $email = trim($row['B'] ?? '');
                 $jk = strtoupper(trim($row['C'] ?? ''));
                 $agama = trim($row['D'] ?? '');
-                $noHp = trim($row['E'] ?? '');
+                $noHp = self::normalizeNoHp($row['E'] ?? '');
                 $password = trim($row['F'] ?? 'guru123');
 
                 if (empty($nama)) {
@@ -512,7 +535,7 @@ class ImportService
                 $nisn = trim($row['B'] ?? '');
                 $jk = strtoupper(trim($row['C'] ?? ''));
                 $agama = trim($row['D'] ?? '');
-                $noHp = trim($row['E'] ?? '');
+                $noHp = self::normalizeNoHp($row['E'] ?? '');
                 $password = trim($row['F'] ?? 'siswa123');
 
                 if (empty($nama) && empty($nisn)) {
@@ -615,7 +638,7 @@ class ImportService
             $nama = trim($row['A'] ?? '');
             $email = trim($row['B'] ?? '');
             $jk = strtoupper(trim($row['C'] ?? ''));
-            $noHp = trim($row['D'] ?? '');
+            $noHp = self::normalizeNoHp($row['D'] ?? '');
             $password = trim($row['E'] ?? '');
 
             // Skip empty rows

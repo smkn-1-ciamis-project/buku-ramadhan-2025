@@ -79,6 +79,23 @@ class GuruPanelProvider extends PanelProvider
                     <meta name="apple-mobile-web-app-title" content="Calakan">
                     <link rel="apple-touch-icon" href="/img/icons/icon-152x152.png">
                     <link rel="apple-touch-icon" sizes="192x192" href="/img/icons/icon-192x192.png">
+
+                    <meta name="description" content="Calakan — Aplikasi pencatatan dan monitoring kegiatan ibadah siswa selama bulan Ramadan 1447H. Mendukung 6 agama. SMKN 1 Ciamis.">
+                    <meta property="og:type" content="website">
+                    <meta property="og:url" content="https://ramadhan.smkn1ciamis.id">
+                    <meta property="og:title" content="Calakan — Catatan Amaliyah Kegiatan Ramadan">
+                    <meta property="og:description" content="Aplikasi pencatatan dan monitoring kegiatan ibadah siswa selama bulan Ramadan 1447H. Mendukung 6 agama: Islam, Kristen, Katolik, Hindu, Buddha, dan Konghucu. SMKN 1 Ciamis.">
+                    <meta property="og:image" content="https://ramadhan.smkn1ciamis.id/img/og_image.jpg">
+                    <meta property="og:image:width" content="1200">
+                    <meta property="og:image:height" content="630">
+                    <meta property="og:image:type" content="image/jpeg">
+                    <meta property="og:site_name" content="Calakan — SMKN 1 Ciamis">
+                    <meta property="og:locale" content="id_ID">
+                    <meta name="twitter:card" content="summary_large_image">
+                    <meta name="twitter:title" content="Calakan — Catatan Amaliyah Kegiatan Ramadan">
+                    <meta name="twitter:description" content="Aplikasi pencatatan dan monitoring kegiatan ibadah siswa selama bulan Ramadan 1447H. SMKN 1 Ciamis.">
+                    <meta name="twitter:image" content="https://ramadhan.smkn1ciamis.id/img/og_image.jpg">
+
                     <style>
                         html, body { overscroll-behavior: none; }
                         body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }

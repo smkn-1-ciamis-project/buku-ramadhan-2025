@@ -42,14 +42,16 @@ class EnsureSingleSession
             $user = Auth::user();
 
             // ── 1. Single-session: tendang perangkat LAMA ─────────────────────
-            // Guru & Kesiswaan boleh multi-device, skip single-session check
-            $roleName    = strtolower($user->role_user?->name ?? '');
-            $isGuru      = str_contains($roleName, 'guru');
-            $isKesiswaan = str_contains($roleName, 'kesiswaan');
+            // Guru, Kesiswaan & Super Admin boleh multi-device, skip single-session check
+            $roleName     = strtolower($user->role_user?->name ?? '');
+            $isGuru       = str_contains($roleName, 'guru');
+            $isKesiswaan  = str_contains($roleName, 'kesiswaan');
+            $isSuperadmin = str_contains($roleName, 'super admin');
 
             if (
                 !$isGuru &&
                 !$isKesiswaan &&
+                !$isSuperadmin &&
                 $user->active_session_id &&
                 $user->active_session_id !== session()->getId()
             ) {

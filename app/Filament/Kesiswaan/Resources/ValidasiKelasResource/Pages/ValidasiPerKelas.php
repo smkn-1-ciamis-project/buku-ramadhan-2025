@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
 use Carbon\Carbon;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Tables;
@@ -57,6 +58,17 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
     return [
       ValidasiKelasResource::getUrl() => 'Validasi Per Kelas',
       '#' => $this->record->nama,
+    ];
+  }
+
+  protected function getHeaderActions(): array
+  {
+    return [
+      Actions\Action::make('exportKelas')
+        ->label('Export Excel')
+        ->icon('heroicon-o-arrow-down-tray')
+        ->color('success')
+        ->action(fn() => redirect(route('kesiswaan.validasi.export', ['kelas' => $this->record->id]))),
     ];
   }
 

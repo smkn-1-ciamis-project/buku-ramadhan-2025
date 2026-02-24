@@ -51,6 +51,13 @@ class SiswaRelationManager extends RelationManager
           ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('no_hp')
           ->label('No. HP')
+          ->formatStateUsing(function (?string $state): ?string {
+            if (empty($state)) return null;
+            if (is_numeric($state) && str_starts_with($state, '8')) {
+              return '0' . $state;
+            }
+            return $state;
+          })
           ->placeholder('-')
           ->toggleable(isToggledHiddenByDefault: true),
       ])
@@ -516,7 +523,16 @@ class SiswaRelationManager extends RelationManager
       Forms\Components\TextInput::make('no_hp')
         ->label('No. HP')
         ->tel()
-        ->maxLength(20),
+        ->maxLength(20)
+        ->dehydrateStateUsing(function (?string $state): ?string {
+          if (empty($state)) return null;
+          $digits = preg_replace('/[^0-9]/', '', $state);
+          if (empty($digits)) return null;
+          if (str_starts_with($digits, '8') && strlen($digits) >= 9 && strlen($digits) <= 13) {
+            $digits = '0' . $digits;
+          }
+          return $digits;
+        }),
     ];
   }
 }
