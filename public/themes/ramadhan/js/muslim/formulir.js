@@ -1261,14 +1261,26 @@ function formulirHarian() {
                 setTimeout(function () {
                     self.showSuccessPopup = false;
                 }, 3000);
-                var next = self.getFirstUnfilledDay();
-                if (next !== self.formDay) {
+                // If submitting today's form, redirect to home after popup
+                if (self.formDay >= self.ramadhanDay) {
                     setTimeout(function () {
-                        self.formDay = next;
-                        self.formSubmitted = false;
-                        self.resetFormData();
-                        self.checkFormSubmitted();
-                    }, 2000);
+                        window.location.href = "/siswa";
+                    }, 1500);
+                } else {
+                    var next = self.getFirstUnfilledDay();
+                    if (next !== self.formDay) {
+                        setTimeout(function () {
+                            self.formDay = next;
+                            self.formSubmitted = false;
+                            self.resetFormData();
+                            self.checkFormSubmitted();
+                        }, 2000);
+                    } else {
+                        // All days filled, redirect to home
+                        setTimeout(function () {
+                            window.location.href = "/siswa";
+                        }, 1500);
+                    }
                 }
             }, 600);
         },

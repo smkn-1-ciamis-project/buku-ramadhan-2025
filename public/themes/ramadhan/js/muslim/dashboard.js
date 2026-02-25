@@ -1746,7 +1746,7 @@ function ramadhanDashboard() {
                 return;
             }
             if (item.isCompleted) {
-                window.open(baseUrl + "?hari=" + day, "_blank");
+                window.location.href = baseUrl + "?hari=" + day;
                 return;
             }
             var firstUnfilled = null;
@@ -1767,13 +1767,13 @@ function ramadhanDashboard() {
                 this.notifRedirectUrl = baseUrl + "?hari=" + firstUnfilled;
                 this.showNotifModal = true;
             } else {
-                window.open(baseUrl + "?hari=" + day, "_blank");
+                window.location.href = baseUrl + "?hari=" + day;
             }
         },
         closeNotifModal(redirect) {
             this.showNotifModal = false;
             if (redirect && this.notifRedirectUrl) {
-                window.open(this.notifRedirectUrl, "_blank");
+                window.location.href = this.notifRedirectUrl;
             }
             this.notifTitle = "";
             this.notifMessage = "";

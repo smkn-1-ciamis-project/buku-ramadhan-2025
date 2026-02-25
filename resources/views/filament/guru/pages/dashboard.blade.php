@@ -418,7 +418,6 @@
                             <thead>
                                 <tr>
                                     <th>Nama</th>
-                                    <th>NISN</th>
                                     <th style="text-align:center">Hari</th>
                                     <th>Dikirim</th>
                                     <th>Status</th>
@@ -427,8 +426,10 @@
                             <tbody>
                                 @foreach ($pendingSubmissions->take(10) as $sub)
                                     <tr>
-                                        <td style="font-weight:500;">{{ $sub['user_name'] }}</td>
-                                        <td class="gd-text-muted">{{ $sub['user_nisn'] }}</td>
+                                        <td>
+                                            <div style="font-weight:500;">{{ $sub['user_name'] }}</div>
+                                            <div style="font-size:.75rem; color:#9ca3af;">{{ $sub['user_nisn'] }}</div>
+                                        </td>
                                         <td style="text-align:center"><span class="gd-hari-badge">{{ $sub['hari_ke'] }}</span></td>
                                         <td class="gd-text-muted">{{ $sub['created_at'] }}</td>
                                         <td><span class="gd-status-pending">Menunggu</span></td>

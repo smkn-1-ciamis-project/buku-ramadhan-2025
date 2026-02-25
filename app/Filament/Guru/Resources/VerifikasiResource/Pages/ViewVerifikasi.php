@@ -130,7 +130,7 @@ class ViewVerifikasi extends ViewRecord
             ->send();
           return redirect(VerifikasiResource::getUrl('index'));
         })
-        ->visible(fn() => $this->record->status !== 'verified'),
+        ->visible(fn() => $this->record->status === 'pending'),
 
       \Filament\Actions\Action::make('reject')
         ->label('Tolak')

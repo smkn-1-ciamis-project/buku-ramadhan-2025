@@ -196,12 +196,9 @@
                                     {{-- Checked-in: read-only badge --}}
                                     <template x-if="isPrayerCheckedIn(item.key)">
                                         <span style="font-size:12px;display:flex;align-items:center;gap:4px;">
-                                            <span class="f-chip f-chip-active"
-                                                  :class="formData.sholat[item.key] === 'jamaah' ? 'f-chip-green' : formData.sholat[item.key] === 'munfarid' ? 'f-chip-yellow' : 'f-chip-gray'"
-                                                  style="cursor:default;pointer-events:none;"
-                                                  x-text="formData.sholat[item.key] ? formData.sholat[item.key].charAt(0).toUpperCase() + formData.sholat[item.key].slice(1) : '-'"></span>
                                             <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                            <span style="color:#10b981;font-weight:500;">Check-in</span>
+                                            <span style="color:#10b981;font-weight:500;"
+                                                  x-text="formData.sholat[item.key] ? formData.sholat[item.key].charAt(0).toUpperCase() + formData.sholat[item.key].slice(1) : 'Check-in'"></span>
                                         </span>
                                     </template>
                                     {{-- Unlocked: clickable chips --}}
@@ -240,12 +237,9 @@
                                     {{-- Checked-in: read-only badge --}}
                                     <template x-if="isPrayerCheckedIn('tarawih')">
                                         <span style="font-size:12px;display:flex;align-items:center;gap:4px;">
-                                            <span class="f-chip f-chip-active"
-                                                  :class="formData.tarawih === 'jamaah' ? 'f-chip-green' : formData.tarawih === 'munfarid' ? 'f-chip-yellow' : 'f-chip-gray'"
-                                                  style="cursor:default;pointer-events:none;"
-                                                  x-text="formData.tarawih ? formData.tarawih.charAt(0).toUpperCase() + formData.tarawih.slice(1) : '-'"></span>
                                             <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                            <span style="color:#10b981;font-weight:500;">Check-in</span>
+                                            <span style="color:#10b981;font-weight:500;"
+                                                  x-text="formData.tarawih ? formData.tarawih.charAt(0).toUpperCase() + formData.tarawih.slice(1) : 'Check-in'"></span>
                                         </span>
                                     </template>
                                     {{-- Unlocked: clickable chips --}}
@@ -284,12 +278,9 @@
                                     {{-- Checked-in: read-only badge --}}
                                     <template x-if="isPrayerCheckedIn(sn.key)">
                                         <span style="font-size:12px;display:flex;align-items:center;gap:4px;">
-                                            <span class="f-chip f-chip-active"
-                                                  :class="formData.sunat[sn.key] === 'ya' ? 'f-chip-green' : 'f-chip-gray'"
-                                                  style="cursor:default;pointer-events:none;"
-                                                  x-text="formData.sunat[sn.key] ? formData.sunat[sn.key].charAt(0).toUpperCase() + formData.sunat[sn.key].slice(1) : '-'"></span>
                                             <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                            <span style="color:#10b981;font-weight:500;">Check-in</span>
+                                            <span style="color:#10b981;font-weight:500;"
+                                                  x-text="formData.sunat[sn.key] ? formData.sunat[sn.key].charAt(0).toUpperCase() + formData.sunat[sn.key].slice(1) : 'Check-in'"></span>
                                         </span>
                                     </template>
                                     {{-- Not checked-in: clickable chips --}}

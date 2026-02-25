@@ -178,7 +178,7 @@ class VerifikasiResource extends Resource
                 ->success()
                 ->send();
             })
-            ->visible(fn(FormSubmission $record) => $record->status !== 'verified'),
+            ->visible(fn(FormSubmission $record) => $record->status === 'pending'),
           Tables\Actions\Action::make('reject')
             ->label('Tolak')
             ->icon('heroicon-o-x-circle')
@@ -216,40 +216,6 @@ class VerifikasiResource extends Resource
                 ->send();
             })
             ->visible(fn(FormSubmission $record) => $record->status === 'pending'),
-          Tables\Actions\Action::make('resetStatus')
-            ->label('Reset ke Pending')
-            ->icon('heroicon-o-arrow-path')
-            ->color('gray')
-            ->requiresConfirmation()
-            ->modalHeading('Reset Status')
-            ->modalDescription('Status formulir akan dikembalikan ke Menunggu Verifikasi.')
-            ->modalSubmitActionLabel('Ya, Reset')
-            ->action(function (FormSubmission $record) {
-              $record->update([
-                'status' => 'pending',
-                'verified_by' => null,
-                'verified_at' => null,
-                'catatan_guru' => null,
-                // Also reset kesiswaan validation
-                'kesiswaan_status' => 'pending',
-                'validated_by' => null,
-                'validated_at' => null,
-                'catatan_kesiswaan' => null,
-              ]);
-              Cache::forget("submissions_{$record->user_id}");
-              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
-              ActivityLog::log('reset_submission', Auth::user(), [
-                'description' => 'Reset status formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
-                'submission_id' => $record->id,
-                'target_user' => $record->user?->name,
-                'hari_ke' => $record->hari_ke,
-              ]);
-              \Filament\Notifications\Notification::make()
-                ->title('Status direset ke pending')
-                ->info()
-                ->send();
-            })
-            ->visible(fn(FormSubmission $record) => $record->status !== 'pending'),
         ])
           ->icon('heroicon-m-ellipsis-vertical')
           ->tooltip('Aksi'),

@@ -185,7 +185,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
                                 ->success()
                                 ->send();
                         })
-                        ->visible(fn(FormSubmission $record) => $record->kesiswaan_status !== 'validated'),
+                        ->visible(fn(FormSubmission $record) => $record->kesiswaan_status === 'pending'),
                     Tables\Actions\Action::make('reject')
                         ->label('Tolak')
                         ->icon('heroicon-o-x-circle')
@@ -222,7 +222,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
                                 ->warning()
                                 ->send();
                         })
-                        ->visible(fn(FormSubmission $record) => $record->kesiswaan_status !== 'rejected'),
+                        ->visible(fn(FormSubmission $record) => $record->kesiswaan_status === 'pending'),
                     Tables\Actions\Action::make('resetStatus')
                         ->label('Reset ke Menunggu')
                         ->icon('heroicon-o-arrow-path')
@@ -233,6 +233,10 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
                         ->modalSubmitActionLabel('Ya, Reset')
                         ->action(function (FormSubmission $record) {
                             $record->update([
+                                'status' => 'pending',
+                                'verified_by' => null,
+                                'verified_at' => null,
+                                'catatan_guru' => null,
                                 'kesiswaan_status' => 'pending',
                                 'validated_by' => null,
                                 'validated_at' => null,
@@ -241,7 +245,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
                             Cache::forget("submissions_{$record->user_id}");
                             Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
                             ActivityLog::log('reset_validation', Auth::user(), [
-                                'description' => 'Mereset status validasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                                'description' => 'Mereset status formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
                                 'submission_id' => $record->id,
                                 'target_user' => $record->user?->name,
                                 'hari_ke' => $record->hari_ke,

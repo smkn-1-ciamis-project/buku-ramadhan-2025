@@ -483,7 +483,7 @@
                     <span class="sa-card-title">Overview Kelas</span>
                     <a href="{{ url('/portal-admin-smkn1/kelas') }}" class="sa-link">Kelola →</a>
                 </div>
-                <div class="sa-card-body" style="padding:.875rem 1.25rem; overflow-y:auto;">
+                <div class="sa-card-body" style="padding:.875rem 1.25rem; overflow-y:auto; max-height:600px;">
                     @forelse ($kelasOverview as $k)
                         <div class="sa-kelas-item">
                             <div class="sa-kelas-info">

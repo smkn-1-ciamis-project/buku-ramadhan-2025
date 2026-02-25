@@ -147,7 +147,7 @@ class ViewValidasi extends ViewRecord
             ? redirect(ValidasiKelasResource::getUrl('validasi-kelas', ['record' => $kelasId]))
             : redirect(ValidasiKelasResource::getUrl());
         })
-        ->visible(fn() => $this->record->kesiswaan_status !== 'validated'),
+        ->visible(fn() => $this->record->kesiswaan_status === 'pending'),
 
       \Filament\Actions\Action::make('reject')
         ->label('Tolak')

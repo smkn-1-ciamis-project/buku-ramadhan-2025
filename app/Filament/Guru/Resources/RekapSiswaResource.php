@@ -56,18 +56,14 @@ class RekapSiswaResource extends Resource
           ->label('Nama Siswa')
           ->searchable()
           ->sortable()
-          ->weight('bold'),
-        Tables\Columns\TextColumn::make('nisn')
-          ->label('NISN')
-          ->searchable()
-          ->sortable()
-          ->color('gray')
-          ->fontFamily('mono'),
+          ->weight('bold')
+          ->description(fn(User $record): string => $record->nisn ?? '-'),
         Tables\Columns\TextColumn::make('kelas.nama')
           ->label('Kelas')
           ->badge()
           ->color('info')
-          ->sortable(),
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('total_submit')
           ->label('Total Laporan')
           ->state(fn(User $record): int => $record->formSubmissions->count())
@@ -84,7 +80,7 @@ class RekapSiswaResource extends Resource
           ->label('Menunggu')
           ->state(fn(User $record): int => $record->formSubmissions->where('status', 'pending')->count())
           ->badge()
-          ->color(fn(int $state) => $state > 0 ? 'warning' : 'success')
+          ->color(fn(int $state) => $state > 0 ? 'warning' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('rejected_count')
           ->label('Ditolak')

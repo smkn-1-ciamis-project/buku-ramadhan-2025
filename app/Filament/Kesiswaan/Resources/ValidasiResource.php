@@ -184,7 +184,7 @@ class ValidasiResource extends Resource
                 ->success()
                 ->send();
             })
-            ->visible(fn(FormSubmission $record) => $record->kesiswaan_status !== 'validated'),
+            ->visible(fn(FormSubmission $record) => $record->kesiswaan_status === 'pending'),
           Tables\Actions\Action::make('reject')
             ->label('Tolak')
             ->icon('heroicon-o-x-circle')
@@ -221,36 +221,7 @@ class ValidasiResource extends Resource
                 ->warning()
                 ->send();
             })
-            ->visible(fn(FormSubmission $record) => $record->kesiswaan_status !== 'rejected'),
-          Tables\Actions\Action::make('resetStatus')
-            ->label('Reset ke Menunggu')
-            ->icon('heroicon-o-arrow-path')
-            ->color('gray')
-            ->requiresConfirmation()
-            ->modalHeading('Reset Status Validasi')
-            ->modalDescription('Status validasi kesiswaan akan dikembalikan ke Menunggu.')
-            ->modalSubmitActionLabel('Ya, Reset')
-            ->action(function (FormSubmission $record) {
-              $record->update([
-                'kesiswaan_status' => 'pending',
-                'validated_by' => null,
-                'validated_at' => null,
-                'catatan_kesiswaan' => null,
-              ]);
-              Cache::forget("submissions_{$record->user_id}");
-              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
-              ActivityLog::log('reset_validation', Auth::user(), [
-                'description' => 'Reset status validasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
-                'submission_id' => $record->id,
-                'target_user' => $record->user?->name,
-                'hari_ke' => $record->hari_ke,
-              ]);
-              \Filament\Notifications\Notification::make()
-                ->title('Status validasi direset')
-                ->info()
-                ->send();
-            })
-            ->visible(fn(FormSubmission $record) => $record->kesiswaan_status !== 'pending'),
+            ->visible(fn(FormSubmission $record) => $record->kesiswaan_status === 'pending'),
         ])
           ->icon('heroicon-m-ellipsis-vertical')
           ->tooltip('Aksi'),

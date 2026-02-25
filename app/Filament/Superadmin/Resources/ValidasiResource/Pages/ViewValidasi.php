@@ -147,7 +147,7 @@ class ViewValidasi extends ViewRecord
                         ? redirect(ValidasiKelasResource::getUrl('validasi-kelas', ['record' => $kelasId]))
                         : redirect(ValidasiKelasResource::getUrl());
                 })
-                ->visible(fn() => $this->record->kesiswaan_status !== 'validated'),
+                ->visible(fn() => $this->record->kesiswaan_status === 'pending'),
 
             \Filament\Actions\Action::make('reject')
                 ->label('Tolak')
@@ -188,6 +188,44 @@ class ViewValidasi extends ViewRecord
                         : redirect(ValidasiKelasResource::getUrl());
                 })
                 ->visible(fn() => $this->record->kesiswaan_status === 'pending'),
+
+            \Filament\Actions\Action::make('resetStatus')
+                ->label('Reset ke Menunggu')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalHeading('Reset Status Validasi')
+                ->modalDescription('Status validasi kesiswaan akan dikembalikan ke Menunggu.')
+                ->modalSubmitActionLabel('Ya, Reset')
+                ->action(function () {
+                    $this->record->update([
+                        'status' => 'pending',
+                        'verified_by' => null,
+                        'verified_at' => null,
+                        'catatan_guru' => null,
+                        'kesiswaan_status' => 'pending',
+                        'validated_by' => null,
+                        'validated_at' => null,
+                        'catatan_kesiswaan' => null,
+                    ]);
+                    Cache::forget("submissions_{$this->record->user_id}");
+                    Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
+                    ActivityLog::log('reset_validation', Auth::user(), [
+                        'description' => 'Mereset status formulir hari ke-' . $this->record->hari_ke . ' dari ' . ($this->record->user?->name ?? '-'),
+                        'submission_id' => $this->record->id,
+                        'target_user' => $this->record->user?->name,
+                        'hari_ke' => $this->record->hari_ke,
+                    ]);
+                    \Filament\Notifications\Notification::make()
+                        ->title('Status validasi direset')
+                        ->info()
+                        ->send();
+                    $kelasId = $this->record->user?->kelas_id;
+                    return $kelasId
+                        ? redirect(ValidasiKelasResource::getUrl('validasi-kelas', ['record' => $kelasId]))
+                        : redirect(ValidasiKelasResource::getUrl());
+                })
+                ->visible(fn() => $this->record->kesiswaan_status !== 'pending'),
         ];
     }
 }
