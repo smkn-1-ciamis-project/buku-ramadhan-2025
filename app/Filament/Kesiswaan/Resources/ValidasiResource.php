@@ -124,6 +124,7 @@ class ValidasiResource extends Resource
       ])
       ->defaultSort('kesiswaan_status', 'asc')
       ->modifyQueryUsing(fn(Builder $query) => $query->reorder()->orderByRaw("FIELD(kesiswaan_status, 'pending', 'rejected', 'validated')")->orderBy('verified_at', 'desc'))
+      ->checkIfRecordIsSelectableUsing(fn(\App\Models\FormSubmission $record): bool => $record->kesiswaan_status === 'pending')
       ->filters([
         Tables\Filters\SelectFilter::make('kesiswaan_status')
           ->label('Status Validasi')

@@ -73,6 +73,18 @@
                         <p class="f-status-sub" style="color:#047857;">Formulir ini telah final dan tidak dapat diubah lagi</p>
                     </div>
                 </div>
+                {{-- Catatan from Guru (on validated) --}}
+                <div x-show="formSubmitted && currentDayKesiswaanStatus === 'validated' && currentDayNote" x-cloak
+                     style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:12px 16px;margin-top:-8px;margin-bottom:16px;">
+                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.8px;">Catatan Guru</p>
+                    <p style="margin:0;color:#15803d;font-size:13px;line-height:1.6;" x-text="currentDayNote"></p>
+                </div>
+                {{-- Catatan from Kesiswaan (on validated) --}}
+                <div x-show="formSubmitted && currentDayKesiswaanStatus === 'validated' && currentDayKesiswaanNote" x-cloak
+                     style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.8px;">Catatan Kesiswaan</p>
+                    <p style="margin:0;color:#15803d;font-size:13px;line-height:1.6;" x-text="currentDayKesiswaanNote"></p>
+                </div>
 
                 {{-- Status badge - Kesiswaan Rejected --}}
                 <div x-show="formSubmitted && currentDayKesiswaanStatus === 'rejected' && currentDayStatus === 'verified'" x-cloak style="background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%);border:1.5px solid #fbbf24;border-radius:16px;padding:28px 24px 24px;margin-bottom:16px;text-align:center;">
@@ -97,6 +109,12 @@
                         <p class="f-status-sub">Menunggu validasi kesiswaan — kamu masih bisa mengedit</p>
                     </div>
                     <button @click="editForm()" class="f-status-edit-btn">Edit</button>
+                </div>
+                {{-- Catatan from Guru (on verified) --}}
+                <div x-show="formSubmitted && currentDayStatus === 'verified' && currentDayKesiswaanStatus !== 'validated' && currentDayKesiswaanStatus !== 'rejected' && currentDayNote" x-cloak
+                     style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:12px 16px;margin-top:-8px;margin-bottom:16px;">
+                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.8px;">Catatan Guru</p>
+                    <p style="margin:0;color:#1d4ed8;font-size:13px;line-height:1.6;" x-text="currentDayNote"></p>
                 </div>
 
                 {{-- Status badge - Pending (sudah dikirim, belum diverifikasi) --}}

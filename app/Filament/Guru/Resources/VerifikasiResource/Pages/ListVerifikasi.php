@@ -4,7 +4,6 @@ namespace App\Filament\Guru\Resources\VerifikasiResource\Pages;
 
 use App\Filament\Guru\Resources\VerifikasiResource;
 use Carbon\Carbon;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -12,83 +11,140 @@ class ListVerifikasi extends ListRecords
 {
   protected static string $resource = VerifikasiResource::class;
 
-  private const TABS_PER_PAGE = 7;
+  /** Which status box is active (null = all statuses) */
+  public ?string $activeStatusFilter = null;
+
+  /** Which day is selected on the calendar (null = all days) */
+  public ?int $activeDayFilter = null;
 
   protected function getHeaderActions(): array
   {
     return [];
   }
 
-  public function getTabs(): array
+  /**
+   * Render 2x2 stat boxes + proper monthly calendar above the table.
+   */
+  public function getHeader(): ?\Illuminate\Contracts\View\View
   {
-    // 1 Ramadhan 1447H = 19 Feb 2026
-    $ramadhanStart = Carbon::create(2026, 2, 19);
-    $today = Carbon::today();
-    $maxDay = max(0, (int) min(30, $ramadhanStart->diffInDays($today) + 1));
+    $ramadhanStart = Carbon::create(2026, 2, 19); // 1 Ramadhan 1447H = Thursday
+    $today         = Carbon::today();
+    $maxDay        = max(0, (int) min(30, $ramadhanStart->diffInDays($today) + 1));
 
-    if ($maxDay < 1) {
-      return [
-        'semua' => Tab::make('Semua'),
+    $baseQuery = VerifikasiResource::getEloquentQuery();
+
+    $total        = (clone $baseQuery)->count();
+    $menunggu     = (clone $baseQuery)->where('status', 'pending')->count();
+    $diverifikasi = (clone $baseQuery)->where('status', 'verified')->count();
+    $divalidasi   = (clone $baseQuery)->where('kesiswaan_status', 'validated')->count();
+    $ditolak      = (clone $baseQuery)->where(function ($q) {
+      $q->where('status', 'rejected')->orWhere('kesiswaan_status', 'rejected');
+    })->count();
+
+    // Per-day stats for calendar coloring
+    $dayCounts = [];
+    $rows = (clone $baseQuery)
+      ->selectRaw('hari_ke, status, count(*) as cnt')
+      ->groupBy('hari_ke', 'status')
+      ->get();
+    foreach ($rows as $row) {
+      $dayCounts[$row->hari_ke][$row->status] = $row->cnt;
+    }
+
+    // Build calendar cells (7-column Mon–Sun grid)
+    // 19 Feb 2026 = isoWeekday 4 (Thursday) → pad 3 empty cells
+    $leadingEmpties = $ramadhanStart->dayOfWeekIso - 1; // 3
+    $calendarCells  = [];
+
+    for ($i = 0; $i < $leadingEmpties; $i++) {
+      $calendarCells[] = null;
+    }
+    for ($d = 1; $d <= 30; $d++) {
+      $date              = $ramadhanStart->copy()->addDays($d - 1);
+      $calendarCells[]   = [
+        'ramadanDay'      => $d,
+        'masehiDay'       => $date->day,
+        'masehiMonthShort' => $date->locale('id')->isoFormat('MMM'),
+        'isPast'          => $d <= $maxDay,
+        'isToday'         => $d === $maxDay && $today->isSameDay($date),
+        'counts'          => $dayCounts[$d] ?? [],
       ];
     }
-
-    $baseQuery = fn() => VerifikasiResource::getEloquentQuery();
-
-    // Determine which page of tabs to show (from URL query param)
-    $tabPage = (int) request()->query('tab_page', 1);
-    $totalPages = (int) ceil($maxDay / self::TABS_PER_PAGE);
-    $tabPage = max(1, min($tabPage, $totalPages));
-
-    // Calculate range: show days descending, paginated
-    // Page 1 = most recent days, Page N = oldest days
-    $endDay = $maxDay - (($tabPage - 1) * self::TABS_PER_PAGE);
-    $startDay = max(1, $endDay - self::TABS_PER_PAGE + 1);
-
-    $tabs = [
-      'semua' => Tab::make('Semua')
-        ->badge(fn() => $baseQuery()->count())
-        ->badgeColor('primary'),
-    ];
-
-    // Daily tabs for current page
-    for ($day = $endDay; $day >= $startDay; $day--) {
-      $d = $day;
-      $tabs["hari_{$d}"] = Tab::make("Hari ke-{$d}")
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('hari_ke', $d))
-        ->badge(fn() => $baseQuery()->where('hari_ke', $d)->count())
-        ->badgeColor(fn() => match (true) {
-          $baseQuery()->where('hari_ke', $d)->where('status', 'pending')->exists() => 'warning',
-          $baseQuery()->where('hari_ke', $d)->where('status', 'rejected')->exists() => 'danger',
-          default => 'success',
-        });
+    // Trailing empties to complete last row
+    $trailing = (7 - (count($calendarCells) % 7)) % 7;
+    for ($i = 0; $i < $trailing; $i++) {
+      $calendarCells[] = null;
     }
 
-    // Navigation tabs for pagination (if more than 1 page)
-    if ($totalPages > 1) {
-      if ($tabPage < $totalPages) {
-        $olderPage = $tabPage + 1;
-        $tabs['older'] = Tab::make("← Hari {$startDay} ke bawah")
-          ->modifyQueryUsing(fn(Builder $q) => $q->where('hari_ke', '<=', $startDay - 1))
-          ->badge(fn() => $baseQuery()->where('hari_ke', '<=', $startDay - 1)->count())
-          ->badgeColor('gray');
-      }
-      if ($tabPage > 1) {
-        $newerPage = $tabPage - 1;
-        $tabs['newer'] = Tab::make("Hari {$endDay} ke atas →")
-          ->modifyQueryUsing(fn(Builder $q) => $q->where('hari_ke', '>=', $endDay + 1))
-          ->badge(fn() => $baseQuery()->where('hari_ke', '>=', $endDay + 1)->count())
-          ->badgeColor('gray');
-      }
+    return view('filament.guru.verifikasi.header-stats', [
+      'total'           => $total,
+      'menunggu'        => $menunggu,
+      'diverifikasi'    => $diverifikasi,
+      'divalidasi'      => $divalidasi,
+      'ditolak'         => $ditolak,
+      'activeStatus'    => $this->activeStatusFilter,
+      'activeDay'       => $this->activeDayFilter,
+      'maxDay'          => $maxDay,
+      'dayCounts'       => $dayCounts,
+      'calendarCells'   => $calendarCells,
+    ]);
+  }
+
+  /** Stat box clicked: filter by status */
+  public function filterByStatus(?string $status): void
+  {
+    $this->activeStatusFilter = $status;
+
+    if ($status === 'validated') {
+      // Divalidasi: filter on kesiswaan_status, clear others
+      $this->tableFilters = array_merge($this->tableFilters ?? [], [
+        'status'             => ['value' => ''],
+        'kesiswaan_status'   => ['value' => 'validated'],
+      ]);
+    } elseif ($status === 'rejected') {
+      // Ditolak: handled via getTableQuery override, clear built-in filters
+      $this->tableFilters = array_merge($this->tableFilters ?? [], [
+        'status'             => ['value' => ''],
+        'kesiswaan_status'   => ['value' => ''],
+      ]);
+    } else {
+      // Regular status filter, clear others
+      $this->tableFilters = array_merge($this->tableFilters ?? [], [
+        'status'             => ['value' => $status ?? ''],
+        'kesiswaan_status'   => ['value' => ''],
+      ]);
     }
 
-    return $tabs;
+    $this->resetPage();
+  }
+
+  /** Calendar day clicked: filter by hari_ke */
+  public function filterByDay(?int $day): void
+  {
+    $this->activeDayFilter = $day;
+
+    $this->tableFilters = array_merge($this->tableFilters ?? [], [
+      'hari_ke' => ['value' => $day !== null ? (string) $day : ''],
+    ]);
+
+    $this->resetPage();
   }
 
   /**
-   * Override getDefaultActiveTab to default to 'semua'
+   * Apply combined rejected filter (status OR kesiswaan_status = rejected)
+   * when the "Ditolak" stat box is active.
    */
-  public function getDefaultActiveTab(): string|int|null
+  protected function getTableQuery(): ?Builder
   {
-    return 'semua';
+    $query = parent::getTableQuery();
+
+    if ($this->activeStatusFilter === 'rejected') {
+      $query->where(function ($q) {
+        $q->where('status', 'rejected')
+          ->orWhere('kesiswaan_status', 'rejected');
+      });
+    }
+
+    return $query;
   }
 }

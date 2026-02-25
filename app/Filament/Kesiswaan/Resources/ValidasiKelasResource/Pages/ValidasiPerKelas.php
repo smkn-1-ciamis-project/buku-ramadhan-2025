@@ -28,12 +28,106 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
 
   protected static string $view = 'filament.kesiswaan.pages.validasi-per-kelas';
 
+  /** Which status box is active (null = all statuses) */
+  public ?string $activeStatusFilter = null;
+
+  /** Which day is selected on the calendar (null = all days) */
+  public ?int $activeDayFilter = null;
+
   public function mount(int|string $record): void
   {
     $this->record = $this->resolveRecord($record);
     $this->record->load(['wali', 'siswa']);
 
     $this->authorizeAccess();
+  }
+
+  /** Stat box clicked: filter by kesiswaan_status */
+  public function filterByStatus(?string $status): void
+  {
+    $this->activeStatusFilter = $status;
+
+    $this->tableFilters = array_merge($this->tableFilters ?? [], [
+      'kesiswaan_status' => ['value' => $status ?? ''],
+    ]);
+
+    $this->resetPage();
+  }
+
+  /** Calendar day clicked: filter by hari_ke */
+  public function filterByDay(?int $day): void
+  {
+    $this->activeDayFilter = $day;
+
+    $this->tableFilters = array_merge($this->tableFilters ?? [], [
+      'hari_ke' => ['value' => $day !== null ? (string) $day : ''],
+    ]);
+
+    $this->resetPage();
+  }
+
+  /** Provide calendar + stats data to the blade view. */
+  protected function getViewData(): array
+  {
+    $siswaIds = $this->record->siswa->pluck('id');
+
+    $ramadhanStart = Carbon::create(2026, 2, 19); // 1 Ramadhan 1447H = Thursday
+    $today         = Carbon::today();
+    $maxDay        = max(0, (int) min(30, $ramadhanStart->diffInDays($today) + 1));
+
+    $baseQuery = FormSubmission::query()
+      ->where('status', 'verified')
+      ->whereIn('user_id', $siswaIds);
+
+    $total      = (clone $baseQuery)->count();
+    $menunggu   = (clone $baseQuery)->where('kesiswaan_status', 'pending')->count();
+    $divalidasi = (clone $baseQuery)->where('kesiswaan_status', 'validated')->count();
+    $ditolak    = (clone $baseQuery)->where('kesiswaan_status', 'rejected')->count();
+
+    // Per-day stats for calendar coloring (using kesiswaan_status)
+    $dayCounts = [];
+    $rows = (clone $baseQuery)
+      ->selectRaw('hari_ke, kesiswaan_status, count(*) as cnt')
+      ->groupBy('hari_ke', 'kesiswaan_status')
+      ->get();
+    foreach ($rows as $row) {
+      $dayCounts[$row->hari_ke][$row->kesiswaan_status] = $row->cnt;
+    }
+
+    // Build calendar cells (7-column Mon–Sun grid)
+    $leadingEmpties = $ramadhanStart->dayOfWeekIso - 1; // 3
+    $calendarCells  = [];
+
+    for ($i = 0; $i < $leadingEmpties; $i++) {
+      $calendarCells[] = null;
+    }
+    for ($d = 1; $d <= 30; $d++) {
+      $date            = $ramadhanStart->copy()->addDays($d - 1);
+      $calendarCells[] = [
+        'ramadanDay'       => $d,
+        'masehiDay'        => $date->day,
+        'masehiMonthShort' => $date->locale('id')->isoFormat('MMM'),
+        'isPast'           => $d <= $maxDay,
+        'isToday'          => $d === $maxDay && $today->isSameDay($date),
+        'counts'           => $dayCounts[$d] ?? [],
+      ];
+    }
+    // Trailing empties to complete last row
+    $trailing = (7 - (count($calendarCells) % 7)) % 7;
+    for ($i = 0; $i < $trailing; $i++) {
+      $calendarCells[] = null;
+    }
+
+    return [
+      'total'         => $total,
+      'menunggu'      => $menunggu,
+      'divalidasi'    => $divalidasi,
+      'ditolak'       => $ditolak,
+      'activeStatus'  => $this->activeStatusFilter,
+      'activeDay'     => $this->activeDayFilter,
+      'maxDay'        => $maxDay,
+      'calendarCells' => $calendarCells,
+    ];
   }
 
   public function getTitle(): string|Htmlable
@@ -86,18 +180,20 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
       ->columns([
         Tables\Columns\TextColumn::make('user.name')
           ->label('Nama Siswa')
+          ->description(fn($record) => $record->user?->nisn)
           ->searchable()
           ->sortable(),
         Tables\Columns\TextColumn::make('user.nisn')
           ->label('NISN')
           ->searchable()
-          ->toggleable(),
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('hari_ke')
           ->label('Hari Ke')
           ->sortable()
           ->badge()
           ->color('info')
-          ->alignCenter(),
+          ->alignCenter()
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('verifier.name')
           ->label('Diverifikasi Oleh')
           ->placeholder('-')
@@ -140,6 +236,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
       ])
       ->defaultSort('kesiswaan_status', 'asc')
       ->modifyQueryUsing(fn(Builder $query) => $query->reorder()->orderByRaw("FIELD(kesiswaan_status, 'pending', 'rejected', 'validated')")->orderBy('verified_at', 'desc'))
+      ->checkIfRecordIsSelectableUsing(fn(FormSubmission $record): bool => $record->kesiswaan_status === 'pending')
       ->filters([
         Tables\Filters\SelectFilter::make('kesiswaan_status')
           ->label('Status Validasi')
@@ -151,7 +248,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
         Tables\Filters\SelectFilter::make('hari_ke')
           ->label('Hari Ke')
           ->options(
-            collect(range(1, 30))->mapWithKeys(fn($d) => [$d => "Hari ke-{$d}"])->toArray()
+            collect(range(1, 30))->mapWithKeys(fn($d) => [$d => (string) $d])->toArray()
           ),
       ])
       ->actions([

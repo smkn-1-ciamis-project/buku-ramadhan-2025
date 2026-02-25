@@ -52,16 +52,20 @@ class VerifikasiResource extends Resource
       ->columns([
         Tables\Columns\TextColumn::make('user.name')
           ->label('Nama Siswa')
+          ->description(fn($record) => $record->user?->nisn)
           ->searchable()
-          ->sortable(),
+          ->sortable()
+          ->size(Tables\Columns\TextColumn\TextColumnSize::Small),
         Tables\Columns\TextColumn::make('user.nisn')
           ->label('NISN')
-          ->searchable(),
+          ->searchable()
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('hari_ke')
           ->label('Hari Ke')
           ->sortable()
           ->badge()
-          ->color('info'),
+          ->color('info')
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('status')
           ->label('Status')
           ->badge()
@@ -83,14 +87,16 @@ class VerifikasiResource extends Resource
           ->since()
           ->tooltip(fn($record) => $record->created_at->translatedFormat('d M Y, H:i'))
           ->color('gray')
-          ->sortable(),
+          ->sortable()
+          ->size(Tables\Columns\TextColumn\TextColumnSize::Small),
         Tables\Columns\TextColumn::make('verified_at')
           ->label('Diverifikasi')
           ->since()
           ->tooltip(fn($record) => $record->verified_at?->translatedFormat('d M Y, H:i'))
           ->color('gray')
           ->sortable()
-          ->placeholder('-'),
+          ->placeholder('-')
+          ->size(Tables\Columns\TextColumn\TextColumnSize::Small),
         Tables\Columns\TextColumn::make('kesiswaan_status')
           ->label('Validasi Kesiswaan')
           ->badge()
@@ -110,7 +116,9 @@ class VerifikasiResource extends Resource
           ->toggleable(),
       ])
       ->defaultSort('status', 'asc')
+      ->striped()
       ->modifyQueryUsing(fn(Builder $query) => $query->reorder()->orderByRaw("FIELD(status, 'pending', 'rejected', 'verified')")->orderBy('created_at', 'desc'))
+      ->checkIfRecordIsSelectableUsing(fn(\App\Models\FormSubmission $record): bool => $record->status === 'pending')
       ->filters([
         Tables\Filters\SelectFilter::make('status')
           ->label('Status')
@@ -119,6 +127,16 @@ class VerifikasiResource extends Resource
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
           ]),
+        Tables\Filters\SelectFilter::make('kesiswaan_status')
+          ->label('Status Kesiswaan')
+          ->options([
+            'pending' => 'Menunggu',
+            'validated' => 'Divalidasi',
+            'rejected' => 'Ditolak',
+          ]),
+        Tables\Filters\SelectFilter::make('hari_ke')
+          ->label('Hari ke-')
+          ->options(array_combine(range(1, 30), array_map(fn($d) => 'Hari ke-' . $d, range(1, 30)))),
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([

@@ -127,7 +127,8 @@ class GuruResource extends Resource
             }
             return $state;
           })
-          ->placeholder('-'),
+          ->placeholder('-')
+          ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\TextColumn::make('kelasWali.nama')
           ->label('Wali Kelas')
           ->badge()

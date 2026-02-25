@@ -74,12 +74,13 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Nama Siswa')
+                    ->description(fn($record) => $record->user?->nisn)
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('user.nisn')
                     ->label('NISN')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('hari_ke')
                     ->label('Hari Ke')
                     ->sortable()
@@ -128,6 +129,7 @@ class ValidasiPerKelas extends ViewRecord implements HasTable
             ])
             ->defaultSort('kesiswaan_status', 'asc')
             ->modifyQueryUsing(fn(Builder $query) => $query->reorder()->orderByRaw("FIELD(kesiswaan_status, 'pending', 'rejected', 'validated')")->orderBy('verified_at', 'desc'))
+            ->checkIfRecordIsSelectableUsing(fn(FormSubmission $record): bool => $record->kesiswaan_status === 'pending')
             ->filters([
                 Tables\Filters\SelectFilter::make('kesiswaan_status')
                     ->label('Status Validasi')

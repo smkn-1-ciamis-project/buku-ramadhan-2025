@@ -90,7 +90,8 @@ class ListFormSubmission extends ListRecords
 
   private function executeBackup(string $password, bool $deleteAfter)
   {
-    $admin = auth()->user();
+    /** @var \App\Models\User $admin */
+    $admin = Auth::user();
 
     if (!Hash::check($password, $admin->password)) {
       Notification::make()
