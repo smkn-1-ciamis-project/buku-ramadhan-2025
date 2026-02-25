@@ -432,11 +432,11 @@
             <tr>
               <th style="width:2.5rem;">No</th>
               <th>Nama Siswa</th>
-              <th>NISN</th>
               <th style="text-align:center;">Total</th>
               <th style="text-align:center;">Terverifikasi</th>
               <th style="text-align:center;">Menunggu</th>
               <th style="text-align:center;">Ditolak</th>
+              <th style="text-align:center;">Validasi</th>
               <th style="text-align:center; min-width:6rem;">Kepatuhan</th>
             </tr>
           </thead>
@@ -444,15 +444,20 @@
             @forelse ($siswaProgress as $index => $siswa)
               <tr>
                 <td>{{ $index + 1 }}</td>
-                <td class="rk-name">{{ $siswa['name'] }}</td>
-                <td class="rk-nisn">{{ $siswa['nisn'] }}</td>
-                <td style="text-align:center;"><span class="rk-badge rk-badge-blue">{{ $siswa['total'] }}</span></td>
-                <td style="text-align:center;"><span class="rk-badge rk-badge-green">{{ $siswa['verified'] }}</span></td>
+                <td>
+                  <span class="rk-name">{{ $siswa['name'] }}</span>
+                  <span class="rk-nisn" style="display:block; margin-top:.125rem;">{{ $siswa['nisn'] }}</span>
+                </td>
+                <td style="text-align:center;"><span class="rk-badge {{ $siswa['total'] > 0 ? 'rk-badge-blue' : 'rk-badge-gray' }}">{{ $siswa['total'] }}</span></td>
+                <td style="text-align:center;"><span class="rk-badge {{ $siswa['verified'] > 0 ? 'rk-badge-green' : 'rk-badge-gray' }}">{{ $siswa['verified'] }}</span></td>
                 <td style="text-align:center;">
                   <span class="rk-badge {{ $siswa['pending'] > 0 ? 'rk-badge-yellow' : 'rk-badge-gray' }}">{{ $siswa['pending'] }}</span>
                 </td>
                 <td style="text-align:center;">
                   <span class="rk-badge {{ $siswa['rejected'] > 0 ? 'rk-badge-red' : 'rk-badge-gray' }}">{{ $siswa['rejected'] }}</span>
+                </td>
+                <td style="text-align:center;">
+                  <span class="rk-badge {{ $siswa['kesiswaan_pending'] > 0 ? 'rk-badge-yellow' : 'rk-badge-gray' }}" title="Menunggu Validasi Kesiswaan">{{ $siswa['kesiswaan_pending'] }}</span>
                 </td>
                 <td style="text-align:center;">
                   <div style="display:flex; align-items:center; gap:.375rem; justify-content:center;">

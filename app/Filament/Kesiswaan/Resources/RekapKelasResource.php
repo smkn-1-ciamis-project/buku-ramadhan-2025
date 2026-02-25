@@ -79,7 +79,7 @@ class RekapKelasResource extends Resource
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'verified')->count();
           })
           ->badge()
-          ->color('success')
+          ->color(fn(int $state) => $state > 0 ? 'success' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('pending_count')
           ->label('Menunggu')
@@ -88,7 +88,7 @@ class RekapKelasResource extends Resource
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
           })
           ->badge()
-          ->color(fn(int $state) => $state > 0 ? 'warning' : 'success')
+          ->color(fn(int $state) => $state > 0 ? 'warning' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('rejected_count')
           ->label('Ditolak')

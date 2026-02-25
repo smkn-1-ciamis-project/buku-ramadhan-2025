@@ -17,6 +17,8 @@
     .dark .stat-box-k.active-pending   { background: rgba(120,53,15,0.3); border-color: #f59e0b; }
     .dark .stat-box-k.active-validated { background: rgba(20,83,45,0.3); border-color: #22c55e; }
     .dark .stat-box-k.active-rejected  { background: rgba(127,29,29,0.3); border-color: #ef4444; }
+    .stat-num-inactive { color: #111827; }
+    .dark .stat-num-inactive { color: #f3f4f6; }
 </style>
 
 <div class="flex flex-col gap-4 mb-2">
@@ -27,7 +29,7 @@
         {{-- Total --}}
         <button wire:click="filterByStatus(null)" type="button"
             class="stat-box-k box-total rounded-xl p-2 lg:p-3 text-center cursor-pointer shadow-sm {{ $activeStatus === null ? 'active-total' : '' }}">
-            <p class="text-xl lg:text-2xl font-bold" style="color:{{ $activeStatus === null ? '#2563eb' : '#111827' }}">
+            <p class="text-xl lg:text-2xl font-bold {{ $activeStatus === null ? '' : 'stat-num-inactive' }}" style="{{ $activeStatus === null ? 'color:#2563eb;' : '' }}">
                 {{ $total }}
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Total</p>
@@ -36,7 +38,7 @@
         {{-- Menunggu --}}
         <button wire:click="filterByStatus('pending')" type="button"
             class="stat-box-k box-pending rounded-xl p-2 lg:p-3 text-center cursor-pointer shadow-sm {{ $activeStatus === 'pending' ? 'active-pending' : '' }}">
-            <p class="text-xl lg:text-2xl font-bold" style="color:{{ $activeStatus === 'pending' ? '#d97706' : '#111827' }}">
+            <p class="text-xl lg:text-2xl font-bold {{ $activeStatus === 'pending' ? '' : 'stat-num-inactive' }}" style="{{ $activeStatus === 'pending' ? 'color:#d97706;' : '' }}">
                 {{ $menunggu }}
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Menunggu</p>
@@ -45,7 +47,7 @@
         {{-- Divalidasi --}}
         <button wire:click="filterByStatus('validated')" type="button"
             class="stat-box-k box-validated rounded-xl p-2 lg:p-3 text-center cursor-pointer shadow-sm {{ $activeStatus === 'validated' ? 'active-validated' : '' }}">
-            <p class="text-xl lg:text-2xl font-bold" style="color:{{ $activeStatus === 'validated' ? '#16a34a' : '#111827' }}">
+            <p class="text-xl lg:text-2xl font-bold {{ $activeStatus === 'validated' ? '' : 'stat-num-inactive' }}" style="{{ $activeStatus === 'validated' ? 'color:#16a34a;' : '' }}">
                 {{ $divalidasi }}
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Divalidasi</p>
@@ -54,7 +56,7 @@
         {{-- Ditolak --}}
         <button wire:click="filterByStatus('rejected')" type="button"
             class="stat-box-k box-rejected rounded-xl p-2 lg:p-3 text-center cursor-pointer shadow-sm {{ $activeStatus === 'rejected' ? 'active-rejected' : '' }}">
-            <p class="text-xl lg:text-2xl font-bold" style="color:{{ $activeStatus === 'rejected' ? '#dc2626' : '#111827' }}">
+            <p class="text-xl lg:text-2xl font-bold {{ $activeStatus === 'rejected' ? '' : 'stat-num-inactive' }}" style="{{ $activeStatus === 'rejected' ? 'color:#dc2626;' : '' }}">
                 {{ $ditolak }}
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ditolak</p>
@@ -97,39 +99,39 @@
                         if ($isToday && $hasAny) {
                             // Hari ini & ada formulir → hijau terang
                             $lightBg    = '#d1fae5'; $lightBorder = '#34d399'; $lightText = '#065f46';
-                            $darkBg     = '#064e3b'; $darkBorder  = '#10b981'; $darkText  = '#6ee7b7';
+                            $darkBg     = '#064e3b'; $darkBorder  = '#10b981'; $darkText  = '#a7f3d0';
                             $borderW    = '2px';
                             $canClick   = true;
                         } elseif ($isToday && !$hasAny) {
                             // Hari ini tapi belum ada formulir → putih dengan border hijau
                             $lightBg    = '#ffffff'; $lightBorder = '#34d399'; $lightText = '#065f46';
-                            $darkBg     = '#1f2937'; $darkBorder  = '#10b981'; $darkText  = '#9ca3af';
+                            $darkBg     = '#1f2937'; $darkBorder  = '#10b981'; $darkText  = '#d1d5db';
                             $borderW    = '2px';
                             $canClick   = true;
                         } elseif (!$isPast) {
                             $lightBg    = '#f9fafb'; $lightBorder = '#f3f4f6'; $lightText = '#d1d5db';
-                            $darkBg     = '#374151'; $darkBorder  = '#4b5563'; $darkText  = '#6b7280';
+                            $darkBg     = '#374151'; $darkBorder  = '#4b5563'; $darkText  = '#9ca3af';
                             $borderW    = '1px';
                             $canClick   = false;
                         } elseif (!$hasAny) {
                             // Hari sudah lewat tapi tidak ada formulir → putih
                             $lightBg    = '#ffffff'; $lightBorder = '#e5e7eb'; $lightText = '#9ca3af';
-                            $darkBg     = '#1f2937'; $darkBorder  = '#4b5563'; $darkText  = '#6b7280';
+                            $darkBg     = '#1f2937'; $darkBorder  = '#4b5563'; $darkText  = '#9ca3af';
                             $borderW    = '1px';
                             $canClick   = true;
                         } elseif ($hasPending) {
                             $lightBg    = '#fef3c7'; $lightBorder = '#fcd34d'; $lightText = '#92400e';
-                            $darkBg     = '#78350f'; $darkBorder  = '#d97706'; $darkText  = '#fcd34d';
+                            $darkBg     = '#78350f'; $darkBorder  = '#d97706'; $darkText  = '#fde68a';
                             $borderW    = '1px';
                             $canClick   = true;
                         } elseif ($hasRejected) {
                             $lightBg    = '#fee2e2'; $lightBorder = '#fca5a5'; $lightText = '#991b1b';
-                            $darkBg     = '#7f1d1d'; $darkBorder  = '#ef4444'; $darkText  = '#fca5a5';
+                            $darkBg     = '#7f1d1d'; $darkBorder  = '#ef4444'; $darkText  = '#fecaca';
                             $borderW    = '1px';
                             $canClick   = true;
                         } elseif ($hasValidated) {
                             $lightBg    = '#dcfce7'; $lightBorder = '#86efac'; $lightText = '#166534';
-                            $darkBg     = '#14532d'; $darkBorder  = '#22c55e'; $darkText  = '#86efac';
+                            $darkBg     = '#14532d'; $darkBorder  = '#22c55e'; $darkText  = '#a7f3d0';
                             $borderW    = '1px';
                             $canClick   = true;
                         } else {

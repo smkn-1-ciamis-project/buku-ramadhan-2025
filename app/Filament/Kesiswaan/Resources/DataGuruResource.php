@@ -69,7 +69,7 @@ class DataGuruResource extends Resource
             return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
           })
           ->badge()
-          ->color(fn(int $state): string => $state > 0 ? 'warning' : 'success')
+          ->color(fn(int $state): string => $state > 0 ? 'warning' : 'gray')
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('total_verified')
@@ -78,7 +78,7 @@ class DataGuruResource extends Resource
             return FormSubmission::where('verified_by', $record->id)->where('status', 'verified')->count();
           })
           ->badge()
-          ->color('success')
+          ->color(fn(int $state): string => $state > 0 ? 'success' : 'gray')
           ->alignCenter()
           ->sortable(false),
       ])

@@ -40,10 +40,18 @@ class ViewRekapKelas extends ViewRecord
 
     // Per-siswa progress
     $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe) {
-      $total = FormSubmission::where('user_id', $siswa->id)->count();
-      $verifiedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'verified')->count();
-      $pendingCount  = FormSubmission::where('user_id', $siswa->id)->where('status', 'pending')->count();
-      $rejectedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'rejected')->count();
+      $submissions = FormSubmission::where('user_id', $siswa->id)->get();
+      $total = $submissions->count();
+      $verifiedCount = $submissions->where('status', 'verified')->count();
+      $pendingCount  = $submissions->where('status', 'pending')->count();
+      $rejectedCount = $submissions->where('status', 'rejected')->count();
+
+      // Kesiswaan validation stats (only from guru-verified submissions)
+      $verifiedSubs = $submissions->where('status', 'verified');
+      $kesiswaanValidated = $verifiedSubs->where('kesiswaan_status', 'validated')->count();
+      $kesiswaanPending   = $verifiedSubs->where('kesiswaan_status', 'pending')->count();
+      $kesiswaanRejected  = $verifiedSubs->where('kesiswaan_status', 'rejected')->count();
+
       $rate = $hariKe > 0 ? round(($total / $hariKe) * 100) : 0;
       return [
         'name' => $siswa->name,
@@ -52,6 +60,9 @@ class ViewRekapKelas extends ViewRecord
         'verified' => $verifiedCount,
         'pending' => $pendingCount,
         'rejected' => $rejectedCount,
+        'kesiswaan_validated' => $kesiswaanValidated,
+        'kesiswaan_pending' => $kesiswaanPending,
+        'kesiswaan_rejected' => $kesiswaanRejected,
         'rate' => min($rate, 100),
       ];
     })->sortBy('name')->values();

@@ -216,6 +216,35 @@ class VerifikasiResource extends Resource
                 ->send();
             })
             ->visible(fn(FormSubmission $record) => $record->status === 'pending'),
+          Tables\Actions\Action::make('resetToPending')
+            ->label('Reset ke Menunggu')
+            ->icon('heroicon-o-arrow-path')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Reset Verifikasi')
+            ->modalDescription(fn(FormSubmission $record) => 'Reset verifikasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-') . ' kembali ke Menunggu?')
+            ->modalSubmitActionLabel('Ya, Reset')
+            ->action(function (FormSubmission $record) {
+              $record->update([
+                'status' => 'pending',
+                'verified_by' => null,
+                'verified_at' => null,
+                'catatan_guru' => null,
+              ]);
+              Cache::forget("submissions_{$record->user_id}");
+              Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
+              ActivityLog::log('reset_verification', Auth::user(), [
+                'description' => 'Mereset verifikasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                'submission_id' => $record->id,
+                'target_user' => $record->user?->name,
+                'hari_ke' => $record->hari_ke,
+              ]);
+              \Filament\Notifications\Notification::make()
+                ->title('Verifikasi direset ke Menunggu')
+                ->info()
+                ->send();
+            })
+            ->visible(fn(FormSubmission $record) => $record->status === 'verified' && $record->kesiswaan_status === 'pending'),
         ])
           ->icon('heroicon-m-ellipsis-vertical')
           ->tooltip('Aksi'),

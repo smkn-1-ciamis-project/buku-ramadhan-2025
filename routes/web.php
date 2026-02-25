@@ -66,7 +66,7 @@ Route::middleware(['auth'])->prefix('guru-exports')->group(function () {
     })->name('guru.rekap-siswa.export-detail');
 });
 
-// Export Validasi (Kesiswaan) — per kelas atau semua kelas
+// Export Validasi (Kesiswaan) — per kelas (satu/banyak) atau semua kelas
 Route::middleware(['auth'])->prefix('kesiswaan-exports')->group(function () {
     Route::get('/validasi/{kelas?}', function (?string $kelas = null) {
         $user = \Illuminate\Support\Facades\Auth::user();
@@ -75,6 +75,8 @@ Route::middleware(['auth'])->prefix('kesiswaan-exports')->group(function () {
             in_array($roleName, ['kesiswaan', 'superadmin', 'super admin']),
             403
         );
-        return \App\Services\KesiswaanExportService::exportValidasi($kelas);
+        // Support comma-separated kelas IDs for multi-select export
+        $kelasIds = $kelas ? array_filter(explode(',', $kelas)) : null;
+        return \App\Services\KesiswaanExportService::exportValidasi($kelasIds);
     })->name('kesiswaan.validasi.export');
 });

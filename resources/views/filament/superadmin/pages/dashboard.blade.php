@@ -85,7 +85,8 @@
         /* Mid row — 3 columns, equal height */
         .sa-mid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; align-items:stretch; }
         .sa-mid > .sa-card { display:flex; flex-direction:column; }
-        .sa-mid > .sa-card > .sa-card-body { flex:1; }
+        .sa-mid > .sa-card > .sa-card-body { flex:1; display:flex; flex-direction:column; }
+        .sa-mid .sa-card-body > hr.sa-divider { margin-top:auto; }
         @media(max-width:1024px) { .sa-mid { grid-template-columns:1fr; } }
 
         .sa-card {
@@ -377,15 +378,15 @@
                             <svg viewBox="0 0 36 36">
                                 <circle class="sa-ring-bg" cx="18" cy="18" r="14" fill="none" stroke-width="3.5"/>
                                 <circle cx="18" cy="18" r="14" fill="none" stroke-width="3.5"
-                                    stroke="#10b981"
-                                    stroke-dasharray="{{ $verifyRate * 0.88 }} 88"
+                                    stroke="{{ $validasiRate >= 70 ? '#10b981' : ($validasiRate >= 40 ? '#f59e0b' : '#ef4444') }}"
+                                    stroke-dasharray="{{ $validasiRate * 0.88 }} 88"
                                     stroke-linecap="round"/>
                             </svg>
-                            <span class="sa-compliance-pct">{{ $verifyRate }}%</span>
+                            <span class="sa-compliance-pct">{{ $validasiRate }}%</span>
                         </div>
                         <div class="sa-compliance-info">
-                            <p class="sa-compliance-title">Tingkat Verifikasi</p>
-                            <p class="sa-compliance-desc sa-text-muted">{{ $totalVerified }} dari {{ $totalFormulir }} formulir</p>
+                            <p class="sa-compliance-title">Tingkat Validasi</p>
+                            <p class="sa-compliance-desc sa-text-muted">{{ $totalValidated }} dari {{ $totalFormulir }} formulir</p>
                         </div>
                     </div>
                 </div>
@@ -421,6 +422,23 @@
                         <span class="sa-sys-dot" style="background:#8b5cf6;"></span>
                         <span class="sa-sys-label">Kesiswaan Terdaftar</span>
                         <span class="sa-sys-val">{{ $totalKesiswaan }}</span>
+                    </div>
+                    <hr class="sa-divider">
+                    <div class="sa-compliance">
+                        <div class="sa-compliance-ring">
+                            <svg viewBox="0 0 36 36">
+                                <circle class="sa-ring-bg" cx="18" cy="18" r="14" fill="none" stroke-width="3.5"/>
+                                <circle cx="18" cy="18" r="14" fill="none" stroke-width="3.5"
+                                    stroke="{{ $verifyRate >= 70 ? '#10b981' : ($verifyRate >= 40 ? '#f59e0b' : '#ef4444') }}"
+                                    stroke-dasharray="{{ $verifyRate * 0.88 }} 88"
+                                    stroke-linecap="round"/>
+                            </svg>
+                            <span class="sa-compliance-pct">{{ $verifyRate }}%</span>
+                        </div>
+                        <div class="sa-compliance-info">
+                            <p class="sa-compliance-title">Tingkat Verifikasi</p>
+                            <p class="sa-compliance-desc sa-text-muted">{{ $totalVerified }} dari {{ $totalFormulir }} formulir</p>
+                        </div>
                     </div>
                 </div>
             </div>

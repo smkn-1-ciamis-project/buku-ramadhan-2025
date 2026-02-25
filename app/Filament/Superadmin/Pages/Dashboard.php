@@ -60,6 +60,9 @@ class Dashboard extends Page
     // Verifikasi rate
     $verifyRate = $totalFormulir > 0 ? round(($totalVerified / $totalFormulir) * 100) : 0;
 
+    // Validasi rate (kesiswaan)
+    $validasiRate = $totalFormulir > 0 ? round(($totalValidated / $totalFormulir) * 100) : 0;
+
     // Aktivitas terbaru (10 formulir terakhir)
     $recentSubmissions = FormSubmission::with(['user.kelas', 'verifier'])
       ->orderBy('created_at', 'desc')
@@ -114,6 +117,7 @@ class Dashboard extends Page
       'siswaSubmitHariIni' => $siswaSubmitHariIni,
       'complianceRate' => $complianceRate,
       'verifyRate' => $verifyRate,
+      'validasiRate' => $validasiRate,
       'recentSubmissions' => $recentSubmissions,
       'kelasOverview' => $kelasOverview,
     ];

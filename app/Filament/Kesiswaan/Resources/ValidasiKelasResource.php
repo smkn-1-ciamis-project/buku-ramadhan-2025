@@ -55,6 +55,11 @@ class ValidasiKelasResource extends Resource
 
     return $table
       ->columns([
+        Tables\Columns\ViewColumn::make('select')
+          ->label('')
+          ->view('filament.kesiswaan.columns.kelas-checkbox')
+          ->extraAttributes(['style' => 'width:40px;'])
+          ->alignCenter(),
         Tables\Columns\TextColumn::make('nama')
           ->label('Kelas')
           ->searchable()
@@ -93,7 +98,7 @@ class ValidasiKelasResource extends Resource
               ->count();
           })
           ->badge()
-          ->color('success')
+          ->color(fn(int $state) => $state > 0 ? 'success' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('ditolak_kesiswaan')
           ->label('Ditolak')

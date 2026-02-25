@@ -168,6 +168,37 @@ class ViewVerifikasi extends ViewRecord
           return redirect(VerifikasiResource::getUrl('index'));
         })
         ->visible(fn() => $this->record->status === 'pending'),
+
+      \Filament\Actions\Action::make('resetToPending')
+        ->label('Reset ke Menunggu')
+        ->icon('heroicon-o-arrow-path')
+        ->color('gray')
+        ->requiresConfirmation()
+        ->modalHeading('Reset Verifikasi')
+        ->modalDescription('Verifikasi formulir ini akan dikembalikan ke Menunggu.')
+        ->modalSubmitActionLabel('Ya, Reset')
+        ->action(function () {
+          $this->record->update([
+            'status' => 'pending',
+            'verified_by' => null,
+            'verified_at' => null,
+            'catatan_guru' => null,
+          ]);
+          \Illuminate\Support\Facades\Cache::forget("submissions_{$this->record->user_id}");
+          \Illuminate\Support\Facades\Cache::forget("submission_{$this->record->user_id}_{$this->record->hari_ke}");
+          ActivityLog::log('reset_verification', Auth::user(), [
+            'description' => 'Mereset verifikasi formulir hari ke-' . $this->record->hari_ke . ' dari ' . ($this->record->user?->name ?? '-'),
+            'submission_id' => $this->record->id,
+            'target_user' => $this->record->user?->name,
+            'hari_ke' => $this->record->hari_ke,
+          ]);
+          \Filament\Notifications\Notification::make()
+            ->title('Verifikasi direset ke Menunggu')
+            ->info()
+            ->send();
+          return redirect(VerifikasiResource::getUrl('index'));
+        })
+        ->visible(fn() => $this->record->status === 'verified' && $this->record->kesiswaan_status === 'pending'),
     ];
   }
 }

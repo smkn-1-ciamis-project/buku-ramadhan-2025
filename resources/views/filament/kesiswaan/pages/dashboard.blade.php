@@ -85,7 +85,8 @@
         /* Mid row — 3 columns */
         .ks-mid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; align-items:stretch; }
         .ks-mid > .ks-card { display:flex; flex-direction:column; }
-        .ks-mid > .ks-card > .ks-card-body { flex:1; }
+        .ks-mid > .ks-card > .ks-card-body { flex:1; display:flex; flex-direction:column; }
+        .ks-mid > .ks-card > .ks-card-body .ks-divider { margin-top:auto; }
         @media(max-width:1024px) { .ks-mid { grid-template-columns:1fr; } }
 
         .ks-card {
@@ -137,9 +138,9 @@
 
         /* Bottom section */
         .ks-bottom { display:grid; grid-template-columns:1.2fr 0.8fr; gap:1rem; align-items:stretch; }
-        .ks-bottom > * { display:flex; flex-direction:column; }
-        .ks-bottom .ks-card { display:flex; flex-direction:column; flex:1; }
-        .ks-bottom .ks-card > div:last-child { flex:1; }
+        .ks-bottom > * { display:flex; flex-direction:column; min-height:0; }
+        .ks-bottom .ks-card { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+        .ks-bottom .ks-card > div:last-child { flex:1; min-height:0; overflow-y:auto; }
         @media(max-width:1024px) { .ks-bottom { grid-template-columns:1fr; } }
 
         /* Table styles */

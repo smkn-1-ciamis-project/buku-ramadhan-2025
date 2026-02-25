@@ -218,9 +218,11 @@ class ListFormSubmission extends ListRecords
           $sunat = $d['sunat'] ?? [];
 
           // Puasa
-          $puasa = match ($d['puasa'] ?? '') {
+          $puasaRaw = $d['puasa'] ?? '';
+          $puasaAlasan = $d['puasa_alasan'] ?? '';
+          $puasa = match ($puasaRaw) {
             'ya' => 'Ya',
-            'tidak' => 'Tidak',
+            'tidak' => 'Tidak' . ($puasaAlasan !== '' ? " ({$puasaAlasan})" : ''),
             default => '-',
           };
 

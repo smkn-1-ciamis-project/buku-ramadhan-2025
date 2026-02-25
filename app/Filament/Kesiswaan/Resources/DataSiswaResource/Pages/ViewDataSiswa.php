@@ -4,20 +4,22 @@ namespace App\Filament\Kesiswaan\Resources\DataSiswaResource\Pages;
 
 use App\Filament\Kesiswaan\Resources\DataSiswaResource;
 use App\Models\FormSubmission;
+use App\Models\PrayerCheckin;
 use Carbon\Carbon;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewDataSiswa extends ViewRecord
 {
   protected static string $resource = DataSiswaResource::class;
 
-  public function infolist(Infolist $infolist): Infolist
+  protected static string $view = 'filament.kesiswaan.pages.view-data-siswa';
+
+  protected function getViewData(): array
   {
     $user = $this->record;
+    $user->load(['kelas.wali', 'role_user']);
 
-    // Calculate Ramadhan day
+    // Ramadhan calculation
     $ramadhanStart = Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
     $ramadhanEnd   = Carbon::create(2026, 3, 20, 23, 59, 59, 'Asia/Jakarta');
     $now = now('Asia/Jakarta');
@@ -25,68 +27,105 @@ class ViewDataSiswa extends ViewRecord
     $hariKe = $isRamadhan ? min((int) $ramadhanStart->diffInDays($now) + 1, 30) : 0;
 
     // Submission stats
-    $submissions = FormSubmission::where('user_id', $user->id)->get();
+    $submissions = FormSubmission::where('user_id', $user->id)
+      ->orderBy('hari_ke')
+      ->get();
     $totalSubmit = $submissions->count();
     $verified    = $submissions->where('status', 'verified')->count();
     $pending     = $submissions->where('status', 'pending')->count();
     $rejected    = $submissions->where('status', 'rejected')->count();
     $submittedDays = $submissions->pluck('hari_ke')->toArray();
+
     $missingDays = [];
     for ($d = 1; $d <= $hariKe; $d++) {
       if (!in_array($d, $submittedDays)) {
         $missingDays[] = $d;
       }
     }
+
     $progress = $hariKe > 0 ? round(($totalSubmit / $hariKe) * 100) : 0;
+    $verifyRate = $totalSubmit > 0 ? round(($verified / $totalSubmit) * 100) : 0;
 
-    return $infolist
-      ->schema([
-        Infolists\Components\Section::make('Profil Siswa')
-          ->schema([
-            Infolists\Components\TextEntry::make('name')->label('Nama'),
-            Infolists\Components\TextEntry::make('nisn')->label('NISN'),
-            Infolists\Components\TextEntry::make('email')->label('Email'),
-            Infolists\Components\TextEntry::make('kelas.nama')->label('Kelas'),
-            Infolists\Components\TextEntry::make('agama')->label('Agama'),
-            Infolists\Components\TextEntry::make('jenis_kelamin')
-              ->label('Jenis Kelamin')
-              ->formatStateUsing(fn(?string $state) => match ($state) {
-                'P' => 'Perempuan',
-                'L' => 'Laki-laki',
-                default => '-'
-              }),
-          ])
-          ->columns(3),
+    // Per-day detail for the table
+    $dayDetails = [];
+    for ($d = 1; $d <= $hariKe; $d++) {
+      $sub = $submissions->firstWhere('hari_ke', $d);
+      $dayDetails[] = [
+        'hari' => $d,
+        'tanggal' => $ramadhanStart->copy()->addDays($d - 1)->translatedFormat('d M Y'),
+        'status' => $sub ? $sub->status : 'belum',
+        'verified_at' => $sub && $sub->verified_at ? $sub->verified_at->format('d/m/Y H:i') : null,
+        'catatan_guru' => $sub->catatan_guru ?? null,
+        'created_at' => $sub ? $sub->created_at->format('d/m/Y H:i') : null,
+      ];
+    }
 
-        Infolists\Components\Section::make('Statistik Formulir')
-          ->schema([
-            Infolists\Components\TextEntry::make('progress')
-              ->label('Progress Pengisian')
-              ->state("{$totalSubmit}/{$hariKe} hari ({$progress}%)")
-              ->badge()
-              ->color($progress >= 80 ? 'success' : ($progress >= 50 ? 'warning' : 'danger')),
-            Infolists\Components\TextEntry::make('stat_verified')
-              ->label('Terverifikasi')
-              ->state((string) $verified)
-              ->badge()
-              ->color('success'),
-            Infolists\Components\TextEntry::make('stat_pending')
-              ->label('Menunggu')
-              ->state((string) $pending)
-              ->badge()
-              ->color('warning'),
-            Infolists\Components\TextEntry::make('stat_rejected')
-              ->label('Ditolak')
-              ->state((string) $rejected)
-              ->badge()
-              ->color('danger'),
-            Infolists\Components\TextEntry::make('missing')
-              ->label('Hari Belum Mengisi')
-              ->state(count($missingDays) > 0 ? implode(', ', array_map(fn($d) => "Hari {$d}", $missingDays)) : 'Semua hari sudah diisi ✅')
-              ->columnSpanFull()
-              ->color(count($missingDays) > 0 ? 'danger' : 'success'),
-          ])
-          ->columns(4),
-      ]);
+    // Prayer checkin stats
+    $totalPrayerDays = PrayerCheckin::where('user_id', $user->id)
+      ->distinct('tanggal')
+      ->count('tanggal');
+    $totalJamaah = PrayerCheckin::where('user_id', $user->id)
+      ->where('status', 'jamaah')
+      ->count();
+    $totalMunfarid = PrayerCheckin::where('user_id', $user->id)
+      ->where('status', 'munfarid')
+      ->count();
+
+    // Streak calculation (consecutive days submitted)
+    $streak = 0;
+    for ($d = $hariKe; $d >= 1; $d--) {
+      if (in_array($d, $submittedDays)) {
+        $streak++;
+      } else {
+        break;
+      }
+    }
+
+    // Last submission info
+    $lastSubmission = $submissions->last();
+
+    // Build calendar cells (7-column Mon–Sun grid, same as validasi page)
+    $leadingEmpties = $ramadhanStart->dayOfWeekIso - 1; // Thursday = 4, so 3 leading empties
+    $calendarCells  = [];
+
+    for ($i = 0; $i < $leadingEmpties; $i++) {
+      $calendarCells[] = null;
+    }
+    for ($d = 1; $d <= 30; $d++) {
+      $date = $ramadhanStart->copy()->addDays($d - 1);
+      $sub  = $submissions->firstWhere('hari_ke', $d);
+      $calendarCells[] = [
+        'ramadanDay'       => $d,
+        'masehiDay'        => $date->day,
+        'masehiMonthShort' => $date->locale('id')->isoFormat('MMM'),
+        'isPast'           => $d <= $hariKe,
+        'isToday'          => $d === $hariKe && $now->isSameDay($date),
+        'status'           => $sub ? $sub->status : null,
+      ];
+    }
+    // Trailing empties to complete last row
+    $trailing = (7 - (count($calendarCells) % 7)) % 7;
+    for ($i = 0; $i < $trailing; $i++) {
+      $calendarCells[] = null;
+    }
+
+    return [
+      'user' => $user,
+      'hariKe' => $hariKe,
+      'totalSubmit' => $totalSubmit,
+      'verified' => $verified,
+      'pending' => $pending,
+      'rejected' => $rejected,
+      'missingDays' => $missingDays,
+      'progress' => min($progress, 100),
+      'verifyRate' => $verifyRate,
+      'dayDetails' => $dayDetails,
+      'calendarCells' => $calendarCells,
+      'totalPrayerDays' => $totalPrayerDays,
+      'totalJamaah' => $totalJamaah,
+      'totalMunfarid' => $totalMunfarid,
+      'streak' => $streak,
+      'lastSubmission' => $lastSubmission,
+    ];
   }
 }

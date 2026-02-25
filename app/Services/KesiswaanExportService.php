@@ -38,16 +38,21 @@ class KesiswaanExportService
 
   /**
    * Export validasi data per kelas (satu kelas = satu sheet).
-   * Jika $kelasId diberikan, hanya kelas itu yang diexport.
+   * Jika $kelasIds diberikan (array), hanya kelas-kelas itu yang diexport.
    * Berisi data formulir lengkap + status validasi kesiswaan.
    */
-  public static function exportValidasi(?string $kelasId = null): StreamedResponse
+  public static function exportValidasi(array|string|null $kelasIds = null): StreamedResponse
   {
     static::init();
     $hariKe = static::hariKe();
 
-    if ($kelasId) {
-      $kelasList = Kelas::where('id', $kelasId)->with(['wali', 'siswa'])->get();
+    // Normalize: accept single string ID, array of IDs, or null (all)
+    if (is_string($kelasIds)) {
+      $kelasIds = array_filter(explode(',', $kelasIds));
+    }
+
+    if (!empty($kelasIds)) {
+      $kelasList = Kelas::whereIn('id', $kelasIds)->with(['wali', 'siswa'])->orderBy('nama')->get();
     } else {
       $kelasList = Kelas::with(['wali', 'siswa'])->orderBy('nama')->get();
     }
@@ -289,9 +294,13 @@ class KesiswaanExportService
     }
 
     $spreadsheet->setActiveSheetIndex(0);
-    $suffix = $kelasId && $kelasList->count() === 1
-      ? str_replace(' ', '_', $kelasList->first()->nama)
-      : 'Semua_Kelas';
+    if (!empty($kelasIds) && $kelasList->count() === 1) {
+      $suffix = str_replace(' ', '_', $kelasList->first()->nama);
+    } elseif (!empty($kelasIds)) {
+      $suffix = $kelasList->count() . '_Kelas';
+    } else {
+      $suffix = 'Semua_Kelas';
+    }
     return static::streamDownload(
       $spreadsheet,
       "Validasi_Kesiswaan_{$suffix}_" . now()->format('Y-m-d') . '.xlsx'
@@ -303,11 +312,13 @@ class KesiswaanExportService
   {
     // Puasa
     $puasa = $data['puasa'] ?? '';
-    $sheet->setCellValue("G{$row}", match ($puasa) {
+    $puasaAlasan = $data['puasa_alasan'] ?? '';
+    $puasaLabel = match ($puasa) {
       'ya' => 'Ya',
-      'tidak' => 'Tidak',
+      'tidak' => 'Tidak' . ($puasaAlasan !== '' ? ' (' . $puasaAlasan . ')' : ''),
       default => '—'
-    });
+    };
+    $sheet->setCellValue("G{$row}", $puasaLabel);
     static::colorBool($sheet, "G{$row}", $puasa === 'ya');
 
     // Sholat wajib

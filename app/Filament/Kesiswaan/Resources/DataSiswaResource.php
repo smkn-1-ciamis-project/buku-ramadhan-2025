@@ -81,7 +81,7 @@ class DataSiswaResource extends Resource
           ->counts('formSubmissions')
           ->sortable()
           ->badge()
-          ->color('success')
+          ->color(fn(int $state): string => $state > 0 ? 'success' : 'gray')
           ->alignCenter(),
       ])
       ->defaultSort('name')
