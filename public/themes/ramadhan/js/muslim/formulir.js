@@ -606,6 +606,10 @@ function formulirHarian() {
             if (Object.keys(this.enabledSections).length === 0) return true;
             return this.enabledSections[key] !== false;
         },
+        _restoreCeramahEditor() {
+            // x-effect on the contenteditable handles restore reactively.
+            // This is kept as a no-op for backward compatibility with callers.
+        },
         init() {
             this.calculateRamadhanDay();
             this.loadSubmittedDays();
@@ -639,6 +643,8 @@ function formulirHarian() {
             }
             this.checkFormSubmitted();
             this._rebuildTadarusUI();
+            // x-effect on the contenteditable in the blade template handles
+            // reactive restore of ringkasan_ceramah — no $watch needed here.
         },
         ramadhanDay: 1,
         calculateRamadhanDay() {
@@ -797,13 +803,50 @@ function formulirHarian() {
             }
         },
         addTadarusEntry() {
-            this.formData.tadarus_entries.push({ surat: "", ayat: "" });
-            this.tadarusUI.push({
+            var newEntry = { surat: "", ayat: "" };
+            var newUI = {
                 maxAyat: 0,
                 ayatError: "",
                 filteredSurahs: QURAN_SURAHS.slice(),
                 showSurahList: false,
-            });
+            };
+
+            // Smart continuation: look at the last entry to pre-fill
+            var entries = this.formData.tadarus_entries;
+            var last = entries.length > 0 ? entries[entries.length - 1] : null;
+            if (last && last.surat) {
+                var prevSurah = QURAN_SURAHS.find(function (s) {
+                    return s.name === last.surat;
+                });
+                if (prevSurah) {
+                    // Parse the ayat value to find the ending ayat
+                    var lastAyatEnd = 0;
+                    if (last.ayat) {
+                        var parts = last.ayat.split("-").filter(function (p) {
+                            return p !== "";
+                        });
+                        lastAyatEnd = parseInt(parts[parts.length - 1]) || 0;
+                    }
+
+                    if (lastAyatEnd > 0 && lastAyatEnd < prevSurah.ayat) {
+                        // Didn't finish the surah → continue same surah from next ayat
+                        newEntry.surat = prevSurah.name;
+                        newEntry.ayat = String(lastAyatEnd + 1);
+                        newUI.maxAyat = prevSurah.ayat;
+                    } else {
+                        // Finished the surah (or no ayat specified) → move to next surah
+                        var nextIdx = prevSurah.number; // number is 1-based, so this is the index of the next surah
+                        if (nextIdx < QURAN_SURAHS.length) {
+                            var nextSurah = QURAN_SURAHS[nextIdx];
+                            newEntry.surat = nextSurah.name;
+                            newUI.maxAyat = nextSurah.ayat;
+                        }
+                    }
+                }
+            }
+
+            this.formData.tadarus_entries.push(newEntry);
+            this.tadarusUI.push(newUI);
         },
         removeTadarusEntry(idx) {
             if (this.formData.tadarus_entries.length <= 1) return;
@@ -888,15 +931,7 @@ function formulirHarian() {
                 if (savedForm) {
                     var parsed = JSON.parse(savedForm);
                     this.formData = this._deepMerge(this.formData, parsed);
-                    var self = this;
-                    if (self.formData.ringkasan_ceramah) {
-                        this.$nextTick(function () {
-                            if (self.$refs.ceramahEditor) {
-                                self.$refs.ceramahEditor.innerHTML =
-                                    self.formData.ringkasan_ceramah;
-                            }
-                        });
-                    }
+                    this._restoreCeramahEditor();
                     if (
                         this.formData.tadarus_surat &&
                         !this.formData.tadarus_entries
@@ -1175,10 +1210,16 @@ function formulirHarian() {
                 this.showErrorPopup = true;
                 return;
             }
-            // Sync editor content
+            // Sync editor content (keep existing value as fallback)
             if (this.$refs.ceramahEditor) {
-                this.formData.ringkasan_ceramah =
-                    this.$refs.ceramahEditor.innerHTML;
+                var editorHtml = this.$refs.ceramahEditor.innerHTML || "";
+                var cleanHtml = editorHtml
+                    .replace(/<[^>]*>/g, "")
+                    .replace(/&nbsp;/g, " ")
+                    .trim();
+                if (cleanHtml) {
+                    this.formData.ringkasan_ceramah = editorHtml;
+                }
             }
             this.formSaving = true;
             localStorage.setItem(
@@ -1203,14 +1244,20 @@ function formulirHarian() {
                 this.showErrorPopup = true;
                 return;
             }
-            // Sync editor content before validation
+            // Sync editor content before validation (preserve existing value if editor is empty)
             if (this.$refs.ceramahEditor) {
-                this.formData.ringkasan_ceramah =
-                    this.$refs.ceramahEditor.innerHTML;
+                var _html = this.$refs.ceramahEditor.innerHTML || "";
+                var _clean = _html
+                    .replace(/<[^>]*>/g, "")
+                    .replace(/&nbsp;/g, " ")
+                    .trim();
+                if (_clean) {
+                    this.formData.ringkasan_ceramah = _html;
+                }
             }
             var errors = this.validateForm();
             if (errors.length > 0) {
-                // Form belum lengkap → simpan draft
+                // Form belum lengkap → simpan sebagai draft
                 this.saveDraft();
                 return;
             }

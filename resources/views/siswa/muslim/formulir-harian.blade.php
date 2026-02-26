@@ -455,10 +455,11 @@
                             <div class="f-editor-content"
                                  contenteditable="true"
                                  x-ref="ceramahEditor"
-                                 @input="formData.ringkasan_ceramah = $refs.ceramahEditor.innerHTML"
-                                 @blur="formData.ringkasan_ceramah = $refs.ceramahEditor.innerHTML"
+                                 x-effect="if (formData.ringkasan_ceramah && !$el.matches(':focus')) $el.innerHTML = formData.ringkasan_ceramah"
+                                 @input="formData.ringkasan_ceramah = $el.innerHTML"
+                                 @keyup="formData.ringkasan_ceramah = $el.innerHTML; updateEditorFormats()"
+                                 @blur="formData.ringkasan_ceramah = $el.innerHTML"
                                  @mouseup="updateEditorFormats()"
-                                 @keyup="updateEditorFormats()"
                                  data-placeholder="Tulis ringkasan ceramah hari ini..."></div>
                         </div>
                     </div>

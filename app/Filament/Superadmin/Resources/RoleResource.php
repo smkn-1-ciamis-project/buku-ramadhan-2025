@@ -59,7 +59,7 @@ class RoleResource extends Resource
   /**
    * Get the correct menu set for a given role name.
    */
-  protected static function getMenusForRole(?string $roleName): array
+  public static function getMenusForRole(?string $roleName): array
   {
     return match ($roleName) {
       'Super Admin' => self::SUPERADMIN_MENUS,
@@ -67,6 +67,21 @@ class RoleResource extends Resource
       'Kesiswaan' => self::KESISWAAN_MENUS,
       default => [],
     };
+  }
+
+  public static function getSuperadminMenus(): array
+  {
+    return self::SUPERADMIN_MENUS;
+  }
+
+  public static function getGuruMenus(): array
+  {
+    return self::GURU_MENUS;
+  }
+
+  public static function getKesiswaanMenus(): array
+  {
+    return self::KESISWAAN_MENUS;
   }
 
   public static function form(Form $form): Form

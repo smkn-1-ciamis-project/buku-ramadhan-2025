@@ -1,7 +1,7 @@
 // Calakan - Service Worker
 // Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis
 
-const CACHE_NAME = "calakan-cache-v8";
+const CACHE_NAME = "calakan-cache-v9";
 const OFFLINE_URL = "/offline.html";
 
 // Assets yang selalu di-cache saat install
