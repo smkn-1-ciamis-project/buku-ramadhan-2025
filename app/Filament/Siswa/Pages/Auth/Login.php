@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
+use Illuminate\Support\Facades\Cache;
 
 class Login extends BaseLogin
 {
@@ -17,6 +18,8 @@ class Login extends BaseLogin
   public bool $showDevicePopup = false;
   public bool $showErrorPopup = false;
   public string $errorPopupMessage = '';
+  public bool $showLockPopup = false;
+  public int $lockSeconds = 0;
 
   protected function getForms(): array
   {
@@ -89,6 +92,19 @@ class Login extends BaseLogin
 
     $credentials = $this->getCredentialsFromFormData($data);
 
+    // ── Failed-attempt rate limit (3 attempts per NISN, 60s lockout) ──
+    $nisn = $credentials['nisn'];
+    $lockKey = 'login_lock:' . $nisn;
+    $failKey = 'login_fails:' . $nisn;
+
+    if (Cache::has($lockKey)) {
+      $remaining = (int) ceil(Cache::get($lockKey) - now()->timestamp);
+      if ($remaining < 0) $remaining = 0;
+      $this->lockSeconds = $remaining > 0 ? $remaining : 60;
+      $this->showLockPopup = true;
+      return null;
+    }
+
     // ── Single-session pre-check ───────────────────────────────────────
     // Load the user BEFORE Auth::attempt so we can inspect the existing
     // session without side-effects.
@@ -115,10 +131,26 @@ class Login extends BaseLogin
     $remember = $data['remember'] ?? false;
 
     if (! Auth::attempt($credentials, $remember)) {
-      $this->errorPopupMessage = 'NISN atau password salah. Pastikan NISN terdiri dari 10 digit angka.';
+      // Track failed attempts
+      $fails = (int) Cache::get($failKey, 0) + 1;
+      Cache::put($failKey, $fails, 120); // keep counter for 2 min
+
+      if ($fails >= 3) {
+        Cache::put($lockKey, now()->addSeconds(60)->timestamp, 60);
+        Cache::forget($failKey);
+        $this->lockSeconds = 60;
+        $this->showLockPopup = true;
+        return null;
+      }
+
+      $this->errorPopupMessage = 'NISN atau password salah. Pastikan NISN terdiri dari 10 digit angka. (' . $fails . '/3 percobaan)';
       $this->showErrorPopup = true;
       return null;
     }
+
+    // Clear failed attempts on success
+    Cache::forget($failKey);
+    Cache::forget($lockKey);
 
     /** @var \App\Models\User $user */
     $user = Auth::user();

@@ -146,6 +146,8 @@ function formulirHarian() {
         showSuccessPopup: false,
         showSavePopup: false,
         successDay: 0,
+        showConfirmPopup: false,
+        confirmAction: "",
         showErrorPopup: false,
         errorMessages: [],
         submittedDays: [],
@@ -1257,10 +1259,17 @@ function formulirHarian() {
             }
             var errors = this.validateForm();
             if (errors.length > 0) {
-                // Form belum lengkap → simpan sebagai draft
-                this.saveDraft();
+                // Form belum lengkap → tampilkan konfirmasi draft
+                this.confirmAction = "draft";
+                this.showConfirmPopup = true;
                 return;
             }
+            // Form lengkap → tampilkan konfirmasi kirim
+            this.confirmAction = "submit";
+            this.showConfirmPopup = true;
+        },
+        confirmSubmit() {
+            this.showConfirmPopup = false;
             this.formSaving = true;
             localStorage.setItem(
                 this._lsKey("ramadhan_form_day_" + this.formDay),
@@ -1330,6 +1339,10 @@ function formulirHarian() {
                     }
                 }
             }, 600);
+        },
+        confirmDraft() {
+            this.showConfirmPopup = false;
+            this.saveDraft();
         },
         editForm() {
             if (this.currentDayKesiswaanStatus === "validated") {

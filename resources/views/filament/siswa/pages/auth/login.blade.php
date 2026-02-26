@@ -1,4 +1,5 @@
-<div class="login-page" x-data="{ showDevicePopup: $wire.entangle('showDevicePopup'), showErrorPopup: $wire.entangle('showErrorPopup') }">
+<div class="login-page" x-data="{ showDevicePopup: $wire.entangle('showDevicePopup'), showErrorPopup: $wire.entangle('showErrorPopup'), showLockPopup: $wire.entangle('showLockPopup'), lockSeconds: $wire.entangle('lockSeconds'), lockTimer: null }"
+     x-effect="if (showLockPopup && lockSeconds > 0 && !lockTimer) { lockTimer = setInterval(() => { lockSeconds--; if (lockSeconds <= 0) { clearInterval(lockTimer); lockTimer = null; showLockPopup = false; } }, 1000); }">
 
   {{-- ── Inject Login CSS ── --}}
   @once
@@ -232,6 +233,44 @@
       <button type="button" class="login-popup-btn" @click="showErrorPopup = false">
         Mengerti
       </button>
+    </div>
+  </div>
+
+  {{-- ═══════════════════════════════
+       POPUP: Terlalu Banyak Percobaan
+  ═══════════════════════════════ --}}
+  <div x-show="showLockPopup"
+       x-cloak
+       class="login-popup-overlay"
+       x-transition:enter="popup-enter"
+       x-transition:enter-start="popup-enter-start"
+       x-transition:enter-end="popup-enter-end"
+       x-transition:leave="popup-leave"
+       x-transition:leave-start="popup-leave-start"
+       x-transition:leave-end="popup-leave-end">
+
+    <div class="login-popup-card">
+
+      {{-- Icon --}}
+      <div class="login-popup-icon login-popup-icon--error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+
+      {{-- Title --}}
+      <div class="login-popup-title">Terlalu Banyak Percobaan</div>
+
+      {{-- Message --}}
+      <div class="login-popup-message">
+        Anda sudah salah memasukkan NISN atau password sebanyak 3 kali. Silakan coba lagi dalam <strong x-text="lockSeconds"></strong> detik.
+      </div>
+
+      {{-- Countdown --}}
+      <div style="margin:16px auto 8px;width:64px;height:64px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:24px;font-weight:700;color:#ef4444;" x-text="lockSeconds"></span>
+      </div>
     </div>
   </div>
 

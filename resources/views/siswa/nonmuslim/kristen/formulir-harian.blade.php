@@ -426,6 +426,32 @@
                     <span x-text="validationMessage"></span>
                 </div>
 
+                {{-- Confirmation Popup (Submit / Draft) --}}
+                <div x-show="showConfirmPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9998;" x-cloak></div>
+                <div x-show="showConfirmPopup" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:20px;padding:32px 28px;box-shadow:0 12px 40px rgba(0,0,0,.2);text-align:center;max-width:340px;width:90%;" x-cloak>
+                    <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#3b82f6;">
+                        <template x-if="confirmAction === 'submit'">
+                            <svg width="28" height="28" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                        </template>
+                        <template x-if="confirmAction === 'draft'">
+                            <svg width="28" height="28" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 3v4H7"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 14h10M7 18h6"/></svg>
+                        </template>
+                    </div>
+                    <h3 style="margin:0 0 6px;font-size:18px;font-weight:700;color:#1e293b;" x-text="confirmAction === 'submit' ? 'Kirim Formulir?' : 'Simpan Draft?'"></h3>
+                    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">
+                        <template x-if="confirmAction === 'submit'">
+                            <span>Formulir <strong x-text="'Hari ke-' + formDay + ' Ramadhan'"></strong> akan dikirim ke guru untuk diverifikasi.</span>
+                        </template>
+                        <template x-if="confirmAction === 'draft'">
+                            <span>Formulir <strong x-text="'Hari ke-' + formDay + ' Ramadhan'"></strong> belum lengkap dan akan disimpan sebagai draft.</span>
+                        </template>
+                    </p>
+                    <div style="display:flex;gap:10px;justify-content:center;">
+                        <button type="button" @click="showConfirmPopup = false" style="flex:1;padding:10px 0;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:14px;cursor:pointer;">Batal</button>
+                        <button type="button" @click="confirmAction === 'submit' ? confirmSubmit() : confirmDraft()" style="flex:1;padding:10px 0;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-weight:600;font-size:14px;cursor:pointer;" x-text="confirmAction === 'submit' ? 'Ya, Kirim' : 'Ya, Simpan'"></button>
+                    </div>
+                </div>
+
                 {{-- Save Draft Popup --}}
                 <div x-show="showSavePopup" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:20px;padding:36px 40px;box-shadow:0 12px 40px rgba(0,0,0,.2);text-align:center;min-width:300px;">
                     <div style="width:64px;height:64px;margin:0 auto 16px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;">

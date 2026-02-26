@@ -81,12 +81,8 @@ class FormSubmissionController extends Controller
     Cache::forget("checkins_today_{$user->id}_" . now()->toDateString());
     Cache::forget("checkins_date_{$user->id}_" . now()->toDateString());
 
-    ActivityLog::log('submit_form', $user, [
-      'description' => 'Mengirim formulir hari ke-' . $request->hari_ke,
-      'hari_ke' => $request->hari_ke,
-      'submission_id' => $submission->id,
-      'is_update' => $existing ? true : false,
-    ]);
+    // Activity log skip — submission data already stored in form_submissions table
+    // ActivityLog::log('submit_form') removed to reduce database bloat from students
 
     return response()->json([
       'success' => true,
