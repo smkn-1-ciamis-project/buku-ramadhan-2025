@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Increase memory limit for Filament panels with heavy tables
+        ini_set('memory_limit', '256M');
+
         // Register auth activity logger
         $logger = new AuthActivityLogger();
         Event::listen(Login::class, [$logger, 'handleLogin']);

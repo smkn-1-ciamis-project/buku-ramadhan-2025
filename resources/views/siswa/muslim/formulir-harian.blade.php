@@ -360,6 +360,7 @@
 
                     {{-- Group A --}}
                     <p class="f-group-label" x-text="groupTitles[0]">Amaliyah Cageur, Bageur dan Bener</p>
+                    <p style="margin:-4px 0 8px;font-size:12px;color:#94a3b8;font-style:italic;">* Minimal pilih 3 kegiatan</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupA" :key="kg.key">
                             <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'" x-show="!(formData.puasa === 'tidak' && formData.puasa_alasan === 'Haid' && (kg.key === 'dzikir_pagi' || kg.key === 'dzikir_petang'))">
@@ -388,6 +389,7 @@
 
                     {{-- Group C --}}
                     <p class="f-group-label" x-text="groupTitles[2]">Amaliyah Pancawaluya Singer</p>
+                    <p style="margin:-4px 0 8px;font-size:12px;color:#94a3b8;font-style:italic;">* Minimal pilih 1 kegiatan</p>
                     <div class="f-kegiatan-grid">
                         <template x-for="kg in kegiatanGroupC" :key="kg.key">
                             <label class="f-kegiatan-item" :class="formData.kegiatan[kg.key] && 'f-kegiatan-active'">
@@ -602,17 +604,17 @@
                 {{-- Submit button --}}
                 <div class="f-submit-wrap">
                     <button @click="submitForm()" :disabled="(formSubmitted && currentDayKesiswaanStatus !== 'rejected') || formSaving"
-                            class="f-submit-btn" :class="[(formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'f-submit-btn-disabled' : '', (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && !isFormComplete() ? 'f-submit-btn-draft' : '']">
+                            class="f-submit-btn" :class="[(formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'f-submit-btn-disabled' : '', (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && (!isFormComplete() || hasPendingPrayers()) ? 'f-submit-btn-draft' : '']">
                         <template x-if="formSaving">
                             <svg class="f-spin" fill="none" viewBox="0 0 24 24"><circle class="f-spin-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="f-spin-path" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         </template>
                         {{-- Icon: Simpan (draft) --}}
-                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && !isFormComplete()" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 3v4H7"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 14h10M7 18h6"/></svg>
+                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && (!isFormComplete() || hasPendingPrayers())" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 3v4H7"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 14h10M7 18h6"/></svg>
                         {{-- Icon: Kirim (complete) --}}
-                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && isFormComplete()" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                        <svg x-show="!formSaving && (!formSubmitted || currentDayKesiswaanStatus === 'rejected') && isFormComplete() && !hasPendingPrayers()" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
                         {{-- Icon: Sudah dikirim --}}
                         <svg x-show="formSubmitted && currentDayKesiswaanStatus !== 'rejected' && !formSaving" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span x-text="formSaving ? 'Menyimpan...' : ((formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'Sudah Dikirim' : (isFormComplete() ? (currentDayKesiswaanStatus === 'rejected' ? 'Kirim Ulang Formulir' : 'Kirim Formulir') : 'Simpan'))"></span>
+                        <span x-text="formSaving ? 'Menyimpan...' : ((formSubmitted && currentDayKesiswaanStatus !== 'rejected') ? 'Sudah Dikirim' : (isFormComplete() && !hasPendingPrayers() ? (currentDayKesiswaanStatus === 'rejected' ? 'Kirim Ulang Formulir' : 'Kirim Formulir') : 'Simpan Draft'))"></span>
                     </button>
                 </div>
 
@@ -652,7 +654,10 @@
                         <template x-if="confirmAction === 'submit'">
                             <span>Formulir <strong x-text="'Hari ke-' + formDay + ' Ramadhan'"></strong> akan dikirim ke guru untuk diverifikasi.</span>
                         </template>
-                        <template x-if="confirmAction === 'draft'">
+                        <template x-if="confirmAction === 'draft' && draftReason === 'prayer_pending'">
+                            <span>Masih ada waktu sholat yang belum terbuka. Formulir <strong x-text="'Hari ke-' + formDay + ' Ramadhan'"></strong> akan disimpan sebagai draft dan bisa dikirim setelah semua waktu sholat terbuka.</span>
+                        </template>
+                        <template x-if="confirmAction === 'draft' && draftReason !== 'prayer_pending'">
                             <span>Formulir <strong x-text="'Hari ke-' + formDay + ' Ramadhan'"></strong> belum lengkap dan akan disimpan sebagai draft.</span>
                         </template>
                     </p>

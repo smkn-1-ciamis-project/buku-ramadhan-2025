@@ -148,6 +148,7 @@ function formulirHarian() {
         successDay: 0,
         showConfirmPopup: false,
         confirmAction: "",
+        draftReason: "",
         showErrorPopup: false,
         errorMessages: [],
         submittedDays: [],
@@ -201,6 +202,27 @@ function formulirHarian() {
             var h = String(schedule.hour).padStart(2, "0");
             var m = String(schedule.min).padStart(2, "0");
             return h + ":" + m;
+        },
+
+        /**
+         * Returns true if today's form still has prayer(s) that haven't
+         * opened yet — meaning the form cannot be fully submitted yet.
+         * Only relevant for today's form (formDay === ramadhanDay).
+         */
+        hasPendingPrayers() {
+            if (this.formDay !== this.ramadhanDay) return false;
+            var allKeys = [
+                "subuh",
+                "dzuhur",
+                "ashar",
+                "maghrib",
+                "isya",
+                "tarawih",
+            ];
+            for (var i = 0; i < allKeys.length; i++) {
+                if (!this.isPrayerUnlocked(allKeys[i])) return true;
+            }
+            return false;
         },
 
         loadPrayerTimes() {
@@ -1228,7 +1250,34 @@ function formulirHarian() {
                 this._lsKey("ramadhan_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
             );
+            // Kirim data ke server agar sholat tersinkron ke check-in
             var self = this;
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            _throttledFetch(
+                "saveDraft",
+                "/api/formulir",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-CSRF-TOKEN": csrfToken
+                            ? csrfToken.getAttribute("content")
+                            : "",
+                    },
+                    body: JSON.stringify({
+                        hari_ke: self.formDay,
+                        data: self.formData,
+                    }),
+                },
+                3000,
+            )
+                .then(function (r) {
+                    return r.json();
+                })
+                .catch(function (e) {
+                    console.warn("Draft gagal disimpan ke server:", e);
+                });
             setTimeout(function () {
                 self.formSaving = false;
                 self.successDay = self.formDay;
@@ -1261,11 +1310,20 @@ function formulirHarian() {
             if (errors.length > 0) {
                 // Form belum lengkap → tampilkan konfirmasi draft
                 this.confirmAction = "draft";
+                this.draftReason = "incomplete";
                 this.showConfirmPopup = true;
                 return;
             }
-            // Form lengkap → tampilkan konfirmasi kirim
+            // Ada sholat yang belum terbuka hari ini → simpan draft dulu
+            if (this.hasPendingPrayers()) {
+                this.confirmAction = "draft";
+                this.draftReason = "prayer_pending";
+                this.showConfirmPopup = true;
+                return;
+            }
+            // Form lengkap & semua sholat sudah terbuka → tampilkan konfirmasi kirim
             this.confirmAction = "submit";
+            this.draftReason = "";
             this.showConfirmPopup = true;
         },
         confirmSubmit() {

@@ -41,6 +41,7 @@ class ActivityLogResource extends Resource
   public static function table(Table $table): Table
   {
     return $table
+      ->modifyQueryUsing(fn($query) => $query->with('user'))
       ->columns([
         Tables\Columns\TextColumn::make('created_at')
           ->label('Waktu')
@@ -252,6 +253,22 @@ class ActivityLogResource extends Resource
             'kesiswaan' => 'Kesiswaan',
             'siswa' => 'Siswa',
           ]),
+        Tables\Filters\SelectFilter::make('agama')
+          ->label('Agama')
+          ->options([
+            'Islam' => 'Islam',
+            'Kristen' => 'Kristen',
+            'Katolik' => 'Katolik',
+            'Hindu' => 'Hindu',
+            'Buddha' => 'Buddha',
+            'Konghucu' => 'Konghucu',
+          ])
+          ->query(function ($query, array $data) {
+            if (!empty($data['value'])) {
+              $query->whereHas('user', fn($q) => $q->where('agama', $data['value']));
+            }
+            return $query;
+          }),
         Tables\Filters\Filter::make('created_at')
           ->form([
             \Filament\Forms\Components\DatePicker::make('from')->label('Dari Tanggal'),
@@ -269,7 +286,7 @@ class ActivityLogResource extends Resource
         ]),
       ])
       ->bulkActions([])
-      ->poll('30s');
+      ->defaultPaginationPageOption(25);
   }
 
   public static function infolist(Infolist $infolist): Infolist
