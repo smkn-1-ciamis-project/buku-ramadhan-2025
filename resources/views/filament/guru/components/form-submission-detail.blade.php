@@ -136,6 +136,16 @@
   /* Pill badges */
   .fsd-pill { display: inline-block; padding: 0.3rem 0.75rem; border-radius: 9999px; font-weight: 600; font-size: 0.8rem; }
   .fsd-pill-sm { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; }
+
+  /* Responsive: mobile */
+  @media (max-width: 640px) {
+    .fsd-sholat-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .fsd-tarawih-sunat-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
 </style>
 
 <div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 1.25rem;">
@@ -168,7 +178,7 @@
     <div class="fsd-card">
       <div class="fsd-card-header"><h3>Sholat Fardhu</h3></div>
       <div class="fsd-card-body">
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; min-width: 0;" class="fsd-sholat-grid">
           @foreach(['subuh' => 'Subuh', 'dzuhur' => 'Dzuhur', 'ashar' => 'Ashar', 'maghrib' => 'Maghrib', 'isya' => 'Isya'] as $key => $label)
             @php
               $val = $data['sholat'][$key] ?? '';
@@ -189,7 +199,7 @@
     </div>
 
     {{-- Tarawih & Sholat Sunat --}}
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;" class="fsd-tarawih-sunat-grid">
       <div class="fsd-card">
         <div class="fsd-card-header"><h3>Tarawih</h3></div>
         <div class="fsd-card-body">

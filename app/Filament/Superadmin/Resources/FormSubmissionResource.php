@@ -94,10 +94,17 @@ class FormSubmissionResource extends Resource
       ->defaultSort('created_at', 'desc')
       ->filters([
         Tables\Filters\SelectFilter::make('status')
-          ->label('Status')
+          ->label('Status Verifikasi')
           ->options([
             'pending' => 'Menunggu',
             'verified' => 'Diverifikasi',
+            'rejected' => 'Ditolak',
+          ]),
+        Tables\Filters\SelectFilter::make('kesiswaan_status')
+          ->label('Status Validasi')
+          ->options([
+            'pending' => 'Menunggu',
+            'validated' => 'Divalidasi',
             'rejected' => 'Ditolak',
           ]),
         Tables\Filters\SelectFilter::make('hari_ke')
