@@ -1,27 +1,3 @@
-// ── API Throttle Helper ─────────────────────────────────────────────
-var _apiLastCall = {};
-function _throttledFetch(key, url, options, cooldownMs) {
-    cooldownMs = cooldownMs || 5000;
-    var now = Date.now();
-    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
-        return Promise.reject({ throttled: true });
-    }
-    _apiLastCall[key] = now;
-    return fetch(url, options).then(function (r) {
-        if (r.status === 429) {
-            return r.json().then(function (d) {
-                return Promise.reject({
-                    rateLimited: true,
-                    message:
-                        d.message ||
-                        "Terlalu banyak permintaan. Tunggu sebentar.",
-                });
-            });
-        }
-        return r;
-    });
-}
-
 function hinduDashboard() {
     return {
         activeTab: "calendar",
@@ -288,15 +264,8 @@ function hinduDashboard() {
                 this.submittedDays = [];
             }
             var self = this;
-            _throttledFetch(
-                "sync",
-                "/api/formulir",
-                { headers: { Accept: "application/json" } },
-                10000,
-            )
-                .then(function (r) {
-                    return r.json();
-                })
+            ApiRepository.formulir
+                .getAll()
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
                         self.submittedDays = data.submitted_days.slice();
@@ -320,7 +289,7 @@ function hinduDashboard() {
                     }
                 })
                 .catch(function (e) {
-                    if (e && e.rateLimited) console.warn(e.message);
+                    if (ApiRepository.isRateLimited(e)) console.warn(e.message);
                 });
         },
         getProgressPercent() {
@@ -849,27 +818,8 @@ function hinduDashboard() {
                 return;
             }
             self.pwLoading = true;
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            _throttledFetch(
-                "changePw",
-                "/api/change-password",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken
-                            ? csrfToken.getAttribute("content")
-                            : "",
-                    },
-                    body: JSON.stringify({
-                        current_password: self.pwOld,
-                        new_password: self.pwNew,
-                        new_password_confirmation: self.pwConfirm,
-                    }),
-                },
-                3000,
-            )
+            ApiRepository.auth
+                .changePassword(self.pwOld, self.pwNew, self.pwConfirm)
                 .then(function (r) {
                     return r.json().then(function (d) {
                         return { ok: r.ok, data: d };
@@ -896,11 +846,10 @@ function hinduDashboard() {
                 })
                 .catch(function (e) {
                     self.pwLoading = false;
-                    if (e && e.throttled) return;
-                    self.pwMessage =
-                        e && e.rateLimited
-                            ? e.message
-                            : "Terjadi kesalahan. Coba lagi.";
+                    if (ApiRepository.isThrottled(e)) return;
+                    self.pwMessage = ApiRepository.isRateLimited(e)
+                        ? e.message
+                        : "Terjadi kesalahan. Coba lagi.";
                 });
         },
     };

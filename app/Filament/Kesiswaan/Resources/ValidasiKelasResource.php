@@ -5,7 +5,6 @@ namespace App\Filament\Kesiswaan\Resources;
 use App\Filament\Kesiswaan\Resources\ValidasiKelasResource\Pages;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
-use Carbon\Carbon;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -43,16 +42,19 @@ class ValidasiKelasResource extends Resource
 
   public static function getEloquentQuery(): Builder
   {
-    return parent::getEloquentQuery()->with(['wali', 'siswa']);
+    return parent::getEloquentQuery()
+      ->with(['wali'])
+      ->withCount(['siswa'])
+      ->withCount([
+        'formSubmissions as menunggu_validasi_count' => fn(Builder $q) => $q->where('status', 'verified')->where('kesiswaan_status', 'pending'),
+        'formSubmissions as sudah_divalidasi_count' => fn(Builder $q) => $q->where('status', 'verified')->where('kesiswaan_status', 'validated'),
+        'formSubmissions as ditolak_kesiswaan_count' => fn(Builder $q) => $q->where('status', 'verified')->where('kesiswaan_status', 'rejected'),
+        'formSubmissions as verified_total_count' => fn(Builder $q) => $q->where('status', 'verified'),
+      ]);
   }
 
   public static function table(Table $table): Table
   {
-    $ramadhanStart = Carbon::create(2026, 2, 19);
-    $today = Carbon::today();
-    $hariKe = $today->gte($ramadhanStart) ? (int) $ramadhanStart->diffInDays($today) + 1 : 0;
-    if ($hariKe > 30) $hariKe = 30;
-
     return $table
       ->columns([
         Tables\Columns\ViewColumn::make('select')
@@ -74,57 +76,32 @@ class ValidasiKelasResource extends Resource
           ->placeholder('-'),
         Tables\Columns\TextColumn::make('total_siswa')
           ->label('Siswa')
-          ->state(fn(Kelas $record): int => $record->siswa->count())
+          ->state(fn(Kelas $record): int => $record->siswa_count)
           ->alignCenter(),
         Tables\Columns\TextColumn::make('menunggu_validasi')
           ->label('Menunggu Validasi')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('status', 'verified')
-              ->where('kesiswaan_status', 'pending')
-              ->count();
-          })
+          ->state(fn(Kelas $record): int => $record->menunggu_validasi_count)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'warning' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('sudah_divalidasi')
           ->label('Divalidasi')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('status', 'verified')
-              ->where('kesiswaan_status', 'validated')
-              ->count();
-          })
+          ->state(fn(Kelas $record): int => $record->sudah_divalidasi_count)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'success' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('ditolak_kesiswaan')
           ->label('Ditolak')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('status', 'verified')
-              ->where('kesiswaan_status', 'rejected')
-              ->count();
-          })
+          ->state(fn(Kelas $record): int => $record->ditolak_kesiswaan_count)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'danger' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('progress_validasi')
           ->label('Progress')
           ->state(function (Kelas $record): string {
-            $siswaIds = $record->siswa->pluck('id');
-            $total = FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('status', 'verified')
-              ->count();
+            $total = $record->verified_total_count;
             if ($total === 0) return '-';
-            $validated = FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('status', 'verified')
-              ->where('kesiswaan_status', 'validated')
-              ->count();
-            return round(($validated / $total) * 100) . '%';
+            return round(($record->sudah_divalidasi_count / $total) * 100) . '%';
           })
           ->alignCenter()
           ->color(function (string $state) {

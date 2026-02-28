@@ -246,20 +246,18 @@
         .dark .rv-pag { border-color:rgba(100,100,100,.15); }
         .rv-pag-info { font-size:.75rem; color:#6b7280; }
         .dark .rv-pag-info { color:#9ca3af; }
-        .rv-pag-links { display:flex; align-items:center; gap:.25rem; }
+        .rv-pag-links { display:flex; align-items:center; gap:.375rem; }
         .rv-pag-btn {
-            display:inline-flex; align-items:center; justify-content:center;
-            min-width:2rem; height:2rem; padding:0 .5rem;
+            display:inline-flex; align-items:center; justify-content:center; gap:.375rem;
+            height:2.125rem; padding:0 .75rem;
             border-radius:.5rem; font-size:.75rem; font-weight:600;
             border:1px solid rgba(100,100,100,.12); background:transparent;
             color:#374151; cursor:pointer; text-decoration:none; transition:all .15s;
         }
         .rv-pag-btn:hover { background:rgba(37,99,235,.08); border-color:rgba(37,99,235,.2); color:#2563eb; }
-        .rv-pag-btn-active { background:rgba(37,99,235,.1); border-color:rgba(37,99,235,.3); color:#2563eb; }
         .rv-pag-btn-disabled { opacity:.4; pointer-events:none; }
         .dark .rv-pag-btn { border-color:rgba(100,100,100,.25); color:#d1d5db; }
         .dark .rv-pag-btn:hover { background:rgba(37,99,235,.15); border-color:rgba(37,99,235,.3); color:#93c5fd; }
-        .dark .rv-pag-btn-active { background:rgba(37,99,235,.2); border-color:rgba(37,99,235,.4); color:#93c5fd; }
         .rv-pag-btn svg { width:.75rem; height:.75rem; }
 
         /* Hide default Filament page header */
@@ -269,7 +267,7 @@
     @php
         $record = $this->record;
         $usersCount = $record->users()->count();
-        $users = $record->users()->orderBy('name')->paginate(15);
+        $users = $record->users()->orderBy('name')->cursorPaginate(15);
         $isSiswa = strtolower($record->name ?? '') === 'siswa';
 
         $roleBadge = match(strtolower($record->name ?? '')) {
@@ -471,38 +469,35 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        {{-- Pagination --}}
+                        {{-- Cursor Pagination --}}
                         @if($users->hasPages())
                             <div class="rv-pag">
                                 <div class="rv-pag-info">
-                                    Menampilkan {{ $users->firstItem() }}–{{ $users->lastItem() }} dari {{ $users->total() }} pengguna
+                                    Menampilkan {{ $users->count() }} pengguna per halaman (total {{ $usersCount }})
                                 </div>
                                 <div class="rv-pag-links">
                                     {{-- Previous --}}
-                                    @if($users->onFirstPage())
-                                        <span class="rv-pag-btn rv-pag-btn-disabled">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-                                        </span>
-                                    @else
+                                    @if($users->previousPageUrl())
                                         <a href="{{ $users->previousPageUrl() }}" class="rv-pag-btn">
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                                            Sebelumnya
                                         </a>
+                                    @else
+                                        <span class="rv-pag-btn rv-pag-btn-disabled">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                                            Sebelumnya
+                                        </span>
                                     @endif
-
-                                    {{-- Page numbers --}}
-                                    @foreach($users->getUrlRange(max(1, $users->currentPage() - 2), min($users->lastPage(), $users->currentPage() + 2)) as $page => $url)
-                                        <a href="{{ $url }}" class="rv-pag-btn {{ $page == $users->currentPage() ? 'rv-pag-btn-active' : '' }}">
-                                            {{ $page }}
-                                        </a>
-                                    @endforeach
 
                                     {{-- Next --}}
                                     @if($users->hasMorePages())
                                         <a href="{{ $users->nextPageUrl() }}" class="rv-pag-btn">
+                                            Berikutnya
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                                         </a>
                                     @else
                                         <span class="rv-pag-btn rv-pag-btn-disabled">
+                                            Berikutnya
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                                         </span>
                                     @endif

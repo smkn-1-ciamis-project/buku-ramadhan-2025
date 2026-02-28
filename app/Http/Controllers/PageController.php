@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FormSetting;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class PageController extends Controller
 {
+  public function __construct(
+    private UserService $userService,
+  ) {}
+
   public function index(): RedirectResponse
   {
     return redirect('/siswa/login');
@@ -40,43 +43,31 @@ class PageController extends Controller
     /** @var \App\Models\User $user */
     $user = Auth::user();
 
-    if (!Hash::check($request->current_password, $user->password)) {
-      return response()->json(['success' => false, 'message' => 'Password lama tidak sesuai.'], 422);
-    }
+    $result = $this->userService->changePassword(
+      $user,
+      $request->current_password,
+      $request->new_password
+    );
 
-    $user->update([
-      'password' => $request->new_password,
-      'must_change_password' => false,
-    ]);
+    $statusCode = $result['status'] ?? ($result['success'] ? 200 : 500);
 
-    // Re-login agar session hash password diperbarui
-    Auth::login($user);
-
-    $user->updateQuietly([
-      'active_session_id' => session()->getId(),
-    ]);
-
-    return response()->json(['success' => true, 'message' => 'Password berhasil diubah.']);
+    return response()->json(
+      collect($result)->except('status')->toArray(),
+      $statusCode
+    );
   }
 
   public function formSettings(string $agama): JsonResponse
   {
-    $setting = FormSetting::getForAgama($agama);
+    $result = $this->userService->getFormSettings($agama);
 
-    if (!$setting) {
-      return response()->json(['message' => 'Setting formulir belum dikonfigurasi untuk agama ini.'], 404);
+    if (!$result['success']) {
+      $statusCode = $result['status'] ?? 500;
+      $response = collect($result)->except(['status', 'success'])->toArray();
+
+      return response()->json($response, $statusCode);
     }
 
-    if (!$setting->is_active) {
-      return response()->json([
-        'inactive' => true,
-        'message' => 'Formulir untuk agama ' . $agama . ' sedang dinonaktifkan oleh kesiswaan.',
-      ], 403);
-    }
-
-    return response()->json([
-      'agama' => $setting->agama,
-      'sections' => collect($setting->sections)->filter(fn($s) => $s['enabled'] ?? true)->values()->toArray(),
-    ]);
+    return response()->json($result['data']);
   }
 }

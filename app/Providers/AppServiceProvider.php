@@ -2,6 +2,14 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\FormSettingRepositoryInterface;
+use App\Repositories\Contracts\FormSubmissionRepositoryInterface;
+use App\Repositories\Contracts\PrayerCheckinRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Eloquent\EloquentFormSettingRepository;
+use App\Repositories\Eloquent\EloquentFormSubmissionRepository;
+use App\Repositories\Eloquent\EloquentPrayerCheckinRepository;
+use App\Repositories\Eloquent\EloquentUserRepository;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -16,7 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // ── Repository Pattern Bindings ─────────────────────────────────
+        $this->app->bind(FormSubmissionRepositoryInterface::class, EloquentFormSubmissionRepository::class);
+        $this->app->bind(PrayerCheckinRepositoryInterface::class, EloquentPrayerCheckinRepository::class);
+        $this->app->bind(FormSettingRepositoryInterface::class, EloquentFormSettingRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
     }
 
     /**

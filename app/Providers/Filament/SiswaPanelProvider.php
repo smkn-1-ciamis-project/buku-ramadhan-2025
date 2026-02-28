@@ -20,6 +20,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -58,6 +59,7 @@ class SiswaPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                ThrottleRequests::class . ':panel',
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -90,6 +92,8 @@ class SiswaPanelProvider extends PanelProvider
                     <meta name="twitter:title" content="Calakan — Catatan Amaliyah Kegiatan Ramadan">
                     <meta name="twitter:description" content="Aplikasi pencatatan dan monitoring kegiatan ibadah siswa selama bulan Ramadan 1447H. SMKN 1 Ciamis.">
                     <meta name="twitter:image" content="https://ramadhan.smkn1ciamis.id/img/og_image.jpg">
+
+                    <script src="' . asset('themes/ramadhan/js/api-repository.js') . '?v=' . filemtime(public_path('themes/ramadhan/js/api-repository.js')) . '" defer></script>
 
                     <style>
                         html, body { overscroll-behavior: none; }

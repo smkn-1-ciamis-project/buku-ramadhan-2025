@@ -69,5 +69,20 @@ class RouteServiceProvider extends ServiceProvider
                     ], 429);
                 });
         });
+
+        // ─── Global web: 120 requests/min per IP (DDoS/crawler protection) ───
+        RateLimiter::for('web-global', function (Request $request) {
+            return Limit::perMinute(120)->by($request->ip());
+        });
+
+        // ─── Filament panel pages: 60 requests/min per user (Livewire/table queries) ───
+        RateLimiter::for('panel', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // ─── Export routes: 5 requests/min per user (heavy CPU — Excel gen) ───
+        RateLimiter::for('export', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

@@ -97,9 +97,14 @@ class RekapExportService
             $sheet->freezePane('E5');
 
             $siswaList = $kelas->siswa->sortBy('name')->values();
+
+            // Batch: fetch ALL submissions for all siswa in this kelas at once (avoid N+1)
+            $allSiswaIds = $siswaList->pluck('id');
+            $allSubsBatch = FormSubmission::whereIn('user_id', $allSiswaIds)->get()->groupBy('user_id');
+
             $row = 5;
             foreach ($siswaList as $idx => $siswa) {
-                $subs     = FormSubmission::where('user_id', $siswa->id)->get();
+                $subs     = $allSubsBatch->get($siswa->id, collect());
                 $total    = $subs->count();
                 $verified = $subs->where('status', 'verified')->count();
                 $pending  = $subs->where('status', 'pending')->count();
@@ -141,8 +146,7 @@ class RekapExportService
                 $row++;
             }
 
-            $allIds  = $siswaList->pluck('id');
-            $allSubs = FormSubmission::whereIn('user_id', $allIds)->get();
+            $allSubs = $allSubsBatch->flatten(1);
             $sheet->mergeCells("A{$row}:D{$row}");
             $sheet->setCellValue("A{$row}", "TOTAL ({$siswaList->count()} siswa)");
             $sheet->setCellValue("E{$row}", $allSubs->count());

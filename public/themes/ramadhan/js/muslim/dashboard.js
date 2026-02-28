@@ -1,27 +1,3 @@
-// ── API Throttle Helper ─────────────────────────────────────────────
-var _apiLastCall = {};
-function _throttledFetch(key, url, options, cooldownMs) {
-    cooldownMs = cooldownMs || 5000;
-    var now = Date.now();
-    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
-        return Promise.reject({ throttled: true });
-    }
-    _apiLastCall[key] = now;
-    return fetch(url, options).then(function (r) {
-        if (r.status === 429) {
-            return r.json().then(function (d) {
-                return Promise.reject({
-                    rateLimited: true,
-                    message:
-                        d.message ||
-                        "Terlalu banyak permintaan. Tunggu sebentar.",
-                });
-            });
-        }
-        return r;
-    });
-}
-
 function ramadhanDashboard() {
     return {
         activeTab: "calendar",
@@ -1643,12 +1619,8 @@ function ramadhanDashboard() {
         },
         syncFromServer() {
             var self = this;
-            _throttledFetch(
-                "sync",
-                "/api/formulir",
-                { headers: { Accept: "application/json" } },
-                10000,
-            )
+            ApiRepository.formulir
+                .getAll()
                 .then(function (r) {
                     return r.json();
                 })
@@ -1675,7 +1647,7 @@ function ramadhanDashboard() {
                     }
                 })
                 .catch(function (e) {
-                    if (e && e.rateLimited) console.warn(e.message);
+                    if (ApiRepository.isRateLimited(e)) console.warn(e.message);
                 });
         },
         getProgressPercent() {
@@ -1796,27 +1768,8 @@ function ramadhanDashboard() {
                 return;
             }
             self.pwLoading = true;
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            _throttledFetch(
-                "changePw",
-                "/api/change-password",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken
-                            ? csrfToken.getAttribute("content")
-                            : "",
-                    },
-                    body: JSON.stringify({
-                        current_password: self.pwOld,
-                        new_password: self.pwNew,
-                        new_password_confirmation: self.pwConfirm,
-                    }),
-                },
-                3000,
-            )
+            ApiRepository.auth
+                .changePassword(self.pwOld, self.pwNew, self.pwConfirm)
                 .then(function (r) {
                     return r.json().then(function (d) {
                         return { ok: r.ok, data: d };
@@ -1843,24 +1796,17 @@ function ramadhanDashboard() {
                 })
                 .catch(function (e) {
                     self.pwLoading = false;
-                    if (e && e.throttled) return;
-                    self.pwMessage =
-                        e && e.rateLimited
-                            ? e.message
-                            : "Terjadi kesalahan. Coba lagi.";
+                    if (ApiRepository.isThrottled(e)) return;
+                    self.pwMessage = ApiRepository.isRateLimited(e)
+                        ? e.message
+                        : "Terjadi kesalahan. Coba lagi.";
                 });
         },
         loadCheckins() {
             var self = this;
             self.checkinLoading = true;
-            _throttledFetch(
-                "firstUnfilled",
-                "/api/prayer-checkins/first-unfilled",
-                {
-                    headers: { Accept: "application/json" },
-                },
-                10000,
-            )
+            ApiRepository.prayerCheckins
+                .getFirstUnfilled()
                 .then(function (r) {
                     return r.json();
                 })
@@ -1877,21 +1823,19 @@ function ramadhanDashboard() {
                 })
                 .catch(function (e) {
                     self.checkinLoading = false;
-                    if (e && (e.throttled || e.rateLimited)) return;
+                    if (
+                        ApiRepository.isThrottled(e) ||
+                        ApiRepository.isRateLimited(e)
+                    )
+                        return;
                     console.warn("Gagal memuat data check-in shalat");
                 });
         },
         _loadCheckinsForDate(tanggal) {
             var self = this;
             self.checkinLoading = true;
-            _throttledFetch(
-                "checkinsDate_" + tanggal,
-                "/api/prayer-checkins/date/" + tanggal,
-                {
-                    headers: { Accept: "application/json" },
-                },
-                10000,
-            )
+            ApiRepository.prayerCheckins
+                .getByDate(tanggal, 10000)
                 .then(function (r) {
                     return r.json();
                 })
@@ -1902,7 +1846,11 @@ function ramadhanDashboard() {
                 })
                 .catch(function (e) {
                     self.checkinLoading = false;
-                    if (e && (e.throttled || e.rateLimited)) return;
+                    if (
+                        ApiRepository.isThrottled(e) ||
+                        ApiRepository.isRateLimited(e)
+                    )
+                        return;
                     console.warn("Gagal memuat data check-in shalat");
                 });
         },
@@ -2122,8 +2070,6 @@ function ramadhanDashboard() {
             var self = this;
             if (!self.checkinModalPrayer || self.checkinSaving) return;
             self.checkinSaving = true;
-            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            var csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
             var payload = {
                 shalat: self.checkinModalPrayer.id,
                 status: status,
@@ -2131,20 +2077,8 @@ function ramadhanDashboard() {
             if (self.checkinDate) {
                 payload.tanggal = self.checkinDate;
             }
-            _throttledFetch(
-                "submitCheckin",
-                "/api/prayer-checkins",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken,
-                    },
-                    body: JSON.stringify(payload),
-                },
-                3000,
-            )
+            ApiRepository.prayerCheckins
+                .submit(payload)
                 .then(function (r) {
                     return r.json();
                 })
@@ -2161,9 +2095,9 @@ function ramadhanDashboard() {
                 })
                 .catch(function (e) {
                     self.checkinSaving = false;
-                    if (e && e.throttled) return;
+                    if (ApiRepository.isThrottled(e)) return;
                     alert(
-                        e && e.rateLimited
+                        ApiRepository.isRateLimited(e)
                             ? e.message
                             : "Gagal menyimpan check-in. Silakan coba lagi.",
                     );

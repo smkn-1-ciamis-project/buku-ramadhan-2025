@@ -1,27 +1,3 @@
-// ── API Throttle Helper ─────────────────────────────────────────────
-var _apiLastCall = {};
-function _throttledFetch(key, url, options, cooldownMs) {
-    cooldownMs = cooldownMs || 5000;
-    var now = Date.now();
-    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
-        return Promise.reject({ throttled: true });
-    }
-    _apiLastCall[key] = now;
-    return fetch(url, options).then(function (r) {
-        if (r.status === 429) {
-            return r.json().then(function (d) {
-                return Promise.reject({
-                    rateLimited: true,
-                    message:
-                        d.message ||
-                        "Terlalu banyak permintaan. Tunggu sebentar.",
-                });
-            });
-        }
-        return r;
-    });
-}
-
 function formulirNonMuslim() {
     return {
         formDay: 1,
@@ -180,14 +156,8 @@ function formulirNonMuslim() {
         },
         loadFormConfig() {
             var self = this;
-            _throttledFetch(
-                "formConfig",
-                "/api/form-settings/" + (window.__userAgama || "Kristen"),
-                {
-                    headers: { Accept: "application/json" },
-                },
-                10000,
-            )
+            ApiRepository.formSettings
+                .get(window.__userAgama || "Kristen")
                 .then(function (r) {
                     if (r.status === 403) {
                         return r.json().then(function (d) {
@@ -621,26 +591,8 @@ function formulirNonMuslim() {
             }
             this.formSubmitted = true;
             var self = this;
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            _throttledFetch(
-                "submitForm",
-                "/api/formulir",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken
-                            ? csrfToken.getAttribute("content")
-                            : "",
-                    },
-                    body: JSON.stringify({
-                        hari_ke: self.formDay,
-                        data: self.formData,
-                    }),
-                },
-                3000,
-            )
+            ApiRepository.formulir
+                .submit(self.formDay, self.formData)
                 .then(function (r) {
                     return r.json();
                 })
@@ -689,12 +641,8 @@ function formulirNonMuslim() {
         },
         syncFromServer() {
             var self = this;
-            _throttledFetch(
-                "sync",
-                "/api/formulir",
-                { headers: { Accept: "application/json" } },
-                10000,
-            )
+            ApiRepository.formulir
+                .getAll()
                 .then(function (r) {
                     return r.json();
                 })

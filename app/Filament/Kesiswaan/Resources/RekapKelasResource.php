@@ -3,9 +3,7 @@
 namespace App\Filament\Kesiswaan\Resources;
 
 use App\Filament\Kesiswaan\Resources\RekapKelasResource\Pages;
-use App\Models\FormSubmission;
 use App\Models\Kelas;
-use App\Models\User;
 use Carbon\Carbon;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -31,7 +29,28 @@ class RekapKelasResource extends Resource
 
   public static function getEloquentQuery(): Builder
   {
-    return parent::getEloquentQuery()->with(['wali', 'siswa']);
+    $ramadhanStart = Carbon::create(2026, 2, 19);
+    $today = Carbon::today();
+    $hariKe = $today->gte($ramadhanStart) ? (int) $ramadhanStart->diffInDays($today) + 1 : 0;
+    if ($hariKe > 30) $hariKe = 30;
+
+    $query = parent::getEloquentQuery()
+      ->with(['wali'])
+      ->withCount(['siswa'])
+      ->withCount([
+        'formSubmissions as verified_count_val' => fn(Builder $q) => $q->where('status', 'verified'),
+        'formSubmissions as pending_count_val' => fn(Builder $q) => $q->where('status', 'pending'),
+        'formSubmissions as rejected_count_val' => fn(Builder $q) => $q->where('status', 'rejected'),
+        'formSubmissions as total_submissions_count' => fn(Builder $q) => $q,
+      ]);
+
+    if ($hariKe >= 1) {
+      $query->withCount([
+        'formSubmissions as submit_hari_ini_count' => fn(Builder $q) => $q->where('hari_ke', $hariKe),
+      ]);
+    }
+
+    return $query;
   }
 
   public static function table(Table $table): Table
@@ -57,56 +76,43 @@ class RekapKelasResource extends Resource
           ->placeholder('-'),
         Tables\Columns\TextColumn::make('total_siswa')
           ->label('Jumlah Siswa')
-          ->state(fn(Kelas $record): int => $record->siswa->count())
+          ->state(fn(Kelas $record): int => $record->siswa_count)
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('submit_hari_ini')
           ->label('Submit Hari Ini')
           ->state(function (Kelas $record) use ($hariKe): string {
             if ($hariKe < 1) return '-';
-            $siswaIds = $record->siswa->pluck('id');
-            $submitted = FormSubmission::whereIn('user_id', $siswaIds)
-              ->where('hari_ke', $hariKe)->count();
-            $total = $siswaIds->count();
-            return "{$submitted}/{$total}";
+            $submitted = $record->submit_hari_ini_count ?? 0;
+            return "{$submitted}/{$record->siswa_count}";
           })
           ->alignCenter()
           ->color(fn(string $state) => $state === '-' ? 'gray' : null),
         Tables\Columns\TextColumn::make('verified_count')
           ->label('Terverifikasi')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'verified')->count();
-          })
+          ->state(fn(Kelas $record): int => $record->verified_count_val)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'success' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('pending_count')
           ->label('Menunggu')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
-          })
+          ->state(fn(Kelas $record): int => $record->pending_count_val)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'warning' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('rejected_count')
           ->label('Ditolak')
-          ->state(function (Kelas $record): int {
-            $siswaIds = $record->siswa->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'rejected')->count();
-          })
+          ->state(fn(Kelas $record): int => $record->rejected_count_val)
           ->badge()
           ->color(fn(int $state) => $state > 0 ? 'danger' : 'gray')
           ->alignCenter(),
         Tables\Columns\TextColumn::make('compliance_rate')
           ->label('Kepatuhan')
           ->state(function (Kelas $record) use ($hariKe): string {
-            $totalSiswa = $record->siswa->count();
+            $totalSiswa = $record->siswa_count;
             if ($totalSiswa === 0 || $hariKe < 1) return '-';
             $expectedTotal = $totalSiswa * $hariKe;
-            $siswaIds = $record->siswa->pluck('id');
-            $actualSubmitted = FormSubmission::whereIn('user_id', $siswaIds)->count();
+            $actualSubmitted = $record->total_submissions_count;
             return round(($actualSubmitted / $expectedTotal) * 100) . '%';
           })
           ->alignCenter()

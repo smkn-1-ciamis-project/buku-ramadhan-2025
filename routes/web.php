@@ -46,9 +46,8 @@ Route::middleware(['auth', 'throttle:api-password'])->post('/api/change-password
 // API Form Settings — serve dynamic form config per agama (throttle)
 Route::middleware(['auth', 'throttle:api-read'])->get('/api/form-settings/{agama}', [PageController::class, 'formSettings']);
 
-// Export Rekap Siswa (Guru)
 // Export Rekap Siswa (Guru) — prefix berbeda dari panel agar tidak konflik dengan Filament routing
-Route::middleware(['auth'])->prefix('guru-exports')->group(function () {
+Route::middleware(['auth', 'throttle:export'])->prefix('guru-exports')->group(function () {
     Route::get('/rekap-siswa', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
         $roleName = strtolower(trim($user->role_user?->name ?? ''));
@@ -67,7 +66,7 @@ Route::middleware(['auth'])->prefix('guru-exports')->group(function () {
 });
 
 // Export Validasi (Kesiswaan) — per kelas (satu/banyak) atau semua kelas
-Route::middleware(['auth'])->prefix('kesiswaan-exports')->group(function () {
+Route::middleware(['auth', 'throttle:export'])->prefix('kesiswaan-exports')->group(function () {
     Route::get('/validasi/{kelas?}', function (?string $kelas = null) {
         $user = \Illuminate\Support\Facades\Auth::user();
         $roleName = strtolower(trim($user->role_user?->name ?? ''));

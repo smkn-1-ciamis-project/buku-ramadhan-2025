@@ -1,27 +1,3 @@
-// ── API Throttle Helper ─────────────────────────────────────────────
-var _apiLastCall = {};
-function _throttledFetch(key, url, options, cooldownMs) {
-    cooldownMs = cooldownMs || 5000;
-    var now = Date.now();
-    if (_apiLastCall[key] && now - _apiLastCall[key] < cooldownMs) {
-        return Promise.reject({ throttled: true });
-    }
-    _apiLastCall[key] = now;
-    return fetch(url, options).then(function (r) {
-        if (r.status === 429) {
-            return r.json().then(function (d) {
-                return Promise.reject({
-                    rateLimited: true,
-                    message:
-                        d.message ||
-                        "Terlalu banyak permintaan. Tunggu sebentar.",
-                });
-            });
-        }
-        return r;
-    });
-}
-
 const QURAN_SURAHS = [
     { number: 1, name: "Al-Fatihah", ayat: 7 },
     { number: 2, name: "Al-Baqarah", ayat: 286 },
@@ -425,14 +401,8 @@ function formulirHarian() {
         },
         loadFormConfig() {
             var self = this;
-            _throttledFetch(
-                "formConfig",
-                "/api/form-settings/Islam",
-                {
-                    headers: { Accept: "application/json" },
-                },
-                10000,
-            )
+            ApiRepository.formSettings
+                .get("Islam")
                 .then(function (r) {
                     if (r.status === 403) {
                         return r.json().then(function (d) {
@@ -621,7 +591,7 @@ function formulirHarian() {
                     self.checkFormSubmitted();
                 })
                 .catch(function (e) {
-                    if (e && (e.throttled || e.rateLimited)) return;
+                    if (ApiRepository.handleError(e, "loadFormConfig")) return;
                     console.warn("Gagal memuat konfigurasi formulir:", e);
                     self.configLoaded = true;
                 });
@@ -995,14 +965,8 @@ function formulirHarian() {
             var dd = String(targetDate.getDate()).padStart(2, "0");
             var dateStr = yyyy + "-" + mm + "-" + dd;
             // Use day-specific throttle key so different days don't block each other
-            _throttledFetch(
-                "checkinDay_" + day,
-                "/api/prayer-checkins/date/" + dateStr,
-                {
-                    headers: { Accept: "application/json" },
-                },
-                3000,
-            )
+            ApiRepository.prayerCheckins
+                .getByDate(dateStr, 3000)
                 .then(function (r) {
                     return r.json();
                 })
@@ -1342,26 +1306,8 @@ function formulirHarian() {
             }
             this.formSubmitted = true;
             var self = this;
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            _throttledFetch(
-                "submitForm",
-                "/api/formulir",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken
-                            ? csrfToken.getAttribute("content")
-                            : "",
-                    },
-                    body: JSON.stringify({
-                        hari_ke: self.formDay,
-                        data: self.formData,
-                    }),
-                },
-                3000,
-            )
+            ApiRepository.formulir
+                .submit(self.formDay, self.formData)
                 .then(function (r) {
                     return r.json();
                 })
@@ -1410,14 +1356,8 @@ function formulirHarian() {
         },
         syncFromServer() {
             var self = this;
-            _throttledFetch(
-                "sync",
-                "/api/formulir",
-                {
-                    headers: { Accept: "application/json" },
-                },
-                10000,
-            )
+            ApiRepository.formulir
+                .getAll()
                 .then(function (r) {
                     return r.json();
                 })

@@ -4,7 +4,6 @@ namespace App\Filament\Kesiswaan\Resources;
 
 use App\Filament\Kesiswaan\Resources\DataGuruResource\Pages;
 use App\Models\FormSubmission;
-use App\Models\Kelas;
 use App\Models\User;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -32,7 +31,20 @@ class DataGuruResource extends Resource
   {
     return parent::getEloquentQuery()
       ->whereHas('role_user', fn(Builder $q) => $q->where('name', 'Guru'))
-      ->with(['role_user', 'kelasWali']);
+      ->with([
+        'role_user',
+        'kelasWali' => fn($q) => $q
+          ->withCount(['siswa'])
+          ->withCount([
+            'formSubmissions as kelas_pending_count' => fn(Builder $q2) => $q2->where('status', 'pending'),
+          ]),
+      ])
+      ->addSelect([
+        'total_verified_sub' => FormSubmission::query()
+          ->selectRaw('count(*)')
+          ->where('status', 'verified')
+          ->whereColumn('form_submissions.verified_by', 'users.id'),
+      ]);
   }
 
   public static function table(Table $table): Table
@@ -54,29 +66,19 @@ class DataGuruResource extends Resource
           ->separator(', '),
         Tables\Columns\TextColumn::make('jumlah_siswa')
           ->label('Jumlah Siswa')
-          ->state(function (User $record): int {
-            return User::whereIn('kelas_id', $record->kelasWali->pluck('id'))
-              ->whereHas('role_user', fn($q) => $q->where('name', 'Siswa'))
-              ->count();
-          })
+          ->state(fn(User $record): int => $record->kelasWali->sum('siswa_count'))
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('pending_verifikasi')
           ->label('Menunggu Verifikasi')
-          ->state(function (User $record): int {
-            $kelasIds = $record->kelasWali->pluck('id');
-            $siswaIds = User::whereIn('kelas_id', $kelasIds)->pluck('id');
-            return FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
-          })
+          ->state(fn(User $record): int => $record->kelasWali->sum('kelas_pending_count'))
           ->badge()
           ->color(fn(int $state): string => $state > 0 ? 'warning' : 'gray')
           ->alignCenter()
           ->sortable(false),
         Tables\Columns\TextColumn::make('total_verified')
           ->label('Total Terverifikasi')
-          ->state(function (User $record): int {
-            return FormSubmission::where('verified_by', $record->id)->where('status', 'verified')->count();
-          })
+          ->state(fn(User $record): int => (int) $record->total_verified_sub)
           ->badge()
           ->color(fn(int $state): string => $state > 0 ? 'success' : 'gray')
           ->alignCenter()

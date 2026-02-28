@@ -31,6 +31,11 @@ class KelasResource extends Resource
     return RoleUser::checkNav('sa_kelas');
   }
 
+  public static function getEloquentQuery(): Builder
+  {
+    return parent::getEloquentQuery()->with(['wali']);
+  }
+
   public static function form(Form $form): Form
   {
     return $form->schema([
