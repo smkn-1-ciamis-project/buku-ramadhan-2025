@@ -1114,28 +1114,23 @@ function formulirHarian() {
                 }
             }
 
-            // 6. Kegiatan wajib minimal 2 total
+            // 6. Kegiatan: Amaliyah Cageur minimal 3
             if (this.isSectionEnabled("kegiatan")) {
-                var totalKegiatan = 0;
-                for (var kk in this.formData.kegiatan) {
-                    if (
-                        this.formData.kegiatan.hasOwnProperty(kk) &&
-                        this.formData.kegiatan[kk]
-                    ) {
-                        totalKegiatan++;
-                    }
-                }
-                if (totalKegiatan < 2) {
+                var cageurCount = 0;
+                var self = this;
+                this.kegiatanGroupA.forEach(function (item) {
+                    if (self.formData.kegiatan[item.key]) cageurCount++;
+                });
+                if (cageurCount < 3) {
                     errors.push(
-                        "Kegiatan Harian wajib diisi minimal 2 (saat ini: " +
-                            totalKegiatan +
+                        "Amaliyah Cageur, Bageur dan Bener wajib diisi minimal 3 (saat ini: " +
+                            cageurCount +
                             ")",
                     );
                 }
 
                 // 7. Pancawaluya Singer wajib minimal 1
                 var singerCount = 0;
-                var self = this;
                 this.kegiatanGroupC.forEach(function (item) {
                     if (self.formData.kegiatan[item.key]) singerCount++;
                 });
@@ -1216,26 +1211,8 @@ function formulirHarian() {
             );
             // Kirim data ke server agar sholat tersinkron ke check-in
             var self = this;
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            _throttledFetch(
-                "saveDraft",
-                "/api/formulir",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": csrfToken
-                            ? csrfToken.getAttribute("content")
-                            : "",
-                    },
-                    body: JSON.stringify({
-                        hari_ke: self.formDay,
-                        data: self.formData,
-                    }),
-                },
-                3000,
-            )
+            ApiRepository.formulir
+                .submit(self.formDay, self.formData)
                 .then(function (r) {
                     return r.json();
                 })

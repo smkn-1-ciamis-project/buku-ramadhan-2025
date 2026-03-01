@@ -38,6 +38,8 @@ class RoleResource extends Resource
     'sa_siswa' => 'Manajemen Siswa',
     'sa_kelas' => 'Manajemen Kelas',
     'sa_log_formulir' => 'Log Formulir',
+    'sa_validasi' => 'Validasi Formulir',
+    'sa_rekap_kelas' => 'Rekap Per Kelas',
     'sa_role' => 'Manajemen Role',
     'sa_setting_formulir' => 'Setting Formulir',
     'sa_log_aktivitas' => 'Log Aktivitas',

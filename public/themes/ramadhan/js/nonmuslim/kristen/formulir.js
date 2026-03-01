@@ -540,7 +540,16 @@ function formulirNonMuslim() {
                 this._lsKey("nonmuslim_form_day_" + this.formDay),
                 JSON.stringify(this.formData),
             );
+            // Kirim data ke server
             var self = this;
+            ApiRepository.formulir
+                .submit(self.formDay, self.formData)
+                .then(function (r) {
+                    return r.json();
+                })
+                .catch(function (e) {
+                    console.warn("Draft gagal disimpan ke server:", e);
+                });
             setTimeout(function () {
                 self.formSaving = false;
                 self.successDay = self.formDay;
@@ -607,7 +616,7 @@ function formulirNonMuslim() {
                     self.showSuccessPopup = false;
                 }, 3000);
                 // If submitting today's form, redirect to home after popup
-                if (self.formDay >= self.ramadhanDay) {
+                if (self.formDay >= self.currentDay) {
                     setTimeout(function () {
                         window.location.href = "/siswa";
                     }, 1500);

@@ -266,6 +266,9 @@ function hinduDashboard() {
             var self = this;
             ApiRepository.formulir
                 .getAll()
+                .then(function (r) {
+                    return r.json();
+                })
                 .then(function (data) {
                     if (data.success && data.submitted_days) {
                         self.submittedDays = data.submitted_days.slice();
