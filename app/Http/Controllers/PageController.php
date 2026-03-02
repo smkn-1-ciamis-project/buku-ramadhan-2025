@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -69,5 +70,10 @@ class PageController extends Controller
     }
 
     return response()->json($result['data']);
+  }
+
+  public function appSettings(): JsonResponse
+  {
+    return response()->json(AppSetting::getForFrontend());
   }
 }

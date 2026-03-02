@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
+    <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     {{-- Kill ALL Filament wrapper spacing --}}
     <style>
         html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }

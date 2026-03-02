@@ -1,3 +1,14 @@
+// ── Dynamic App Settings Helper ──────────────────────────────────────
+var _appCfg = window.__appSettings || {};
+function _parseSettingDate(dateStr) {
+    if (!dateStr) return null;
+    var p = dateStr.split("-");
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+}
+var _ramadhanStart =
+    _parseSettingDate(_appCfg.ramadhan_start_date) || new Date(2026, 1, 19);
+var _ramadhanTotalDays = _appCfg.ramadhan_total_days || 30;
+
 function formulirNonMuslim() {
     return {
         formDay: 1,
@@ -323,7 +334,7 @@ function formulirNonMuslim() {
             return this.enabledSections[key] !== false;
         },
         calculateCurrentDay() {
-            var startDate = new Date(2026, 1, 19);
+            var startDate = new Date(_ramadhanStart);
             var now = new Date();
             var today = new Date(
                 now.getFullYear(),
@@ -331,7 +342,7 @@ function formulirNonMuslim() {
                 now.getDate(),
             );
             var diff = Math.floor((today - startDate) / 86400000) + 1;
-            this.currentDay = Math.max(1, Math.min(diff, 30));
+            this.currentDay = Math.max(1, Math.min(diff, _ramadhanTotalDays));
         },
         checkSunday() {
             var now = new Date();

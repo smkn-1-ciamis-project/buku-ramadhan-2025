@@ -46,6 +46,9 @@ Route::middleware(['auth', 'throttle:api-password'])->post('/api/change-password
 // API Form Settings — serve dynamic form config per agama (throttle)
 Route::middleware(['auth', 'throttle:api-read'])->get('/api/form-settings/{agama}', [PageController::class, 'formSettings']);
 
+// API App Settings — serve dynamic app settings (API URLs, Ramadhan schedule, etc.) to frontend JS
+Route::middleware(['auth', 'throttle:api-read'])->get('/api/app-settings', [PageController::class, 'appSettings']);
+
 // Export Rekap Siswa (Guru) — prefix berbeda dari panel agar tidak konflik dengan Filament routing
 Route::middleware(['auth', 'throttle:export'])->prefix('guru-exports')->group(function () {
     Route::get('/rekap-siswa', function () {

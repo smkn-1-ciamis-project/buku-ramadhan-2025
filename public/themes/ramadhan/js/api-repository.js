@@ -274,6 +274,20 @@ var ApiRepository = (function () {
         },
 
         /**
+         * App Settings — dynamic configuration from Superadmin
+         */
+        appSettings: {
+            /**
+             * GET /api/app-settings
+             * Returns Ramadhan schedule, API URLs, default location, etc.
+             * @returns {Promise<Response>}
+             */
+            get: function () {
+                return _get("appSettings", "/api/app-settings");
+            },
+        },
+
+        /**
          * Utility: check if an error is a client-side throttle rejection.
          * @param {*} err
          * @returns {boolean}
