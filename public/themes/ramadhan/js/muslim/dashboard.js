@@ -757,9 +757,7 @@ function ramadhanDashboard() {
             const mm = now.getMinutes();
             const nowMin = hh * 60 + mm;
             const parseTime = (label) => {
-                const p = this.fullPrayerSchedule.find(
-                    (x) => x.label === label,
-                );
+                const p = this.fullPrayerSchedule.find((x) => x.name === label);
                 if (!p || !p.time) return null;
                 const [h, m] = p.time.split(":").map(Number);
                 return h * 60 + m;

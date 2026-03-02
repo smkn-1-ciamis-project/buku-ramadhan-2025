@@ -22,12 +22,14 @@ class FormSubmissionController extends Controller
     $request->validate([
       'hari_ke' => 'required|integer|min:1|max:30',
       'data'    => 'required|array',
+      'is_draft' => 'sometimes|boolean',
     ]);
 
     $result = $this->formSubmissionService->storeSubmission(
       Auth::user(),
       $request->hari_ke,
-      $request->data
+      $request->data,
+      (bool) $request->input('is_draft', false)
     );
 
     $statusCode = $result['status'] ?? ($result['success'] ? 200 : 500);

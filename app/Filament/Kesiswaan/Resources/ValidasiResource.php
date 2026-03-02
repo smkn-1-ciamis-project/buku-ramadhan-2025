@@ -135,7 +135,8 @@ class ValidasiResource extends Resource
           ]),
         Tables\Filters\SelectFilter::make('kelas')
           ->label('Kelas')
-          ->relationship('user.kelas', 'nama')
+          ->options(fn() => \App\Models\Kelas::orderBy('nama')->pluck('nama', 'id')->toArray())
+          ->query(fn(Builder $query, array $data) => $data['value'] ? $query->whereHas('user', fn($q) => $q->where('kelas_id', $data['value'])) : $query)
           ->searchable()
           ->preload(),
         Tables\Filters\SelectFilter::make('hari_ke')

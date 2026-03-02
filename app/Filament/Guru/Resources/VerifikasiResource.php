@@ -39,6 +39,7 @@ class VerifikasiResource extends Resource
     $kelasIds = Kelas::where('wali_id', $guru->id)->pluck('id');
 
     return parent::getEloquentQuery()
+      ->where('status', '!=', 'draft')
       ->whereHas('user', function (Builder $q) use ($kelasIds) {
         $q->whereIn('kelas_id', $kelasIds)
           ->whereHas('role_user', fn(Builder $rq) => $rq->where('name', 'Siswa'));

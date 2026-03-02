@@ -120,7 +120,8 @@ class ValidasiResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('kelas')
                     ->label('Kelas')
-                    ->relationship('user.kelas', 'nama')
+                    ->options(fn() => Kelas::orderBy('nama')->pluck('nama', 'id')->toArray())
+                    ->query(fn(Builder $query, array $data) => $data['value'] ? $query->whereHas('user', fn($q) => $q->where('kelas_id', $data['value'])) : $query)
                     ->searchable()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('hari_ke')
@@ -145,10 +146,6 @@ class ValidasiResource extends Resource
                         ->modalSubmitActionLabel('Ya, Reset')
                         ->action(function (FormSubmission $record) {
                             $record->update([
-                                'status' => 'pending',
-                                'verified_by' => null,
-                                'verified_at' => null,
-                                'catatan_guru' => null,
                                 'kesiswaan_status' => 'pending',
                                 'validated_by' => null,
                                 'validated_at' => null,
@@ -157,7 +154,7 @@ class ValidasiResource extends Resource
                             Cache::forget("submissions_{$record->user_id}");
                             Cache::forget("submission_{$record->user_id}_{$record->hari_ke}");
                             ActivityLog::log('reset_validation', Auth::user(), [
-                                'description' => 'Mereset status formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
+                                'description' => 'Mereset status validasi formulir hari ke-' . $record->hari_ke . ' dari ' . ($record->user?->name ?? '-'),
                                 'submission_id' => $record->id,
                                 'target_user' => $record->user?->name,
                                 'hari_ke' => $record->hari_ke,

@@ -1212,7 +1212,7 @@ function formulirHarian() {
             // Kirim data ke server agar sholat tersinkron ke check-in
             var self = this;
             ApiRepository.formulir
-                .submit(self.formDay, self.formData)
+                .submit(self.formDay, self.formData, true)
                 .then(function (r) {
                     return r.json();
                 })

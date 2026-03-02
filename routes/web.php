@@ -71,7 +71,7 @@ Route::middleware(['auth', 'throttle:export'])->prefix('kesiswaan-exports')->gro
         $user = \Illuminate\Support\Facades\Auth::user();
         $roleName = strtolower(trim($user->role_user?->name ?? ''));
         abort_unless(
-            in_array($roleName, ['kesiswaan', 'superadmin', 'super admin']),
+            in_array($roleName, ['kesiswaan', 'superadmin', 'super admin', 'kepala sekolah']),
             403
         );
         // Support comma-separated kelas IDs for multi-select export

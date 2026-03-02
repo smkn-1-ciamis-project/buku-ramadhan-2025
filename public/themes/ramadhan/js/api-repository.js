@@ -176,10 +176,11 @@ var ApiRepository = (function () {
              * @param {object} formData
              * @returns {Promise<Response>}
              */
-            submit: function (hariKe, formData) {
+            submit: function (hariKe, formData, isDraft) {
                 return _post("formulir_submit", "/api/formulir", {
                     hari_ke: hariKe,
                     data: formData,
+                    is_draft: isDraft ? true : false,
                 });
             },
         },

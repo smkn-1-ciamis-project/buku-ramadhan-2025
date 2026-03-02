@@ -40,7 +40,7 @@ class FormSubmissionService
    *
    * @return array{success: bool, message: string, submission?: \App\Models\FormSubmission}
    */
-  public function storeSubmission(User $user, int $hariKe, array $formData): array
+  public function storeSubmission(User $user, int $hariKe, array $formData, bool $isDraft = false): array
   {
     // Check if form is active for user's religion
     $agama = $user->agama ?? 'Islam';
@@ -66,6 +66,28 @@ class FormSubmissionService
       ];
     }
 
+    // Draft: hanya simpan data, jangan reset verifikasi, jangan ubah status jika sudah pending/verified
+    if ($isDraft) {
+      $updateData = ['data' => $formData];
+      // Hanya set status draft jika belum pernah disubmit (belum ada record atau masih draft)
+      if (!$existing || $existing->status === 'draft') {
+        $updateData['status'] = 'draft';
+      }
+      $submission = $this->formSubmissionRepo->updateOrCreate($user, $hariKe, $updateData);
+
+      // Sync sholat data to prayer_checkins (Muslim only)
+      if ($isMuslim) {
+        $this->syncPrayerCheckins($user, $hariKe, $formData);
+      }
+
+      return [
+        'success' => true,
+        'message' => 'Draft formulir hari ke-' . $hariKe . ' berhasil disimpan.',
+        'submission' => $submission,
+      ];
+    }
+
+    // Full submit: reset verifikasi
     $submission = $this->formSubmissionRepo->updateOrCreate($user, $hariKe, [
       'data' => $formData,
       'status' => 'pending',

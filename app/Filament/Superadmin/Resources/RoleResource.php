@@ -48,6 +48,7 @@ class RoleResource extends Resource
   protected const GURU_MENUS = [
     'guru_manajemen_siswa' => 'Manajemen Siswa',
     'guru_verifikasi' => 'Verifikasi Formulir',
+    'guru_rekap_siswa' => 'Rekap Siswa',
   ];
 
   protected const KESISWAAN_MENUS = [

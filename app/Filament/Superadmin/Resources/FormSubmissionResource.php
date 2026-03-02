@@ -5,6 +5,7 @@ namespace App\Filament\Superadmin\Resources;
 use App\Filament\Superadmin\Resources\FormSubmissionResource\Pages;
 use App\Models\ActivityLog;
 use App\Models\FormSubmission;
+use App\Models\Kelas;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
@@ -96,6 +97,7 @@ class FormSubmissionResource extends Resource
         Tables\Filters\SelectFilter::make('status')
           ->label('Status Verifikasi')
           ->options([
+            'draft' => 'Draf',
             'pending' => 'Menunggu',
             'verified' => 'Diverifikasi',
             'rejected' => 'Ditolak',
@@ -114,7 +116,8 @@ class FormSubmissionResource extends Resource
           ),
         Tables\Filters\SelectFilter::make('kelas')
           ->label('Kelas')
-          ->relationship('user.kelas', 'nama')
+          ->options(fn() => Kelas::orderBy('nama')->pluck('nama', 'id')->toArray())
+          ->query(fn(Builder $query, array $data) => $data['value'] ? $query->whereHas('user', fn($q) => $q->where('kelas_id', $data['value'])) : $query)
           ->searchable()
           ->preload(),
       ])
