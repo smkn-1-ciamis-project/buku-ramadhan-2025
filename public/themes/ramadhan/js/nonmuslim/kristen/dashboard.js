@@ -16,6 +16,7 @@ function nonmuslimDashboard() {
         activeTab: "calendar",
         showChangePassword: false,
         showLogoutConfirm: false,
+        showAbout: false,
         pwOld: "",
         pwNew: "",
         pwConfirm: "",

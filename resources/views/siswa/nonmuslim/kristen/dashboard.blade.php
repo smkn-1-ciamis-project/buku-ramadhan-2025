@@ -802,15 +802,16 @@
                                     <button class="akun-pw-btn" @click="changePassword()" :disabled="pwLoading" x-text="pwLoading ? 'Menyimpan...' : 'Simpan Password'"></button>
                                 </div>
 
-                                <div class="akun-menu-item">
+                                <button type="button" @click="showAbout = true" class="akun-menu-item w-full">
                                     <div class="akun-menu-icon akun-menu-icon-blue">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v2.0 - SMKN 1 Ciamis</p>
+                                        <p class="akun-menu-sub">Calakan v2.5.7 — Lihat pembaruan</p>
                                     </div>
-                                </div>
+                                    <svg style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                                </button>
 
                                 <button type="button" @click="showLogoutConfirm = true" class="akun-menu-item akun-menu-logout w-full">
                                     <div class="akun-menu-icon akun-menu-icon-red">
@@ -836,6 +837,64 @@
                                                 @csrf
                                                 <button type="submit" class="logout-btn-confirm">Ya, Keluar</button>
                                             </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- About / Changelog Modal --}}
+                                <div x-show="showAbout" x-transition.opacity class="logout-overlay" @click.self="showAbout = false" style="display:none;">
+                                    <div class="logout-modal" x-show="showAbout" x-transition.scale.90 style="max-width:420px;width:92%;overflow:hidden;padding:0;">
+                                        <div style="max-height:82vh;overflow-y:auto;padding:24px 20px;">
+                                        <div class="logout-modal-icon" style="background:#eff6ff;color:#3b82f6;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                                        </div>
+                                        <h3 class="logout-modal-title">Calakan</h3>
+                                        <p class="logout-modal-text" style="margin-bottom:10px;">Aplikasi Buku Ramadhan Digital<br><strong>SMKN 1 Ciamis</strong></p>
+                                        <div style="display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 14px;font-size:0.78rem;font-weight:700;color:#1d4ed8;margin-bottom:18px;">
+                                            Versi 2.5.7 — 2 Maret 2026
+                                        </div>
+                                        <div style="text-align:left;width:100%;">
+                                            <div style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e5e7eb;">Riwayat Pembaruan</div>
+                                            <div style="margin-bottom:14px;">
+                                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.7</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">2 Maret 2026</span>
+                                                </div>
+                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Versi aplikasi bisa diklik, tampilkan riwayat pembaruan</li>
+                                                    <li>Aplikasi lebih cepat dan responsif dari sebelumnya</li>
+                                                    <li>Keamanan login semakin ditingkatkan</li>
+                                                    <li>Berbagai perbaikan bug minor</li>
+                                                </ul>
+                                            </div>
+                                            <div style="margin-bottom:14px;">
+                                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.0</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">Februari 2026</span>
+                                                </div>
+                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Perbaikan tampilan dashboard di layar HP</li>
+                                                    <li>Data & profil siswa lebih akurat</li>
+                                                    <li>Berbagai perbaikan bug dan peningkatan stabilitas</li>
+                                                </ul>
+                                            </div>
+                                            <div style="margin-bottom:4px;">
+                                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                                                    <span style="background:#f3f4f6;color:#374151;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.0</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">Januari 2026</span>
+                                                </div>
+                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Peluncuran versi 2.0 Calakan</li>
+                                                    <li>Jadwal sholat & waktu imsakiyah otomatis</li>
+                                                    <li>Kuis & ayat Al-Quran harian</li>
+                                                    <li>Absensi & formulir harian Ramadhan</li>
+                                                    <li>Dukungan siswa nonmuslim (4 agama)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="logout-modal-actions" style="margin-top:18px;">
+                                            <button type="button" @click="showAbout = false" class="logout-btn-cancel" style="width:100%;">Tutup</button>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
