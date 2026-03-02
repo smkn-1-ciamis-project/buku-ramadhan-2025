@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__userAgama = '{{ auth()->user()->agama ?? "Hindu" }}';</script>
+    <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__userAgama = '{{ auth()->user()->agama ?? "Hindu" }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     <div x-data="formulirHindu()" x-init="init()" class="formulir-page">
         <style>
             html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }

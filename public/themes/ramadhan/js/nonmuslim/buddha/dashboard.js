@@ -1,3 +1,16 @@
+// ── Dynamic App Settings Helper ──────────────────────────────────────
+var _appCfg = window.__appSettings || {};
+function _parseSettingDate(dateStr) {
+    if (!dateStr) return null;
+    var p = dateStr.split("-");
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+}
+var _ramadhanStart =
+    _parseSettingDate(_appCfg.ramadhan_start_date) || new Date(2026, 1, 19);
+var _ramadhanEnd =
+    _parseSettingDate(_appCfg.ramadhan_end_date) || new Date(2026, 2, 20);
+var _ramadhanTotalDays = _appCfg.ramadhan_total_days || 30;
+
 function buddhaDashboard() {
     return {
         activeTab: "calendar",
@@ -125,7 +138,7 @@ function buddhaDashboard() {
                 now.getFullYear();
         },
         calculateRamadhanDay() {
-            var startDate = new Date(2026, 1, 19);
+            var startDate = new Date(_ramadhanStart);
             var now = new Date();
             var today = new Date(
                 now.getFullYear(),
@@ -133,7 +146,7 @@ function buddhaDashboard() {
                 now.getDate(),
             );
             var diff = Math.floor((today - startDate) / 86400000) + 1;
-            this.ramadhanDay = Math.max(1, Math.min(diff, 30));
+            this.ramadhanDay = Math.max(1, Math.min(diff, _ramadhanTotalDays));
         },
         checkSunday() {
             this.isSunday = new Date().getDay() === 0;
@@ -155,8 +168,8 @@ function buddhaDashboard() {
             }
         },
         buildCalendar() {
-            var startDate = new Date(2026, 1, 19);
-            var endDate = new Date(2026, 2, 20);
+            var startDate = new Date(_ramadhanStart);
+            var endDate = new Date(_ramadhanEnd);
             var startDow = startDate.getDay();
             var mondayOffset = startDow === 0 ? -6 : 1 - startDow;
             var calStart = new Date(startDate);
@@ -192,7 +205,7 @@ function buddhaDashboard() {
             for (var i = 0; i < 42; i++) {
                 var cur = new Date(d);
                 var hijriDay = Math.floor((cur - startDate) / 86400000) + 1;
-                var inRange = hijriDay >= 1 && hijriDay <= 30;
+                var inRange = hijriDay >= 1 && hijriDay <= _ramadhanTotalDays;
                 var isToday = cur.getTime() === today.getTime() && inRange;
                 var isPast = cur < today && inRange;
                 var isCompleted =

@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <script>window.__siswaUserId = '{{ auth()->id() }}';</script>
+    <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     <div x-data="buddhaDashboard()" x-init="init()" class="ramadhan-app" data-formulir-url="{{ \App\Filament\Siswa\Pages\NonMuslim\Buddha\FormulirHarian::getUrl() }}">
         {{-- Kill ALL Filament wrapper spacing --}}
         <style>

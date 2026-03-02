@@ -114,6 +114,23 @@ const QURAN_SURAHS = [
     { number: 113, name: "Al-Falaq", ayat: 5 },
     { number: 114, name: "An-Nas", ayat: 6 },
 ];
+
+// ── Dynamic App Settings Helper ──────────────────────────────────────
+var _appCfg = window.__appSettings || {};
+function _parseSettingDate(dateStr) {
+    if (!dateStr) return null;
+    var p = dateStr.split("-");
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+}
+var _ramadhanStart =
+    _parseSettingDate(_appCfg.ramadhan_start_date) || new Date(2026, 1, 19);
+var _ramadhanTotalDays = _appCfg.ramadhan_total_days || 30;
+var _prayerApiUrl =
+    _appCfg.prayer_api_url || "https://api.aladhan.com/v1/timings/";
+var _prayerApiMethod = _appCfg.prayer_api_method || 20;
+var _defaultLat = _appCfg.default_latitude || -7.3305;
+var _defaultLng = _appCfg.default_longitude || 108.3508;
+
 function formulirHarian() {
     return {
         formDay: 1,
@@ -214,21 +231,22 @@ function formulirHarian() {
                     return;
                 }
             } catch (e) {}
-            // Default koordinat Ciamis
-            var lat = -7.3305;
-            var lng = 108.3508;
+            // Default koordinat dari setting
+            var lat = _defaultLat;
+            var lng = _defaultLng;
             var dateStr = new Date()
                 .toISOString()
                 .slice(0, 10)
                 .replace(/-/g, "-");
             var url =
-                "https://api.aladhan.com/v1/timings/" +
+                _prayerApiUrl +
                 dateStr +
                 "?latitude=" +
                 lat +
                 "&longitude=" +
                 lng +
-                "&method=20";
+                "&method=" +
+                _prayerApiMethod;
             fetch(url, {
                 signal: AbortSignal.timeout
                     ? AbortSignal.timeout(5000)
@@ -642,7 +660,7 @@ function formulirHarian() {
         },
         ramadhanDay: 1,
         calculateRamadhanDay() {
-            const ramadhanStart = new Date(2026, 1, 19);
+            const ramadhanStart = new Date(_ramadhanStart);
             const now = new Date();
             const today = new Date(
                 now.getFullYear(),
@@ -650,7 +668,7 @@ function formulirHarian() {
                 now.getDate(),
             );
             const diff = Math.floor((today - ramadhanStart) / 86400000) + 1;
-            this.ramadhanDay = Math.max(1, Math.min(diff, 30));
+            this.ramadhanDay = Math.max(1, Math.min(_ramadhanTotalDays, diff));
         },
         getFirstUnfilledDay() {
             for (var d = 1; d <= this.ramadhanDay; d++) {
@@ -956,7 +974,7 @@ function formulirHarian() {
             var self = this;
             // Reset immediately so stale data from previous day is cleared
             self.checkedInPrayers = {};
-            var ramadhanStart = new Date(2026, 1, 19);
+            var ramadhanStart = new Date(_ramadhanStart);
             var targetDate = new Date(
                 ramadhanStart.getTime() + (day - 1) * 86400000,
             );

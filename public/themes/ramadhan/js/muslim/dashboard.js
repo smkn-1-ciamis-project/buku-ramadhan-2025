@@ -1,3 +1,27 @@
+// ── Dynamic App Settings Helper ──────────────────────────────────────
+var _appCfg = window.__appSettings || {};
+function _parseSettingDate(dateStr) {
+    if (!dateStr) return null;
+    var p = dateStr.split("-");
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+}
+var _ramadhanStart =
+    _parseSettingDate(_appCfg.ramadhan_start_date) || new Date(2026, 1, 19);
+var _ramadhanEnd =
+    _parseSettingDate(_appCfg.ramadhan_end_date) || new Date(2026, 2, 20);
+var _ramadhanTotalDays = _appCfg.ramadhan_total_days || 30;
+var _hijriYear = _appCfg.hijri_year || "1447 H";
+var _prayerApiUrl =
+    _appCfg.prayer_api_url || "https://api.aladhan.com/v1/timings/";
+var _prayerApiMethod = _appCfg.prayer_api_method || 20;
+var _quranApiUrl =
+    _appCfg.quran_api_url || "https://api.alquran.cloud/v1/ayah/";
+var _nominatimApiUrl =
+    _appCfg.nominatim_api_url || "https://nominatim.openstreetmap.org/reverse";
+var _defaultLat = _appCfg.default_latitude || -7.3305;
+var _defaultLng = _appCfg.default_longitude || 108.3508;
+var _defaultCity = _appCfg.default_city || "Ciamis";
+
 function ramadhanDashboard() {
     return {
         activeTab: "calendar",
@@ -43,7 +67,7 @@ function ramadhanDashboard() {
         locationText: "Mendeteksi...",
         locationCity: "Mendeteksi lokasi...",
         locationCoords: "",
-        cityName: "Ciamis",
+        cityName: _defaultCity,
         compassHeading: 0,
         compassActive: false,
         compassSupported: false,
@@ -56,8 +80,8 @@ function ramadhanDashboard() {
         calendarMonthLabel: "",
         imsakTime: "--:--",
         maghribTime: "--:--",
-        userLat: -7.3305,
-        userLng: 108.3508,
+        userLat: _defaultLat,
+        userLng: _defaultLng,
         nextPrayerName: "",
         nextPrayerMinutes: 0,
         showLocationPicker: false,
@@ -204,25 +228,31 @@ function ramadhanDashboard() {
                 month: "long",
                 day: "numeric",
             });
-            const ramadhanStart = new Date(2026, 1, 19);
+            const ramadhanStart = new Date(_ramadhanStart);
             const hijriDay = Math.max(
                 1,
-                Math.min(30, Math.floor((now - ramadhanStart) / 864e5) + 1),
+                Math.min(
+                    _ramadhanTotalDays,
+                    Math.floor((now - ramadhanStart) / 864e5) + 1,
+                ),
             );
-            this.hijriDate = hijriDay + " Ramadhan 1447 H";
+            this.hijriDate = hijriDay + " Ramadhan " + _hijriYear;
         },
         calculateRamadhanDay() {
             const now = new Date();
-            const ramadhanStart = new Date(2026, 1, 19);
+            const ramadhanStart = new Date(_ramadhanStart);
             const diff = Math.floor((now - ramadhanStart) / 864e5);
-            this.ramadhanDay = Math.max(1, Math.min(30, diff + 1));
+            this.ramadhanDay = Math.max(
+                1,
+                Math.min(_ramadhanTotalDays, diff + 1),
+            );
         },
         buildCalendar() {
             const days = [];
-            const ramadhanStart = new Date(2026, 1, 19);
+            const ramadhanStart = new Date(_ramadhanStart);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            for (let d = 0; d < 30; d++) {
+            for (let d = 0; d < _ramadhanTotalDays; d++) {
                 const date = new Date(ramadhanStart);
                 date.setDate(ramadhanStart.getDate() + d);
                 const hijriDay = d + 1;
@@ -407,8 +437,8 @@ function ramadhanDashboard() {
             }
         },
         calculatePrayerTimes() {
-            const lat = this.userLat || -7.3305;
-            const lng = this.userLng || 108.3508;
+            const lat = this.userLat || _defaultLat;
+            const lng = this.userLng || _defaultLng;
             const now = this.getNowInSelectedTz();
             const dd = String(now.getDate()).padStart(2, "0");
             const mm = String(now.getMonth() + 1).padStart(2, "0");
@@ -432,13 +462,14 @@ function ramadhanDashboard() {
                 } catch (e) {}
             }
             const url =
-                "https://api.aladhan.com/v1/timings/" +
+                _prayerApiUrl +
                 dateStr +
                 "?latitude=" +
                 lat +
                 "&longitude=" +
                 lng +
-                "&method=20";
+                "&method=" +
+                _prayerApiMethod;
             fetch(url, {
                 signal: AbortSignal.timeout
                     ? AbortSignal.timeout(5000)
@@ -1069,12 +1100,8 @@ function ramadhanDashboard() {
             };
             try {
                 const [arRes, idRes] = await Promise.all([
-                    fetch(
-                        `https://api.alquran.cloud/v1/ayah/${pick.s}:${pick.a}/ar.alafasy`,
-                    ),
-                    fetch(
-                        `https://api.alquran.cloud/v1/ayah/${pick.s}:${pick.a}/id.indonesian`,
-                    ),
+                    fetch(`${_quranApiUrl}${pick.s}:${pick.a}/ar.alafasy`),
+                    fetch(`${_quranApiUrl}${pick.s}:${pick.a}/id.indonesian`),
                 ]);
                 const arData = await arRes.json();
                 const idData = await idRes.json();
@@ -1162,7 +1189,8 @@ function ramadhanDashboard() {
                     this.calculateQibla();
                     this.calculatePrayerTimes();
                     fetch(
-                        "https://nominatim.openstreetmap.org/reverse?lat=" +
+                        _nominatimApiUrl +
+                            "?lat=" +
                             this.userLat +
                             "&lon=" +
                             this.userLng +
@@ -1228,12 +1256,12 @@ function ramadhanDashboard() {
             );
         },
         setDefaultLocation() {
-            this.locationText = "Ciamis, Jawa Barat (default)";
-            this.locationCity = "Kab. Ciamis, Jawa Barat";
-            this.locationCoords = "-7.3305, 108.3508";
-            this.userLat = -7.3305;
-            this.userLng = 108.3508;
-            this.cityName = "Kab. Ciamis";
+            this.locationText = _defaultCity + ", Jawa Barat (default)";
+            this.locationCity = "Kab. " + _defaultCity + ", Jawa Barat";
+            this.locationCoords = _defaultLat + ", " + _defaultLng;
+            this.userLat = _defaultLat;
+            this.userLng = _defaultLng;
+            this.cityName = "Kab. " + _defaultCity;
             this.selectedTz = "WIB";
             this.calculateQibla();
             this.calculatePrayerTimes();
@@ -1896,7 +1924,7 @@ function ramadhanDashboard() {
             if (!this.checkinDate || this.checkinHariKe <= 1) return;
             var d = new Date(this.checkinDate + "T00:00:00");
             d.setDate(d.getDate() - 1);
-            var ramStart = new Date(2026, 1, 19);
+            var ramStart = new Date(_ramadhanStart);
             if (d < ramStart) return;
             this.checkinHariKe--;
             this.checkinDate =
@@ -1914,7 +1942,7 @@ function ramadhanDashboard() {
             d.setDate(d.getDate() + 1);
             var today = new Date();
             today.setHours(0, 0, 0, 0);
-            var ramEnd = new Date(2026, 2, 20);
+            var ramEnd = new Date(_ramadhanEnd);
             if (d > today || d > ramEnd) return;
             this.checkinHariKe++;
             this.checkinDate =
@@ -1935,7 +1963,7 @@ function ramadhanDashboard() {
             d.setDate(d.getDate() + 1);
             var today = new Date();
             today.setHours(0, 0, 0, 0);
-            var ramEnd = new Date(2026, 2, 20);
+            var ramEnd = new Date(_ramadhanEnd);
             return d <= today && d <= ramEnd;
         },
         getCheckinStatus(id) {

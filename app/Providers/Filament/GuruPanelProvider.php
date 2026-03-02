@@ -33,7 +33,9 @@ class GuruPanelProvider extends PanelProvider
             ->id('guru')
             ->path('portal-guru-smkn1')
             ->login(GuruLogin::class)
-            ->brandName('Panel Guru - Calakan')
+            ->brandName('Panel Guru')
+            ->brandLogo(new HtmlString('<span style="display:flex;align-items:center;gap:0.6rem;"><img src="' . asset('img/logo_smk.png') . '" style="height:2rem;border-radius:4px;flex-shrink:0;"><span style="font-size:0.95rem;font-weight:700;color:inherit;line-height:1;white-space:nowrap;">Panel Guru</span></span>'))
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('img/logo_smk.png'))
             ->colors([
                 'primary' => Color::Blue,
@@ -101,6 +103,7 @@ class GuruPanelProvider extends PanelProvider
                     <style>
                         html, body { overscroll-behavior: none; }
                         body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+                        .fi-sidebar-header a, .fi-topbar-start a { pointer-events: none !important; cursor: default !important; }
                     </style>
                 ')
             )
