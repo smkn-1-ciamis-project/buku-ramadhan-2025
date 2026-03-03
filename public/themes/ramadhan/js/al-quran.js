@@ -283,6 +283,7 @@ function alQuranPage() {
         async openSurah(num) {
             if (num < 1 || num > 114) return;
             this.view = "read";
+            this.showSearch = false;
             this.ayahError = "";
             this.currentAyahs = [];
             this.filteredAyahs = [];

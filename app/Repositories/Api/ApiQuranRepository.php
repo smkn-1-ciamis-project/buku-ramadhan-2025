@@ -224,10 +224,19 @@ class ApiQuranRepository implements QuranRepositoryInterface
 
           $merged = [];
           for ($i = 0, $len = count($arAyahs); $i < $len; $i++) {
+            $arabicText = $arAyahs[$i]['text'];
+
+            // Strip Bismillah prefix from ayah 1 (surahs other than Al-Faatiha #1 and At-Tawba #9)
+            // The API embeds "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ" at the start of ayah 1
+            // Use flexible regex to handle varying diacritic ordering from the API
+            if ($i === 0 && $surahNumber !== 1 && $surahNumber !== 9) {
+              $arabicText = preg_replace('/^بِسْمِ\s+ٱل.{2,8}هِ\s+ٱل.{2,10}نِ\s+ٱل.{2,10}مِ\s*/u', '', $arabicText);
+            }
+
             $merged[] = [
               'numberInSurah' => $arAyahs[$i]['numberInSurah'],
               'juz'           => $arAyahs[$i]['juz'],
-              'arabic'        => $arAyahs[$i]['text'],
+              'arabic'        => $arabicText,
               'translation'   => $idAyahs[$i]['text'] ?? '',
               'audio'         => $arAyahs[$i]['audio'] ?? '',
             ];

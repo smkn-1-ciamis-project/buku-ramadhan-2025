@@ -149,6 +149,11 @@
     height: 14px;
 }
 
+/* Desktop search button for detail view (hidden by default, shown on desktop) */
+.quran-topbar-search-detail {
+    display: none;
+}
+
 @media (min-width: 768px) {
     /* Hide the search toggle button — search is always visible on desktop */
     .quran-topbar-action {
@@ -164,6 +169,39 @@
         max-width: 680px;
         margin: 0 auto;
         padding: 14px 20px 0;
+    }
+    /* Desktop search button in topbar for surah detail */
+    .quran-topbar-search-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        transition: background 0.15s;
+        flex-shrink: 0;
+    }
+    .quran-topbar-search-detail:hover {
+        background: rgba(255, 255, 255, 0.22);
+    }
+    .quran-topbar-search-detail svg {
+        width: 16px;
+        height: 16px;
+    }
+    /* Sticky ayah search on desktop */
+    .quran-ayah-search-wrap {
+        position: sticky;
+        top: 60px;
+        z-index: 40;
+        background: #f1f5f9;
+        padding-top: 4px;
+        padding-bottom: 4px;
     }
 }
 
