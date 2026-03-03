@@ -38,7 +38,7 @@ class SiswaResource extends Resource
   {
     return parent::getEloquentQuery()
       ->whereHas('role_user', fn(Builder $q) => $q->where('name', 'Siswa'))
-      ->with(['role_user', 'kelas']);
+      ->with(['role_user', 'kelas.wali']);
   }
 
   public static function form(Form $form): Form
@@ -121,17 +121,18 @@ class SiswaResource extends Resource
       ->columns([
         Tables\Columns\TextColumn::make('name')
           ->label('Nama')
+          ->description(fn($record) => $record->nisn)
           ->searchable()
           ->sortable(),
-        Tables\Columns\TextColumn::make('nisn')
-          ->label('NISN')
-          ->searchable()
-          ->copyable(),
         Tables\Columns\TextColumn::make('kelas.nama')
           ->label('Kelas')
           ->badge()
           ->color('info')
           ->placeholder('Belum ada kelas')
+          ->sortable(),
+        Tables\Columns\TextColumn::make('kelas.wali.name')
+          ->label('Wali Kelas')
+          ->placeholder('-')
           ->sortable(),
         Tables\Columns\TextColumn::make('jenis_kelamin')
           ->label('JK')
