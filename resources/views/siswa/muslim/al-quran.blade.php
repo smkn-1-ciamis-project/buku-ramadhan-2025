@@ -31,8 +31,21 @@
             </button>
         </div>
 
-        {{-- Search bar --}}
+        {{-- Search bar (mobile toggle) --}}
         <div x-show="showSearch" x-transition.origin.top class="quran-search-wrap">
+            <div class="quran-search-inner">
+                <svg class="quran-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                <input type="text" x-model="searchQuery" @input.debounce.300ms="filterSurahs()"
+                       placeholder="Cari surah... (contoh: Al-Baqarah, Yasin)"
+                       class="quran-search-input">
+                <button x-show="searchQuery.length > 0" @click="searchQuery = ''; filterSurahs()" class="quran-search-clear">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        {{-- Search bar (desktop always visible) --}}
+        <div x-show="view === 'list'" class="quran-search-desktop">
             <div class="quran-search-inner">
                 <svg class="quran-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 <input type="text" x-model="searchQuery" @input.debounce.300ms="filterSurahs()"
@@ -75,7 +88,7 @@
                                 <div class="quran-surah-info">
                                     <div class="quran-surah-name" x-text="surah.englishName"></div>
                                     <div class="quran-surah-meta">
-                                        <span class="quran-surah-type" x-text="surah.revelationType === 'Meccan' ? 'Makkiyyah' : 'Madaniyyah'"></span>
+                                        <span class="quran-surah-type" x-text="getSurahTranslation(surah.number)"></span>
                                         <span class="quran-surah-dot">&bull;</span>
                                         <span x-text="surah.numberOfAyahs + ' ayat'"></span>
                                     </div>
@@ -107,7 +120,7 @@
                                 <h2 class="quran-reader-surah-name" x-text="currentSurah.englishName"></h2>
                                 <div class="quran-reader-surah-arabic" x-text="currentSurah.name"></div>
                                 <div class="quran-reader-surah-info">
-                                    <span x-text="(currentSurah.revelationType === 'Meccan' ? 'Makkiyyah' : 'Madaniyyah')"></span>
+                                    <span x-text="getSurahTranslation(currentSurah.number)"></span>
                                     <span>&bull;</span>
                                     <span x-text="currentSurah.numberOfAyahs + ' ayat'"></span>
                                 </div>
@@ -118,14 +131,30 @@
                         <div class="quran-reader-audio-ctrls" x-show="!loadingAyahs && currentAyahs.length > 0">
                             {{-- Reciter picker --}}
                             <div class="quran-reciter-wrap">
+                                {{-- Mobile backdrop --}}
+                                <div x-show="showReciterPicker" @click="showReciterPicker = false" class="quran-reciter-backdrop"></div>
                                 <button @click="showReciterPicker = !showReciterPicker" class="quran-reciter-btn" title="Pilih Qari">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
                                     <span class="quran-reciter-name" x-text="getReciterName()"></span>
                                     <svg class="quran-reciter-chevron" :class="showReciterPicker && 'quran-reciter-chevron-up'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
                                 </button>
                                 {{-- Dropdown --}}
-                                <div x-show="showReciterPicker" x-transition.origin.top @click.outside="showReciterPicker = false" class="quran-reciter-dropdown">
-                                    <div class="quran-reciter-dropdown-title">Pilih Qari (Pembaca)</div>
+                                <div x-show="showReciterPicker"
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 translate-y-full"
+                                     x-transition:enter-end="opacity-100 translate-y-0"
+                                     x-transition:leave="transition ease-in duration-200"
+                                     x-transition:leave-start="opacity-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 translate-y-full"
+                                     @click.outside="showReciterPicker = false" class="quran-reciter-dropdown">
+                                    {{-- Drag handle --}}
+                                    <div class="quran-reciter-handle-bar"></div>
+                                    <div class="quran-reciter-dropdown-header">
+                                        <div class="quran-reciter-dropdown-title">Pilih Qari (Pembaca)</div>
+                                        <button @click="showReciterPicker = false" class="quran-reciter-close-btn" aria-label="Tutup">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
                                     <template x-for="r in reciters" :key="r.id">
                                         <button @click="changeReciter(r.id)" class="quran-reciter-option" :class="selectedReciter === r.id && 'quran-reciter-option-active'">
                                             <div class="quran-reciter-option-info">
@@ -142,9 +171,6 @@
                                 <svg x-show="!autoPlay" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
                                 <svg x-show="autoPlay" fill="currentColor" viewBox="0 0 24 24"><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
                                 <span x-text="autoPlay ? 'Auto-Play ON' : 'Putar Semua'"></span>
-                            </button>
-                            <button x-show="playingIndex >= 0" @click="stopAudio()" class="quran-stop-btn" title="Berhenti">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/></svg>
                             </button>
                         </div>
                     </div>

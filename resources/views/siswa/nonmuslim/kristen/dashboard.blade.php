@@ -808,7 +808,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v2.5.7 — Lihat pembaruan</p>
+                                        <p class="akun-menu-sub">Calakan v2.6.2 — Lihat pembaruan</p>
                                     </div>
                                     <svg style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                                 </button>
@@ -851,13 +851,28 @@
                                         <h3 class="logout-modal-title">Calakan</h3>
                                         <p class="logout-modal-text" style="margin-bottom:10px;">Aplikasi Buku Ramadhan Digital<br><strong>SMKN 1 Ciamis</strong></p>
                                         <div style="display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 14px;font-size:0.78rem;font-weight:700;color:#1d4ed8;margin-bottom:18px;">
-                                            Versi 2.5.7 — 2 Maret 2026
+                                            Versi 2.6.2 — 3 Maret 2026
                                         </div>
                                         <div style="text-align:left;width:100%;">
                                             <div style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e5e7eb;">Riwayat Pembaruan</div>
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.7</span>
+                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.6.2</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">3 Maret 2026</span>
+                                                </div>
+                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Al-Quran digital lengkap 114 surah dengan terjemahan</li>
+                                                    <li>Pilihan 9 qari/pembaca Al-Quran favorit</li>
+                                                    <li>Putar semua ayat otomatis, lanjut ke surah berikutnya otomatis</li>
+                                                    <li>Pencarian surah &amp; pencarian ayat di dalam surah</li>
+                                                    <li>Menu Jadwal Sholat &amp; Arah Kiblat digabung jadi satu</li>
+                                                    <li>Aplikasi lebih cepat &amp; responsif dari sebelumnya</li>
+                                                    <li>Versi aplikasi bisa diklik untuk melihat riwayat pembaruan</li>
+                                                </ul>
+                                            </div>
+                                            <div style="margin-bottom:14px;">
+                                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.7</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">2 Maret 2026</span>
                                                 </div>
                                                 <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">

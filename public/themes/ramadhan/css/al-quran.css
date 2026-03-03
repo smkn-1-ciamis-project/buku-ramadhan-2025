@@ -87,6 +87,11 @@
     background: #fff;
     border-bottom: 1px solid #e2e8f0;
 }
+
+/* Desktop always-visible search bar */
+.quran-search-desktop {
+    display: none;
+}
 .quran-search-inner {
     position: relative;
     display: flex;
@@ -142,6 +147,24 @@
 .quran-search-clear svg {
     width: 14px;
     height: 14px;
+}
+
+@media (min-width: 768px) {
+    /* Hide the search toggle button — search is always visible on desktop */
+    .quran-topbar-action {
+        display: none !important;
+    }
+    /* Hide the mobile slide-down search panel */
+    .quran-search-wrap {
+        display: none !important;
+    }
+    /* Show the always-visible desktop search bar */
+    .quran-search-desktop {
+        display: block;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 14px 20px 0;
+    }
 }
 
 /* Body */
@@ -657,12 +680,21 @@
     border-color: rgba(255, 255, 255, 0.4);
 }
 
+/* Reciter dropdown backdrop (mobile only) */
+.quran-reciter-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 199;
+    backdrop-filter: blur(1px);
+}
+
 /* Reciter dropdown */
 .quran-reciter-dropdown {
     position: absolute;
     top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     min-width: 280px;
     max-height: 320px;
     overflow-y: auto;
@@ -692,13 +724,49 @@
 .quran-reciter-dropdown::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+.quran-reciter-handle-bar {
+    display: none; /* shown only on mobile via media query */
+    width: 40px;
+    height: 4px;
+    background: #cbd5e1;
+    border-radius: 2px;
+    margin: 10px auto 4px;
+    flex-shrink: 0;
+}
+.quran-reciter-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px 2px;
+}
 .quran-reciter-dropdown-title {
-    padding: 10px 12px 6px;
+    padding: 6px 0;
     font-size: 11px;
     font-weight: 700;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+.quran-reciter-close-btn {
+    display: none; /* shown only on mobile via media query */
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.quran-reciter-close-btn:hover {
+    background: #e2e8f0;
+}
+.quran-reciter-close-btn svg {
+    width: 14px;
+    height: 14px;
 }
 .quran-reciter-option {
     display: flex;
@@ -1046,8 +1114,38 @@
         min-width: 28px;
     }
     .quran-reciter-dropdown {
-        min-width: 240px;
-        max-width: 90vw;
+        min-width: unset;
+        max-width: unset;
+        width: 100%;
+        max-height: 70vh;
+        /* Bottom sheet — slides up from bottom of screen */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        transform: none;
+        border-radius: 20px 20px 0 0;
+        padding: 0 6px 6px;
+        padding-bottom: env(safe-area-inset-bottom, 6px);
+        z-index: 200;
+    }
+    .quran-reciter-backdrop {
+        display: block;
+    }
+    .quran-reciter-handle-bar {
+        display: block;
+    }
+    .quran-reciter-close-btn {
+        display: flex;
+    }
+    .quran-reciter-dropdown-header {
+        padding: 4px 16px 6px;
+    }
+    .quran-reciter-option {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 0 4px;
     }
     .quran-reciter-name {
         max-width: 100px;
@@ -1065,17 +1163,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #fff;
+    background: #f8fafc;
     border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 14px;
+    padding: 12px 14px;
     transition:
         border-color 0.2s,
         box-shadow 0.2s;
 }
 .quran-ayah-search-inner:focus-within {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: transparent;
+    background: #fff;
+    box-shadow: 0 0 0 2px #3b82f6;
 }
 .quran-ayah-search-icon {
     width: 18px;
@@ -1086,13 +1185,22 @@
 .quran-ayah-search-input {
     flex: 1;
     min-width: 0;
-    border: none;
-    outline: none;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     font-size: 13px;
     font-weight: 500;
     color: #1e293b;
     background: transparent;
     font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.quran-ayah-search-input:focus,
+.quran-ayah-search-input:focus-visible {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 .quran-ayah-search-input::placeholder {
     color: #94a3b8;
