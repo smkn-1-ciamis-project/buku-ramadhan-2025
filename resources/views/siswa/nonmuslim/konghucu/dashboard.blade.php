@@ -908,7 +908,7 @@
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.0</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">Februari 2026</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">26 Februari 2026</span>
                                                 </div>
                                                 <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Perbaikan tampilan dashboard di layar HP</li>
@@ -919,7 +919,7 @@
                                             <div style="margin-bottom:4px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
                                                     <span style="background:#f3f4f6;color:#374151;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.0</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">Januari 2026</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">22 Februari 2026</span>
                                                 </div>
                                                 <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Peluncuran versi 2.0 Calakan</li>
