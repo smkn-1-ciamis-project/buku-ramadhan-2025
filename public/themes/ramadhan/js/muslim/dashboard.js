@@ -90,6 +90,7 @@ function ramadhanDashboard() {
         filteredLocations: [],
         indonesiaLocations: [],
         locationsLoading: true,
+        scheduleSubTab: "jadwal",
         sidebarTabs: [
             {
                 id: "calendar",
@@ -97,8 +98,11 @@ function ramadhanDashboard() {
                 mobileLabel: "Kalender",
             },
             { id: "shalat", label: "Check-in Shalat", mobileLabel: "Shalat" },
-            { id: "schedule", label: "Jadwal Sholat", mobileLabel: "Jadwal" },
-            { id: "qibla", label: "Arah Kiblat", mobileLabel: "Kiblat" },
+            {
+                id: "schedule",
+                label: "Jadwal & Kiblat",
+                mobileLabel: "Jadwal",
+            },
             { id: "dua", label: "Doa Harian", mobileLabel: "Doa" },
             { id: "account", label: "Pengaturan Akun", mobileLabel: "Akun" },
         ],

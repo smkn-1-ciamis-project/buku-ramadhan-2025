@@ -4,6 +4,7 @@ namespace App\Filament\Superadmin\Resources\RekapKelasResource\Pages;
 
 use App\Filament\Superadmin\Resources\RekapKelasResource;
 use App\Models\FormSubmission;
+use App\Services\DashboardStatsService;
 use Carbon\Carbon;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -17,14 +18,16 @@ class ViewRekapKelas extends ViewRecord
     {
         $kelas = $this->record;
         $kelas->load(['wali', 'siswa']);
+        $statsService = app(DashboardStatsService::class);
 
-        $siswaIds = $kelas->siswa->pluck('id');
-        $totalSiswa = $siswaIds->count();
+        $siswaIds = $kelas->siswa->pluck('id')->toArray();
+        $totalSiswa = count($siswaIds);
 
         $ramadhanStart = Carbon::create(2026, 2, 19);
         $today = Carbon::today();
         $hariKe = $today->gte($ramadhanStart) ? min((int) $ramadhanStart->diffInDays($today) + 1, 30) : 0;
 
+        // Batch aggregate stats for the whole kelas (1 query)
         $totalSubmissions = FormSubmission::whereIn('user_id', $siswaIds)->count();
         $verified = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'verified')->count();
         $pending  = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
@@ -38,20 +41,19 @@ class ViewRekapKelas extends ViewRecord
         $complianceRate = $expectedTotal > 0 ? round(($totalSubmissions / $expectedTotal) * 100) : 0;
         $verifyRate = $totalSubmissions > 0 ? round(($verified / $totalSubmissions) * 100) : 0;
 
-        // Per-siswa progress
-        $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe) {
-            $total = FormSubmission::where('user_id', $siswa->id)->count();
-            $verifiedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'verified')->count();
-            $pendingCount  = FormSubmission::where('user_id', $siswa->id)->where('status', 'pending')->count();
-            $rejectedCount = FormSubmission::where('user_id', $siswa->id)->where('status', 'rejected')->count();
-            $rate = $hariKe > 0 ? round(($total / $hariKe) * 100) : 0;
+        // Per-siswa progress — batch (1 query instead of 4×N)
+        $perSiswaStats = $statsService->getPerSiswaStats($siswaIds);
+
+        $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe, $perSiswaStats) {
+            $s = $perSiswaStats[$siswa->id] ?? ['total' => 0, 'verified' => 0, 'pending' => 0, 'rejected' => 0];
+            $rate = $hariKe > 0 ? round(($s['total'] / $hariKe) * 100) : 0;
             return [
                 'name' => $siswa->name,
                 'nisn' => $siswa->nisn ?? '-',
-                'total' => $total,
-                'verified' => $verifiedCount,
-                'pending' => $pendingCount,
-                'rejected' => $rejectedCount,
+                'total' => $s['total'],
+                'verified' => $s['verified'],
+                'pending' => $s['pending'],
+                'rejected' => $s['rejected'],
                 'rate' => min($rate, 100),
             ];
         })->sortBy('name')->values();

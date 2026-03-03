@@ -6,6 +6,7 @@ use App\Models\FormSubmission;
 use App\Models\Kelas;
 use App\Models\RoleUser;
 use App\Models\User;
+use App\Services\DashboardStatsService;
 use Carbon\Carbon;
 use Filament\Pages\Page;
 
@@ -22,6 +23,7 @@ class Dashboard extends Page
   public function getViewData(): array
   {
     $now = now('Asia/Jakarta');
+    $statsService = app(DashboardStatsService::class);
 
     // Statistik umum
     $totalGuru = User::whereHas('role_user', fn($q) => $q->where('name', 'Guru'))->count();
@@ -78,27 +80,25 @@ class Dashboard extends Page
         'created_at_full' => $sub->created_at->translatedFormat('d M Y, H:i'),
       ]);
 
-    // Kelas overview with submission stats
-    $kelasOverview = Kelas::withCount('siswa')
+    // Kelas overview with submission stats — batch query (2 queries instead of N)
+    $kelasAll = Kelas::withCount('siswa')
       ->with('wali')
       ->orderBy('nama')
-      ->get()
-      ->map(function ($k) use ($now, $hariKe) {
-        $todaySubmissions = $hariKe > 0
-          ? FormSubmission::whereDate('created_at', $now->toDateString())
-          ->whereHas('user', fn($q) => $q->where('kelas_id', $k->id))
-          ->distinct('user_id')
-          ->count('user_id')
-          : 0;
+      ->get();
 
-        return [
-          'nama' => $k->nama,
-          'wali' => $k->wali->name ?? '-',
-          'siswa_count' => $k->siswa_count,
-          'today_submissions' => $todaySubmissions,
-          'rate' => $k->siswa_count > 0 ? round(($todaySubmissions / $k->siswa_count) * 100) : 0,
-        ];
-      });
+    $perKelasStats = $statsService->getPerKelasStats($kelasAll, $now->toDateString(), $hariKe);
+
+    $kelasOverview = $kelasAll->map(function ($k) use ($perKelasStats) {
+      $s = $perKelasStats[$k->id] ?? ['today_sub' => 0];
+      $todaySubmissions = $s['today_sub'];
+      return [
+        'nama' => $k->nama,
+        'wali' => $k->wali->name ?? '-',
+        'siswa_count' => $k->siswa_count,
+        'today_submissions' => $todaySubmissions,
+        'rate' => $k->siswa_count > 0 ? round(($todaySubmissions / $k->siswa_count) * 100) : 0,
+      ];
+    });
 
     return [
       'totalGuru' => $totalGuru,

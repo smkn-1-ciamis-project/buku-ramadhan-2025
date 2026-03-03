@@ -254,11 +254,18 @@
                             <span class="center-menu-label">Formulir</span>
                         </a>
 
-                        {{-- Right tabs: Kiblat, Doa, Akun --}}
+                        {{-- Al-Quran (links to separate page) --}}
+                        <a href="{{ \App\Filament\Siswa\Pages\Muslim\AlQuran::getUrl() }}" class="center-menu-btn" style="text-decoration:none;">
+                            <div class="center-menu-icon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                            </div>
+                            <span class="center-menu-label">Al-Quran</span>
+                        </a>
+
+                        {{-- Right tabs: Doa, Akun --}}
                         <template x-for="tab in sidebarTabs.slice(3)" :key="tab.id">
                             <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
                                 <div class="center-menu-icon">
-                                    <svg x-show="tab.id === 'qibla'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     <svg x-show="tab.id === 'dua'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                                     <svg x-show="tab.id === 'account'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </div>
@@ -620,201 +627,24 @@
                         </div>
                     </div>
 
-                    {{-- ARAH KIBLAT --}}
-                    <div x-show="activeTab === 'qibla'" x-transition.opacity.duration.200ms
-                         x-init="$watch('activeTab', v => { if(v==='qibla' && compassPermission==='granted' && !compassActive) { if('ondeviceorientationabsolute' in window) _startAbsoluteCompassListener(); else _startCompassListener(); } if(v!=='qibla') stopCompass(); })">
-                        <div class="qibla-card">
-                            {{-- Header --}}
-                            <div class="qibla-header">
-                                <div class="qibla-header-title">
-                                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>
-                                    <h3>Arah Kiblat</h3>
-                                </div>
-                                <p class="qibla-header-sub">Kompas digital &bull; GPS &bull; Sensor perangkat</p>
-                            </div>
+                    {{-- JADWAL SHOLAT & ARAH KIBLAT (merged) --}}
+                    <div x-show="activeTab === 'schedule'" x-transition.opacity.duration.200ms
+                         x-init="$watch('activeTab', v => { if(v==='schedule' && scheduleSubTab==='kiblat' && compassPermission==='granted' && !compassActive) { if('ondeviceorientationabsolute' in window) _startAbsoluteCompassListener(); else _startCompassListener(); } if(v!=='schedule') stopCompass(); }); $watch('scheduleSubTab', v => { if(v==='kiblat' && activeTab==='schedule' && compassPermission==='granted' && !compassActive) { if('ondeviceorientationabsolute' in window) _startAbsoluteCompassListener(); else _startCompassListener(); } if(v!=='kiblat') stopCompass(); })">
 
-                            {{-- Location bar --}}
-                            <div class="qibla-location-bar">
-                                <div class="qibla-loc-icon">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                                </div>
-                                <div class="qibla-loc-details">
-                                    <div class="qibla-loc-city" x-text="locationCity"></div>
-                                    <div class="qibla-loc-coords" x-text="locationCoords || 'Mendeteksi...'"></div>
-                                    <div class="qibla-loc-gps">
-                                        <span class="dot" :style="'background:' + gpsQualityColor"></span>
-                                        <span :style="'color:' + gpsQualityColor" x-text="gpsQualityLabel + (gpsAccuracy ? ' (\u00b1' + gpsAccuracy + 'm)' : '')"></span>
-                                    </div>
-                                </div>
-                                <button class="qibla-refresh-btn" @click="getLocation()" title="Perbarui lokasi">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
-                                </button>
-                            </div>
-
-                            {{-- Compass --}}
-                            <div class="qibla-compass-wrap">
-                                <div class="qibla-compass-container">
-                                    {{-- Dial (rotates with device heading) --}}
-                                    <div class="qibla-compass-dial" :style="'transform: rotate(' + compassRotation + 'deg)'">
-                                        {{-- Inner face with pre-rendered compass rose --}}
-                                        <div class="qibla-compass-face">
-                                            <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-                                                {{-- Outer ring --}}
-                                                <circle cx="150" cy="150" r="140" fill="none" stroke="#e2e8f0" stroke-width="1"/>
-                                                <circle cx="150" cy="150" r="130" fill="none" stroke="#f1f5f9" stroke-width="0.5"/>
-
-                                                {{-- Degree ticks: every 5° (72 ticks total) --}}
-                                                @for($i = 0; $i < 360; $i += 5)
-                                                    @php
-                                                        $rad = deg2rad($i);
-                                                        $sinI = sin($rad);
-                                                        $cosI = cos($rad);
-                                                        $isMajor = ($i % 30 === 0);
-                                                        $isMid = ($i % 10 === 0 && !$isMajor);
-                                                        $outerR = 140;
-                                                        $innerR = $isMajor ? 124 : ($isMid ? 128 : 133);
-                                                        $strokeW = $isMajor ? 2 : ($isMid ? 1.2 : 0.6);
-                                                        $color = ($i === 0) ? '#dc2626' : ($isMajor ? '#475569' : ($isMid ? '#94a3b8' : '#cbd5e1'));
-                                                    @endphp
-                                                    <line x1="{{ 150 + $outerR * $sinI }}" y1="{{ 150 - $outerR * $cosI }}"
-                                                          x2="{{ 150 + $innerR * $sinI }}" y2="{{ 150 - $innerR * $cosI }}"
-                                                          stroke="{{ $color }}" stroke-width="{{ $strokeW }}" stroke-linecap="round"/>
-                                                @endfor
-
-                                                {{-- Degree numbers every 30° --}}
-                                                @foreach([30,60,90,120,150,180,210,240,270,300,330] as $deg)
-                                                    @php
-                                                        $rad = deg2rad($deg);
-                                                        $tx = 150 + 113 * sin($rad);
-                                                        $ty = 150 - 113 * cos($rad) + 4;
-                                                    @endphp
-                                                    <text x="{{ $tx }}" y="{{ $ty }}" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" font-family="system-ui, sans-serif">{{ $deg }}</text>
-                                                @endforeach
-
-                                                {{-- Inner circle rings --}}
-                                                <circle cx="150" cy="150" r="96" fill="none" stroke="#f1f5f9" stroke-width="0.5"/>
-                                                <circle cx="150" cy="150" r="60" fill="none" stroke="#f1f5f9" stroke-width="0.5" stroke-dasharray="4,4"/>
-
-                                                {{-- Compass rose / crosshair lines --}}
-                                                <line x1="150" y1="56" x2="150" y2="96" stroke="#e2e8f0" stroke-width="0.8"/>
-                                                <line x1="150" y1="204" x2="150" y2="244" stroke="#e2e8f0" stroke-width="0.8"/>
-                                                <line x1="56" y1="150" x2="96" y2="150" stroke="#e2e8f0" stroke-width="0.8"/>
-                                                <line x1="204" y1="150" x2="244" y2="150" stroke="#e2e8f0" stroke-width="0.8"/>
-
-                                                {{-- Diagonal crosshair lines --}}
-                                                @foreach([45, 135, 225, 315] as $deg)
-                                                    @php $r = deg2rad($deg); @endphp
-                                                    <line x1="{{ 150 + 60 * sin($r) }}" y1="{{ 150 - 60 * cos($r) }}"
-                                                          x2="{{ 150 + 96 * sin($r) }}" y2="{{ 150 - 96 * cos($r) }}"
-                                                          stroke="#f1f5f9" stroke-width="0.5"/>
-                                                @endforeach
-
-                                                {{-- North arrow (red diamond) --}}
-                                                <polygon points="150,54 145,70 150,64 155,70" fill="#dc2626" opacity="0.9"/>
-
-                                                {{-- Cardinal labels --}}
-                                                <text x="150" y="50" text-anchor="middle" fill="#dc2626" font-size="16" font-weight="800" font-family="system-ui, sans-serif">U</text>
-                                                <text x="150" y="260" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">S</text>
-                                                <text x="258" y="155" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">T</text>
-                                                <text x="42" y="155" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">B</text>
-
-                                                {{-- Intercardinal labels --}}
-                                                <text x="{{ 150 + 100 * sin(deg2rad(45)) }}" y="{{ 150 - 100 * cos(deg2rad(45)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">TL</text>
-                                                <text x="{{ 150 + 100 * sin(deg2rad(135)) }}" y="{{ 150 - 100 * cos(deg2rad(135)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">TG</text>
-                                                <text x="{{ 150 + 100 * sin(deg2rad(225)) }}" y="{{ 150 - 100 * cos(deg2rad(225)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">BD</text>
-                                                <text x="{{ 150 + 100 * sin(deg2rad(315)) }}" y="{{ 150 - 100 * cos(deg2rad(315)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">BL</text>
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    {{-- Kaaba pointer (rotates to show qibla direction) --}}
-                                    <div class="qibla-kaaba-pointer" :style="'transform: rotate(' + qiblaOnCompass + 'deg)'">
-                                        <div class="qibla-kaaba-marker">
-                                            <div class="qibla-kaaba-icon">
-                                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.18L18.5 7.5 12 10.82 5.5 7.5 12 4.18zM5 8.82l6 3.33v7.53l-6-3.33V8.82zm8 10.86V12.15l6-3.33v7.53l-6 3.33z"/></svg>
-                                            </div>
-                                            <div class="qibla-kaaba-line"></div>
-                                        </div>
-                                    </div>
-
-                                    {{-- Center dot --}}
-                                    <div class="qibla-compass-center"></div>
-
-                                    {{-- Fixed north indicator (triangle at top of container) --}}
-                                    <div class="qibla-north-indicator">
-                                        <svg width="18" height="14" viewBox="0 0 18 14">
-                                            <polygon points="9,0 1,14 17,14" fill="#dc2626"/>
-                                            <polygon points="9,3 4,14 14,14" fill="#ef4444"/>
-                                        </svg>
-                                    </div>
-                                </div>
-
-                                {{-- Heading display --}}
-                                <div class="qibla-heading-display">
-                                    <div class="qibla-heading-degrees" x-show="compassActive">
-                                        <span x-text="Math.round(compassHeading)"></span><span>&deg;</span>
-                                        <span x-text="compassCardinal" style="margin-left:6px;font-size:18px;color:#64748b;font-weight:600;"></span>
-                                    </div>
-                                    <div class="qibla-heading-degrees" x-show="!compassActive">
-                                        <span x-text="qiblaDirection.toFixed(1)"></span><span>&deg;</span>
-                                    </div>
-                                    <div class="qibla-heading-cardinal" x-text="compassActive ? 'Arah perangkat Anda saat ini' : 'Arah kiblat dari lokasi Anda'"></div>
-                                </div>
-
-                                {{-- Compass status --}}
-                                <div class="qibla-compass-status">
-                                    <template x-if="compassActive">
-                                        <span class="active-dot"></span>
-                                    </template>
-                                    <template x-if="!compassActive">
-                                        <span class="inactive-dot"></span>
-                                    </template>
-                                    <span x-text="compassActive ? 'Kompas aktif \u2014 arahkan HP ke kiblat' : (compassSupported ? 'Kompas tidak aktif' : 'Sensor tidak tersedia')"></span>
-                                </div>
-                            </div>
-
-                            {{-- Info grid --}}
-                            <div class="qibla-info-grid">
-                                <div class="qibla-info-item">
-                                    <div class="qibla-info-item-icon qibla-color">
-                                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 15.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>
-                                    </div>
-                                    <div class="qibla-info-value"><span x-text="qiblaDirection.toFixed(1) + '\u00b0'"></span></div>
-                                    <div class="qibla-info-label" x-text="'Arah Kiblat (' + qiblaCardinal + ')'"></div>
-                                </div>
-                                <div class="qibla-info-item">
-                                    <div class="qibla-info-item-icon distance-color">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/></svg>
-                                    </div>
-                                    <div class="qibla-info-value"><span x-text="distanceToKaaba.toLocaleString()"></span> <span>km</span></div>
-                                    <div class="qibla-info-label">Jarak ke Ka'bah</div>
-                                </div>
-                            </div>
-
-                            {{-- Permission request for iOS --}}
-                            <div class="qibla-permission-box" x-show="compassPermission === 'unknown'" x-transition>
-                                <p>Untuk mengaktifkan kompas digital, izinkan akses sensor orientasi perangkat Anda.</p>
-                                <button class="qibla-permission-btn" @click="requestCompassPermission()">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                                    Aktifkan Kompas
-                                </button>
-                            </div>
-
-                            {{-- Denied message --}}
-                            <div class="qibla-permission-box" x-show="compassPermission === 'denied'" x-transition>
-                                <p>Izin sensor ditolak. Kompas menampilkan arah kiblat statis berdasarkan GPS Anda.</p>
-                            </div>
-
-                            {{-- Static fallback note --}}
-                            <div class="qibla-static-note" x-show="!compassActive && compassPermission !== 'unknown'">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-                                <p>Buka di <strong>HP/tablet</strong> untuk kompas real-time. Penanda <strong style="color:#d97706;">&#9632; Ka'bah</strong> menunjuk arah kiblat. Putar badan sampai penanda di atas = Anda menghadap kiblat.</p>
-                            </div>
+                        {{-- Sub-tab switcher --}}
+                        <div class="schedule-subtab-wrap">
+                            <button @click="scheduleSubTab = 'jadwal'" class="schedule-subtab-btn" :class="scheduleSubTab === 'jadwal' && 'schedule-subtab-active'">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Jadwal Sholat
+                            </button>
+                            <button @click="scheduleSubTab = 'kiblat'" class="schedule-subtab-btn" :class="scheduleSubTab === 'kiblat' && 'schedule-subtab-active'">
+                                <svg fill="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 15.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>
+                                Arah Kiblat
+                            </button>
                         </div>
-                    </div>
 
-                    {{-- JADWAL SHOLAT --}}
-                    <div x-show="activeTab === 'schedule'" x-transition.opacity.duration.200ms>
+                        {{-- Sub-tab: Jadwal Sholat --}}
+                        <div x-show="scheduleSubTab === 'jadwal'" x-transition.opacity.duration.150ms>
                         <div class="jadwal-card">
                             {{-- Header --}}
                             <div class="jadwal-header">
@@ -912,6 +742,181 @@
                                 <p class="highlight-card-time" x-text="maghribTime"></p>
                                 <p class="highlight-card-sub">Waktu maghrib</p>
                             </div>
+                        </div>
+                        </div>
+
+                        {{-- Sub-tab: Arah Kiblat --}}
+                        <div x-show="scheduleSubTab === 'kiblat'" x-transition.opacity.duration.150ms>
+                        <div class="qibla-card">
+                            {{-- Header --}}
+                            <div class="qibla-header">
+                                <div class="qibla-header-title">
+                                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 15.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>
+                                    <h3>Arah Kiblat</h3>
+                                </div>
+                                <p class="qibla-header-sub">Kompas digital &bull; GPS &bull; Sensor perangkat</p>
+                            </div>
+
+                            {{-- Location bar --}}
+                            <div class="qibla-location-bar">
+                                <div class="qibla-loc-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                </div>
+                                <div class="qibla-loc-details">
+                                    <div class="qibla-loc-city" x-text="locationCity"></div>
+                                    <div class="qibla-loc-coords" x-text="locationCoords || 'Mendeteksi...'"></div>
+                                    <div class="qibla-loc-gps">
+                                        <span class="dot" :style="'background:' + gpsQualityColor"></span>
+                                        <span :style="'color:' + gpsQualityColor" x-text="gpsQualityLabel + (gpsAccuracy ? ' (\u00b1' + gpsAccuracy + 'm)' : '')"></span>
+                                    </div>
+                                </div>
+                                <button class="qibla-refresh-btn" @click="getLocation()" title="Perbarui lokasi">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+                                </button>
+                            </div>
+
+                            {{-- Compass --}}
+                            <div class="qibla-compass-wrap">
+                                <div class="qibla-compass-container">
+                                    {{-- Dial (rotates with device heading) --}}
+                                    <div class="qibla-compass-dial" :style="'transform: rotate(' + compassRotation + 'deg)'">
+                                        <div class="qibla-compass-face">
+                                            <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="150" cy="150" r="140" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+                                                <circle cx="150" cy="150" r="130" fill="none" stroke="#f1f5f9" stroke-width="0.5"/>
+                                                @for($i = 0; $i < 360; $i += 5)
+                                                    @php
+                                                        $rad = deg2rad($i);
+                                                        $sinI = sin($rad);
+                                                        $cosI = cos($rad);
+                                                        $isMajor = ($i % 30 === 0);
+                                                        $isMid = ($i % 10 === 0 && !$isMajor);
+                                                        $outerR = 140;
+                                                        $innerR = $isMajor ? 124 : ($isMid ? 128 : 133);
+                                                        $strokeW = $isMajor ? 2 : ($isMid ? 1.2 : 0.6);
+                                                        $color = ($i === 0) ? '#dc2626' : ($isMajor ? '#475569' : ($isMid ? '#94a3b8' : '#cbd5e1'));
+                                                    @endphp
+                                                    <line x1="{{ 150 + $outerR * $sinI }}" y1="{{ 150 - $outerR * $cosI }}"
+                                                          x2="{{ 150 + $innerR * $sinI }}" y2="{{ 150 - $innerR * $cosI }}"
+                                                          stroke="{{ $color }}" stroke-width="{{ $strokeW }}" stroke-linecap="round"/>
+                                                @endfor
+                                                @foreach([30,60,90,120,150,180,210,240,270,300,330] as $deg)
+                                                    @php
+                                                        $rad = deg2rad($deg);
+                                                        $tx = 150 + 113 * sin($rad);
+                                                        $ty = 150 - 113 * cos($rad) + 4;
+                                                    @endphp
+                                                    <text x="{{ $tx }}" y="{{ $ty }}" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" font-family="system-ui, sans-serif">{{ $deg }}</text>
+                                                @endforeach
+                                                <circle cx="150" cy="150" r="96" fill="none" stroke="#f1f5f9" stroke-width="0.5"/>
+                                                <circle cx="150" cy="150" r="60" fill="none" stroke="#f1f5f9" stroke-width="0.5" stroke-dasharray="4,4"/>
+                                                <line x1="150" y1="56" x2="150" y2="96" stroke="#e2e8f0" stroke-width="0.8"/>
+                                                <line x1="150" y1="204" x2="150" y2="244" stroke="#e2e8f0" stroke-width="0.8"/>
+                                                <line x1="56" y1="150" x2="96" y2="150" stroke="#e2e8f0" stroke-width="0.8"/>
+                                                <line x1="204" y1="150" x2="244" y2="150" stroke="#e2e8f0" stroke-width="0.8"/>
+                                                @foreach([45, 135, 225, 315] as $deg)
+                                                    @php $r = deg2rad($deg); @endphp
+                                                    <line x1="{{ 150 + 60 * sin($r) }}" y1="{{ 150 - 60 * cos($r) }}"
+                                                          x2="{{ 150 + 96 * sin($r) }}" y2="{{ 150 - 96 * cos($r) }}"
+                                                          stroke="#f1f5f9" stroke-width="0.5"/>
+                                                @endforeach
+                                                <polygon points="150,54 145,70 150,64 155,70" fill="#dc2626" opacity="0.9"/>
+                                                <text x="150" y="50" text-anchor="middle" fill="#dc2626" font-size="16" font-weight="800" font-family="system-ui, sans-serif">U</text>
+                                                <text x="150" y="260" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">S</text>
+                                                <text x="258" y="155" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">T</text>
+                                                <text x="42" y="155" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="700" font-family="system-ui, sans-serif">B</text>
+                                                <text x="{{ 150 + 100 * sin(deg2rad(45)) }}" y="{{ 150 - 100 * cos(deg2rad(45)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">TL</text>
+                                                <text x="{{ 150 + 100 * sin(deg2rad(135)) }}" y="{{ 150 - 100 * cos(deg2rad(135)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">TG</text>
+                                                <text x="{{ 150 + 100 * sin(deg2rad(225)) }}" y="{{ 150 - 100 * cos(deg2rad(225)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">BD</text>
+                                                <text x="{{ 150 + 100 * sin(deg2rad(315)) }}" y="{{ 150 - 100 * cos(deg2rad(315)) + 3 }}" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600" font-family="system-ui, sans-serif">BL</text>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    {{-- Kaaba pointer --}}
+                                    <div class="qibla-kaaba-pointer" :style="'transform: rotate(' + qiblaOnCompass + 'deg)'">
+                                        <div class="qibla-kaaba-marker">
+                                            <div class="qibla-kaaba-icon">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.18L18.5 7.5 12 10.82 5.5 7.5 12 4.18zM5 8.82l6 3.33v7.53l-6-3.33V8.82zm8 10.86V12.15l6-3.33v7.53l-6 3.33z"/></svg>
+                                            </div>
+                                            <div class="qibla-kaaba-line"></div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Center dot --}}
+                                    <div class="qibla-compass-center"></div>
+
+                                    {{-- Fixed north indicator --}}
+                                    <div class="qibla-north-indicator">
+                                        <svg width="18" height="14" viewBox="0 0 18 14">
+                                            <polygon points="9,0 1,14 17,14" fill="#dc2626"/>
+                                            <polygon points="9,3 4,14 14,14" fill="#ef4444"/>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {{-- Heading display --}}
+                                <div class="qibla-heading-display">
+                                    <div class="qibla-heading-degrees" x-show="compassActive">
+                                        <span x-text="Math.round(compassHeading)"></span><span>&deg;</span>
+                                        <span x-text="compassCardinal" style="margin-left:6px;font-size:18px;color:#64748b;font-weight:600;"></span>
+                                    </div>
+                                    <div class="qibla-heading-degrees" x-show="!compassActive">
+                                        <span x-text="qiblaDirection.toFixed(1)"></span><span>&deg;</span>
+                                    </div>
+                                    <div class="qibla-heading-cardinal" x-text="compassActive ? 'Arah perangkat Anda saat ini' : 'Arah kiblat dari lokasi Anda'"></div>
+                                </div>
+
+                                {{-- Compass status --}}
+                                <div class="qibla-compass-status">
+                                    <template x-if="compassActive">
+                                        <span class="active-dot"></span>
+                                    </template>
+                                    <template x-if="!compassActive">
+                                        <span class="inactive-dot"></span>
+                                    </template>
+                                    <span x-text="compassActive ? 'Kompas aktif \u2014 arahkan HP ke kiblat' : (compassSupported ? 'Kompas tidak aktif' : 'Sensor tidak tersedia')"></span>
+                                </div>
+                            </div>
+
+                            {{-- Info grid --}}
+                            <div class="qibla-info-grid">
+                                <div class="qibla-info-item">
+                                    <div class="qibla-info-item-icon qibla-color">
+                                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 15.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>
+                                    </div>
+                                    <div class="qibla-info-value"><span x-text="qiblaDirection.toFixed(1) + '\u00b0'"></span></div>
+                                    <div class="qibla-info-label" x-text="'Arah Kiblat (' + qiblaCardinal + ')'"></div>
+                                </div>
+                                <div class="qibla-info-item">
+                                    <div class="qibla-info-item-icon distance-color">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/></svg>
+                                    </div>
+                                    <div class="qibla-info-value"><span x-text="distanceToKaaba.toLocaleString()"></span> <span>km</span></div>
+                                    <div class="qibla-info-label">Jarak ke Ka'bah</div>
+                                </div>
+                            </div>
+
+                            {{-- Permission request for iOS --}}
+                            <div class="qibla-permission-box" x-show="compassPermission === 'unknown'" x-transition>
+                                <p>Untuk mengaktifkan kompas digital, izinkan akses sensor orientasi perangkat Anda.</p>
+                                <button class="qibla-permission-btn" @click="requestCompassPermission()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                    Aktifkan Kompas
+                                </button>
+                            </div>
+
+                            {{-- Denied message --}}
+                            <div class="qibla-permission-box" x-show="compassPermission === 'denied'" x-transition>
+                                <p>Izin sensor ditolak. Kompas menampilkan arah kiblat statis berdasarkan GPS Anda.</p>
+                            </div>
+
+                            {{-- Static fallback note --}}
+                            <div class="qibla-static-note" x-show="!compassActive && compassPermission !== 'unknown'">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                                <p>Buka di <strong>HP/tablet</strong> untuk kompas real-time. Penanda <strong style="color:#d97706;">&#9632; Ka'bah</strong> menunjuk arah kiblat. Putar badan sampai penanda di atas = Anda menghadap kiblat.</p>
+                            </div>
+                        </div>
                         </div>
                     </div>
 

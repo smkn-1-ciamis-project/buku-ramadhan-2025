@@ -2,12 +2,18 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\FormSettingRepositoryInterface;
 use App\Repositories\Contracts\FormSubmissionRepositoryInterface;
+use App\Repositories\Contracts\KelasRepositoryInterface;
 use App\Repositories\Contracts\PrayerCheckinRepositoryInterface;
+use App\Repositories\Contracts\QuranRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Api\ApiQuranRepository;
+use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentFormSettingRepository;
 use App\Repositories\Eloquent\EloquentFormSubmissionRepository;
+use App\Repositories\Eloquent\EloquentKelasRepository;
 use App\Repositories\Eloquent\EloquentPrayerCheckinRepository;
 use App\Repositories\Eloquent\EloquentUserRepository;
 use Illuminate\Auth\Events\Failed;
@@ -29,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrayerCheckinRepositoryInterface::class, EloquentPrayerCheckinRepository::class);
         $this->app->bind(FormSettingRepositoryInterface::class, EloquentFormSettingRepository::class);
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
+        $this->app->bind(QuranRepositoryInterface::class, ApiQuranRepository::class);
+        $this->app->bind(ActivityLogRepositoryInterface::class, EloquentActivityLogRepository::class);
+        $this->app->bind(KelasRepositoryInterface::class, EloquentKelasRepository::class);
     }
 
     /**

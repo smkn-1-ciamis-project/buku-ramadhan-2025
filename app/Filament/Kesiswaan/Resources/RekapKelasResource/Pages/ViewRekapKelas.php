@@ -4,6 +4,7 @@ namespace App\Filament\Kesiswaan\Resources\RekapKelasResource\Pages;
 
 use App\Filament\Kesiswaan\Resources\RekapKelasResource;
 use App\Models\FormSubmission;
+use App\Services\DashboardStatsService;
 use Carbon\Carbon;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -17,9 +18,10 @@ class ViewRekapKelas extends ViewRecord
   {
     $kelas = $this->record;
     $kelas->load(['wali', 'siswa']);
+    $statsService = app(DashboardStatsService::class);
 
-    $siswaIds = $kelas->siswa->pluck('id');
-    $totalSiswa = $siswaIds->count();
+    $siswaIds = $kelas->siswa->pluck('id')->toArray();
+    $totalSiswa = count($siswaIds);
 
     $ramadhanStart = Carbon::create(2026, 2, 19);
     $today = Carbon::today();
@@ -38,31 +40,31 @@ class ViewRekapKelas extends ViewRecord
     $complianceRate = $expectedTotal > 0 ? round(($totalSubmissions / $expectedTotal) * 100) : 0;
     $verifyRate = $totalSubmissions > 0 ? round(($verified / $totalSubmissions) * 100) : 0;
 
-    // Per-siswa progress
-    $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe) {
-      $submissions = FormSubmission::where('user_id', $siswa->id)->get();
-      $total = $submissions->count();
-      $verifiedCount = $submissions->where('status', 'verified')->count();
-      $pendingCount  = $submissions->where('status', 'pending')->count();
-      $rejectedCount = $submissions->where('status', 'rejected')->count();
+    // Per-siswa progress — batch (1 query instead of N)
+    $perSiswaStats = $statsService->getPerSiswaStats($siswaIds);
 
-      // Kesiswaan validation stats (only from guru-verified submissions)
-      $verifiedSubs = $submissions->where('status', 'verified');
-      $kesiswaanValidated = $verifiedSubs->where('kesiswaan_status', 'validated')->count();
-      $kesiswaanPending   = $verifiedSubs->where('kesiswaan_status', 'pending')->count();
-      $kesiswaanRejected  = $verifiedSubs->where('kesiswaan_status', 'rejected')->count();
+    $siswaProgress = $kelas->siswa->map(function ($siswa) use ($hariKe, $perSiswaStats) {
+      $s = $perSiswaStats[$siswa->id] ?? [
+        'total' => 0,
+        'verified' => 0,
+        'pending' => 0,
+        'rejected' => 0,
+        'kesiswaan_validated' => 0,
+        'kesiswaan_pending' => 0,
+        'kesiswaan_rejected' => 0,
+      ];
 
-      $rate = $hariKe > 0 ? round(($total / $hariKe) * 100) : 0;
+      $rate = $hariKe > 0 ? round(($s['total'] / $hariKe) * 100) : 0;
       return [
         'name' => $siswa->name,
         'nisn' => $siswa->nisn ?? '-',
-        'total' => $total,
-        'verified' => $verifiedCount,
-        'pending' => $pendingCount,
-        'rejected' => $rejectedCount,
-        'kesiswaan_validated' => $kesiswaanValidated,
-        'kesiswaan_pending' => $kesiswaanPending,
-        'kesiswaan_rejected' => $kesiswaanRejected,
+        'total' => $s['total'],
+        'verified' => $s['verified'],
+        'pending' => $s['pending'],
+        'rejected' => $s['rejected'],
+        'kesiswaan_validated' => $s['kesiswaan_validated'],
+        'kesiswaan_pending' => $s['kesiswaan_pending'],
+        'kesiswaan_rejected' => $s['kesiswaan_rejected'],
         'rate' => min($rate, 100),
       ];
     })->sortBy('name')->values();

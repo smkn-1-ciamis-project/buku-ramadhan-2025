@@ -3,12 +3,12 @@
 namespace App\Filament\Guru\Pages;
 
 use App\Models\FormSubmission;
-use App\Models\Kelas;
 use App\Models\User;
+use App\Services\DashboardStatsService;
+use App\Repositories\Contracts\KelasRepositoryInterface;
 use Carbon\Carbon;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use IntlCalendar;
 
 class Dashboard extends Page
@@ -24,7 +24,10 @@ class Dashboard extends Page
   public function getViewData(): array
   {
     $guru = Auth::user();
-    $kelasList = Kelas::where('wali_id', $guru->id)->with('siswa')->get();
+    $kelasRepo = app(KelasRepositoryInterface::class);
+    $statsService = app(DashboardStatsService::class);
+
+    $kelasList = $kelasRepo->getForWali($guru->id);
 
     // Hitung hari Ramadhan berdasarkan tanggal resmi Kemenag RI
     // 1 Ramadhan 1447H Indonesia = 19 Februari 2026
@@ -75,40 +78,36 @@ class Dashboard extends Page
     $allSiswaIds = [];
     $kelasOverview = [];
 
+    // ── Collect all siswa IDs upfront ──────────────────────────────
+    foreach ($kelasList as $kelas) {
+      $ids = $kelas->siswa->pluck('id')->toArray();
+      $allSiswaIds = array_merge($allSiswaIds, $ids);
+      $totalSiswa += count($ids);
+    }
+
+    // ── Batch queries (2 queries total instead of 2×N) ─────────────
+    $todayDate = now('Asia/Jakarta')->toDateString();
+    $todaySubmittedIds = $hariKe > 0
+      ? $statsService->getTodaySubmittedUserIds($allSiswaIds, $todayDate)
+      : [];
+    $submissionCounts = $statsService->getSubmissionCountsPerUser($allSiswaIds);
+
+    // ── Build per-kelas overview (no more queries) ─────────────────
     foreach ($kelasList as $kelas) {
       $siswaIds = $kelas->siswa->pluck('id')->toArray();
-      $allSiswaIds = array_merge($allSiswaIds, $siswaIds);
       $siswaCount = count($siswaIds);
-      $totalSiswa += $siswaCount;
 
-      // Siapa yang sudah submit hari ini (berdasarkan tanggal created_at)
-      $todaySubmissions = [];
-      if ($hariKe > 0) {
-        $todaySubmissions = FormSubmission::whereIn('user_id', $siswaIds)
-          ->whereDate('created_at', now('Asia/Jakarta')->toDateString())
-          ->pluck('user_id')
-          ->unique()
-          ->toArray();
-      }
-
+      $todaySubmissions = array_intersect($todaySubmittedIds, $siswaIds);
       $sudahSubmit = count($todaySubmissions);
       $belumSubmit = $siswaCount - $sudahSubmit;
 
-      // Total submission per siswa (untuk progress bar)
-      $submissionCounts = FormSubmission::whereIn('user_id', $siswaIds)
-        ->select('user_id', DB::raw('COUNT(*) as total'))
-        ->groupBy('user_id')
-        ->pluck('total', 'user_id')
-        ->toArray();
-
-      // Siswa list with their submission status
-      $siswaData = $kelas->siswa->sortBy('name')->map(function ($siswa) use ($todaySubmissions, $submissionCounts, $hariKe) {
+      $siswaData = $kelas->siswa->sortBy('name')->map(function ($siswa) use ($todaySubmittedIds, $submissionCounts, $hariKe) {
         return [
           'id'             => $siswa->id,
           'name'           => $siswa->name,
           'nisn'           => $siswa->nisn,
           'jk'             => $siswa->jenis_kelamin,
-          'today_submitted' => in_array($siswa->id, $todaySubmissions),
+          'today_submitted' => in_array($siswa->id, $todaySubmittedIds),
           'total_submitted' => $submissionCounts[$siswa->id] ?? 0,
           'progress'       => $hariKe > 0 ? round((($submissionCounts[$siswa->id] ?? 0) / $hariKe) * 100) : 0,
         ];
@@ -123,16 +122,11 @@ class Dashboard extends Page
       ];
     }
 
-    // Global submission stats (berdasarkan tanggal hari ini)
+    // Global submission stats (use pre-fetched data — no extra queries)
     $totalSubmissionsToday = 0;
     $totalBelumToday = 0;
     if ($hariKe > 0) {
-      $submittedUserIds = FormSubmission::whereIn('user_id', $allSiswaIds)
-        ->whereDate('created_at', now('Asia/Jakarta')->toDateString())
-        ->pluck('user_id')
-        ->unique()
-        ->count();
-      $totalSubmissionsToday = $submittedUserIds;
+      $totalSubmissionsToday = count(array_unique($todaySubmittedIds));
       $totalBelumToday = $totalSiswa - $totalSubmissionsToday;
     }
 
@@ -156,14 +150,10 @@ class Dashboard extends Page
     // === Siswa yang belum mengisi per hari (detail hari mana saja yang kosong) ===
     $belumMengisiDetail = [];
     if ($hariKe > 0) {
-      // Get all submissions grouped by user
-      $allSubmissions = FormSubmission::whereIn('user_id', $allSiswaIds)
-        ->select('user_id', 'hari_ke')
-        ->get()
-        ->groupBy('user_id')
-        ->map(fn($subs) => $subs->pluck('hari_ke')->toArray());
+      // Batch: get all submissions grouped by user → hari_ke (1 query)
+      $allSubmissions = $statsService->getSubmittedDaysPerUser($allSiswaIds);
 
-      // Get all siswa info
+      // Get all siswa info (1 query)
       $allSiswa = User::whereIn('id', $allSiswaIds)
         ->select('id', 'name', 'nisn', 'jenis_kelamin')
         ->orderBy('name')

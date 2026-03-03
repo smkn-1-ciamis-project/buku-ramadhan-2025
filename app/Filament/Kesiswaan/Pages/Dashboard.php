@@ -5,9 +5,9 @@ namespace App\Filament\Kesiswaan\Pages;
 use App\Models\FormSubmission;
 use App\Models\Kelas;
 use App\Models\User;
+use App\Services\DashboardStatsService;
 use Carbon\Carbon;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\DB;
 
 class Dashboard extends Page
 {
@@ -22,6 +22,7 @@ class Dashboard extends Page
   public function getViewData(): array
   {
     $now = now('Asia/Jakarta');
+    $statsService = app(DashboardStatsService::class);
 
     // Ramadhan calculation
     $ramadhanStart = Carbon::create(2026, 2, 19, 0, 0, 0, 'Asia/Jakarta');
@@ -79,28 +80,23 @@ class Dashboard extends Page
     $complianceRate   = $totalSiswa > 0 ? round(($siswaSubmitToday / $totalSiswa) * 100) : 0;
     $verifyRate       = $totalFormulir > 0 ? round(($totalVerified / $totalFormulir) * 100) : 0;
 
-    // Per-kelas overview
-    $kelasOverview = Kelas::withCount('siswa')->with('wali')->orderBy('nama')->get()->map(function ($k) use ($now, $hariKe) {
-      $siswaIds = $k->siswa()->pluck('id');
-      $todaySub = $hariKe > 0
-        ? FormSubmission::whereIn('user_id', $siswaIds)->whereDate('created_at', $now->toDateString())->distinct('user_id')->count('user_id')
-        : 0;
-      $totalSub  = FormSubmission::whereIn('user_id', $siswaIds)->count();
-      $verified  = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'verified')->count();
-      $pending   = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
-      $rejected  = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'rejected')->count();
-      $todayRate = $k->siswa_count > 0 ? round(($todaySub / $k->siswa_count) * 100) : 0;
+    // Per-kelas overview — batch queries (2 queries instead of 5×N)
+    $kelasAll = Kelas::withCount('siswa')->with('wali')->orderBy('nama')->get();
+    $perKelasStats = $statsService->getPerKelasStats($kelasAll, $now->toDateString(), $hariKe);
 
+    $kelasOverview = $kelasAll->map(function ($k) use ($perKelasStats) {
+      $s = $perKelasStats[$k->id] ?? ['today_sub' => 0, 'total_sub' => 0, 'verified' => 0, 'pending' => 0, 'rejected' => 0];
+      $todayRate = $k->siswa_count > 0 ? round(($s['today_sub'] / $k->siswa_count) * 100) : 0;
       return [
         'nama'         => $k->nama,
         'wali'         => $k->wali->name ?? '-',
         'siswa_count'  => $k->siswa_count,
-        'today_sub'    => $todaySub,
+        'today_sub'    => $s['today_sub'],
         'today_rate'   => $todayRate,
-        'total_sub'    => $totalSub,
-        'verified'     => $verified,
-        'pending'      => $pending,
-        'rejected'     => $rejected,
+        'total_sub'    => $s['total_sub'],
+        'verified'     => $s['verified'],
+        'pending'      => $s['pending'],
+        'rejected'     => $s['rejected'],
       ];
     });
 
@@ -121,14 +117,15 @@ class Dashboard extends Page
         'verified_at_full' => $s->verified_at?->translatedFormat('d M Y, H:i'),
       ]);
 
-    // Guru yang belum verifikasi (guru with most pending submissions in their classes)
-    $guruPending = Kelas::with('wali')->whereNotNull('wali_id')->get()->map(function ($k) {
-      $siswaIds = $k->siswa()->pluck('id');
-      $pending = FormSubmission::whereIn('user_id', $siswaIds)->where('status', 'pending')->count();
+    // Guru yang belum verifikasi — batch query (1 query instead of N)
+    $guruKelas = Kelas::with('wali')->whereNotNull('wali_id')->get();
+    $pendingPerKelas = $statsService->getPendingCountPerKelas($guruKelas->pluck('id')->toArray());
+
+    $guruPending = $guruKelas->map(function ($k) use ($pendingPerKelas) {
       return [
         'guru'    => $k->wali->name ?? '-',
         'kelas'   => $k->nama,
-        'pending' => $pending,
+        'pending' => $pendingPerKelas[$k->id] ?? 0,
       ];
     })->filter(fn($g) => $g['pending'] > 0)->sortByDesc('pending')->values()->take(10);
 

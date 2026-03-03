@@ -49,6 +49,13 @@ Route::middleware(['auth', 'throttle:api-read'])->get('/api/form-settings/{agama
 // API App Settings — serve dynamic app settings (API URLs, Ramadhan schedule, etc.) to frontend JS
 Route::middleware(['auth', 'throttle:api-read'])->get('/api/app-settings', [PageController::class, 'appSettings']);
 
+// API Quran — server-side proxy with Redis caching (Repository Pattern)
+Route::middleware(['auth', 'throttle:api-read'])->prefix('api/quran')->group(function () {
+    Route::get('/surahs', [\App\Http\Controllers\Api\QuranController::class, 'surahs']);
+    Route::get('/surah/{number}', [\App\Http\Controllers\Api\QuranController::class, 'surah']);
+    Route::get('/reciters', [\App\Http\Controllers\Api\QuranController::class, 'reciters']);
+});
+
 // Export Rekap Siswa (Guru) — prefix berbeda dari panel agar tidak konflik dengan Filament routing
 Route::middleware(['auth', 'throttle:export'])->prefix('guru-exports')->group(function () {
     Route::get('/rekap-siswa', function () {
