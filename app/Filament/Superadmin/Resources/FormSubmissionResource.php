@@ -42,7 +42,7 @@ class FormSubmissionResource extends Resource
   public static function getEloquentQuery(): Builder
   {
     return parent::getEloquentQuery()
-      ->with(['user.kelas', 'user.role_user', 'verifier']);
+      ->with(['user.kelas', 'user.role_user', 'verifier', 'validator']);
   }
 
   public static function table(Table $table): Table
@@ -51,11 +51,9 @@ class FormSubmissionResource extends Resource
       ->columns([
         Tables\Columns\TextColumn::make('user.name')
           ->label('Nama Siswa')
+          ->description(fn($record) => $record->user?->nisn)
           ->searchable()
           ->sortable(),
-        Tables\Columns\TextColumn::make('user.nisn')
-          ->label('NISN')
-          ->searchable(),
         Tables\Columns\TextColumn::make('user.kelas.nama')
           ->label('Kelas')
           ->badge()
@@ -84,6 +82,24 @@ class FormSubmissionResource extends Resource
           ->sortable(),
         Tables\Columns\TextColumn::make('verifier.name')
           ->label('Diverifikasi Oleh')
+          ->placeholder('-'),
+        Tables\Columns\TextColumn::make('kesiswaan_status')
+          ->label('Status Validasi')
+          ->badge()
+          ->color(fn(?string $state): string => match ($state) {
+            'validated' => 'success',
+            'rejected'  => 'danger',
+            default     => 'gray',
+          })
+          ->formatStateUsing(fn(?string $state): string => match ($state) {
+            'validated' => 'Divalidasi',
+            'rejected'  => 'Ditolak',
+            'pending'   => 'Menunggu',
+            default     => '-',
+          })
+          ->sortable(),
+        Tables\Columns\TextColumn::make('validator.name')
+          ->label('Divalidasi Oleh')
           ->placeholder('-'),
         Tables\Columns\TextColumn::make('created_at')
           ->label('Dikirim')
