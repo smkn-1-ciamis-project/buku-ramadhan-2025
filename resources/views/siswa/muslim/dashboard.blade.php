@@ -266,7 +266,7 @@
                         <template x-for="tab in sidebarTabs.slice(3)" :key="tab.id">
                             <button @click="activeTab = tab.id" class="center-menu-btn" :class="activeTab === tab.id && 'active'">
                                 <div class="center-menu-icon">
-                                    <svg x-show="tab.id === 'dua'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                    <svg x-show="tab.id === 'dua'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0l.075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 013.15 0V15M6.9 7.575a1.575 1.575 0 10-3.15 0v8.175a6.75 6.75 0 006.75 6.75h2.018a5.25 5.25 0 003.712-1.538l1.732-1.732a5.25 5.25 0 001.538-3.712l.003-2.024a.668.668 0 01.198-.471 1.575 1.575 0 10-2.228-2.228 3.818 3.818 0 00-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0116.35 15m.002 0h-.002"/></svg>
                                     <svg x-show="tab.id === 'account'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </div>
                                 <span class="center-menu-label" x-text="tab.mobileLabel"></span>
@@ -1357,7 +1357,7 @@
         </div>
 
         {{-- ===== WATERMARK SMKN 1 CIAMIS ===== --}}
-        <div class="watermark-footer">
+        <div class="watermark-footer" style="width:100%;text-align:center;display:block;">
             <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener noreferrer">
                 &copy; {{ date('Y') }} SMKN 1 Ciamis
             </a>

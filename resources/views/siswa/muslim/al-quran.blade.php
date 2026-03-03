@@ -305,7 +305,7 @@
 
         {{-- Footer watermark --}}
         <div class="watermark-footer">
-            <a href="https://smkn1ciamis.sch.id" target="_blank" rel="noopener">SMKN 1 Ciamis &bull; Calakan</a>
+            <a href="{{ route('tim-pengembang') }}" target="_blank" rel="noopener">SMKN 1 Ciamis &bull; Calakan</a>
         </div>
     </div>
 
