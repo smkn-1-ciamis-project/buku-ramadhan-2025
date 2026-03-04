@@ -197,7 +197,7 @@ function alQuranPage() {
 
         // Reciters (Qari)
         reciters: [],
-        selectedReciter: "ar.alafasy",
+        selectedReciter: "ar.abdurrahmaansudais",
         showReciterPicker: false,
 
         // Cache
