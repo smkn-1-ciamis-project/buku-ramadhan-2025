@@ -1,66 +1,430 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Calakan — Catatan Amaliyah Kegiatan Ramadan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Aplikasi Buku Ramadhan Digital SMKN 1 Ciamis**
 
-## About Laravel
+[![GitHub](https://img.shields.io/badge/GitHub-smkn--1--ciamis--project%2Fbuku--ramadhan--2025-181717?logo=github)](https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Version](https://img.shields.io/badge/version-v2.6.2-blue)](TEAM.md)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Calakan adalah aplikasi web full-stack untuk pencatatan kegiatan ibadah Ramadhan siswa secara digital. Dibangun dengan Laravel 12 dan Filament v3, dilengkapi dashboard mobile-first untuk siswa, sistem verifikasi dua tingkat (Guru dan Kesiswaan), serta aplikasi Android berupa WebView wrapper.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> Versi saat ini: **v2.6.2** — 3 Maret 2026
+> Repository: [github.com/smkn-1-ciamis-project/buku-ramadhan-2025](https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Daftar Isi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- [Fitur Utama](#fitur-utama)
+- [Tech Stack](#tech-stack)
+- [Arsitektur](#arsitektur)
+- [Sistem Role & Panel](#sistem-role--panel)
+- [Alur Verifikasi](#alur-verifikasi)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
+- [Repository Pattern](#repository-pattern)
+- [Instalasi & Setup](#instalasi--setup)
+- [Konfigurasi](#konfigurasi)
+- [Android App](#android-app)
+- [Tim Pengembang](#tim-pengembang)
+- [Riwayat Versi](#riwayat-versi)
+- [Lisensi](#lisensi)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Fitur Utama
 
-## Laravel Sponsors
+### Untuk Siswa
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Formulir Harian Ramadhan** — Pengisian catatan ibadah harian (hari ke-1 s/d 30)
+- **Checkin Sholat** — Pencatatan sholat wajib (Subuh, Dzuhur, Ashar, Maghrib, Isya, Tarawih) dan sunnah (Rawatib, Tahajud, Dhuha)
+- **Al-Quran Digital** — 114 surah lengkap dengan terjemahan, pilihan 9 qari, putar otomatis, dan pencarian surah/ayat
+- **Jadwal Sholat & Arah Kiblat** — Jadwal imsakiyah dan waktu sholat harian
+- **Dashboard Mobile-First** — Antarmuka responsif yang dioptimalkan untuk perangkat mobile
+- **Dukungan Multi-Agama** — Dashboard terpisah untuk siswa Muslim dan non-Muslim (Kristen, Katolik, Hindu, Buddha, Konghucu)
+- **Riwayat Pembaruan** — Changelog versi dapat diakses langsung dari aplikasi
 
-### Premium Partners
+### Untuk Guru (Wali Kelas)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- **Dashboard Kelas** — Monitoring progress pengisian formulir per siswa
+- **Verifikasi Formulir** — Approve/reject formulir harian siswa dengan catatan
+- **Rekap Siswa** — Ringkasan kepatuhan pengisian per siswa
+- **Ekspor Data** — Export rekap siswa ke format spreadsheet
 
-## Contributing
+### Untuk Kesiswaan
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Dashboard Sekolah** — Statistik keseluruhan submission, kepatuhan, dan verifikasi
+- **Validasi Formulir** — Validasi tingkat kedua setelah verifikasi guru
+- **Manajemen Data** — Kelola data guru, siswa, kelas, dan pengaturan formulir
+- **Ekspor Validasi** — Export laporan validasi per kelas
 
-## Code of Conduct
+### Untuk Superadmin
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Dashboard Admin** — Overview lengkap seluruh data sekolah
+- **Manajemen Pengguna** — CRUD untuk guru, siswa, kesiswaan, dan role
+- **Pengaturan Formulir** — Konfigurasi dinamis field formulir per agama
+- **Pengaturan API** — Konfigurasi URL API eksternal (jadwal sholat, arah kiblat)
+- **Jadwal Ramadhan** — Pengaturan tanggal awal dan akhir Ramadhan
+- **Activity Log** — Log aktivitas pengguna lengkap dengan informasi perangkat
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Tech Stack
 
-## License
+| Komponen       | Teknologi                      |
+| -------------- | ------------------------------ |
+| Backend        | PHP 8.2+, Laravel 12           |
+| Admin Panel    | Filament v3                    |
+| Frontend Siswa | Blade, Alpine.js, Tailwind CSS |
+| Database       | MySQL / MariaDB                |
+| Cache          | Redis (via Predis)             |
+| PDF Export     | barryvdh/laravel-dompdf        |
+| Spreadsheet    | phpoffice/phpspreadsheet       |
+| Android        | Java 17, WebView, Gradle 8.5   |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Arsitektur
+
+Aplikasi mengikuti pola **Controller > Service > Repository > Model** untuk memisahkan tanggung jawab dan memudahkan testing.
+
+```
+app/
+├── Filament/               # 4 Panel admin (Siswa, Guru, Kesiswaan, Superadmin)
+│   ├── Guru/               # Panel wali kelas
+│   ├── Kesiswaan/          # Panel kesiswaan/kepala sekolah
+│   ├── Siswa/              # Panel autentikasi siswa
+│   └── Superadmin/         # Panel admin utama
+├── Http/
+│   ├── Controllers/        # API & page controllers
+│   └── Middleware/          # Auth, rate limit, single session
+├── Models/                 # Eloquent models (UUID-based)
+├── Repositories/
+│   ├── Contracts/          # Interface definitions
+│   ├── Eloquent/           # Database implementations
+│   └── Api/                # External API implementations
+├── Services/               # Business logic layer
+├── Traits/                 # Reusable traits (UUID, password modal)
+├── Listeners/              # Event listeners (auth logging)
+└── Providers/              # Service & Filament providers
+```
+
+### Optimisasi Database
+
+- **Batch Queries** — Semua dashboard menggunakan `DashboardStatsService` dengan query batch (`JOIN` + `GROUP BY`) untuk menghindari N+1
+- **Redis Caching** — Cache untuk data surah (24 jam), ayat (12 jam), settings (1 jam), dan submission (3 menit)
+- **Performance Indexes** — Index pada kolom yang sering di-query (`user_id`, `kelas_id`, `status`, `hari_ke`, `created_at`)
+
+---
+
+## Sistem Role & Panel
+
+Setiap role memiliki panel Filament terpisah dengan akses yang ketat:
+
+| Panel         | Role                      | Akses                                                |
+| ------------- | ------------------------- | ---------------------------------------------------- |
+| `/siswa`      | Siswa                     | Dashboard ibadah, formulir, checkin sholat, Al-Quran |
+| `/guru`       | Guru (Wali Kelas)         | Verifikasi, rekap siswa, monitoring kelas            |
+| `/kesiswaan`  | Kesiswaan, Kepala Sekolah | Validasi, manajemen data, ekspor laporan             |
+| `/superadmin` | Super Admin               | Full akses: semua fitur + pengaturan sistem          |
+
+Fitur keamanan:
+
+- **Single Session Enforcement** — Satu akun hanya bisa login di satu perangkat
+- **Forced Password Change** — Admin bisa memaksa user mengganti password saat login pertama
+- **Rate Limiting** — Throttle pada semua endpoint API
+- **Activity Logging** — Pencatatan login, logout, dan aktivitas penting dengan info IP dan perangkat
+
+---
+
+## Alur Verifikasi
+
+Formulir harian siswa melalui dua tingkat persetujuan:
+
+```
+Siswa mengisi formulir
+        |
+        v
+  [Status: pending]
+        |
+        v
+Guru wali kelas memverifikasi
+        |
+   +---------+---------+
+   |                   |
+   v                   v
+[verified]         [rejected]
+   |               (+ catatan guru)
+   v
+Kesiswaan memvalidasi
+   |
+   +---------+---------+
+   |                   |
+   v                   v
+[validated]        [rejected]
+                   (+ catatan kesiswaan)
+```
+
+---
+
+## Database Schema
+
+Tabel-tabel utama:
+
+| Tabel              | Deskripsi                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `users`            | Data pengguna (UUID), dengan field `nisn`, `agama`, `kelas_id`, `jenis_kelamin`, `active_session_id` |
+| `role_users`       | Definisi role (Siswa, Guru, Kesiswaan, Super Admin) dengan pengaturan visibilitas menu               |
+| `kelas`            | Data kelas/rombel dengan `wali_id` (relasi ke guru)                                                  |
+| `form_submissions` | Formulir harian Ramadhan per siswa per hari, dengan field verifikasi guru dan validasi kesiswaan     |
+| `prayer_checkins`  | Checkin sholat harian per siswa (wajib + sunnah)                                                     |
+| `form_settings`    | Konfigurasi dinamis field formulir per agama                                                         |
+| `app_settings`     | Pengaturan aplikasi (URL API, jadwal Ramadhan, dsb)                                                  |
+| `activity_logs`    | Log aktivitas pengguna dengan metadata perangkat                                                     |
+
+Relasi utama:
+
+- `User` belongsTo `Kelas` (siswa → kelas)
+- `Kelas` belongsTo `User` sebagai wali (kelas → guru wali)
+- `Kelas` hasMany `User` sebagai siswa
+- `Kelas` hasManyThrough `FormSubmission` via `User`
+- `FormSubmission` belongsTo `User` (siswa), `verifier` (guru), `validator` (kesiswaan)
+
+---
+
+## API Endpoints
+
+Semua endpoint API menggunakan session-based authentication dengan throttle middleware.
+
+### Formulir
+
+| Method | Endpoint                 | Deskripsi                     |
+| ------ | ------------------------ | ----------------------------- |
+| `GET`  | `/api/formulir`          | Daftar formulir siswa         |
+| `GET`  | `/api/formulir/{hariKe}` | Detail formulir hari tertentu |
+| `POST` | `/api/formulir`          | Submit formulir harian        |
+
+### Checkin Sholat
+
+| Method | Endpoint                              | Deskripsi                          |
+| ------ | ------------------------------------- | ---------------------------------- |
+| `GET`  | `/api/prayer-checkins/today`          | Checkin sholat hari ini            |
+| `GET`  | `/api/prayer-checkins/first-unfilled` | Sholat berikutnya yang belum diisi |
+| `GET`  | `/api/prayer-checkins/date/{date}`    | Checkin pada tanggal tertentu      |
+| `POST` | `/api/prayer-checkins`                | Submit checkin sholat              |
+
+### Al-Quran
+
+| Method | Endpoint                    | Deskripsi                                |
+| ------ | --------------------------- | ---------------------------------------- |
+| `GET`  | `/api/quran/surahs`         | Daftar 114 surah (cached 24 jam)         |
+| `GET`  | `/api/quran/surah/{number}` | Detail surah dengan ayat (cached 12 jam) |
+| `GET`  | `/api/quran/reciters`       | Daftar 9 qari tersedia                   |
+
+### Lainnya
+
+| Method | Endpoint                     | Deskripsi                     |
+| ------ | ---------------------------- | ----------------------------- |
+| `GET`  | `/api/form-settings/{agama}` | Pengaturan formulir per agama |
+| `GET`  | `/api/app-settings`          | Pengaturan aplikasi           |
+| `POST` | `/api/change-password`       | Ganti password                |
+
+### Export (Guru & Kesiswaan)
+
+| Method | Endpoint                               | Deskripsi                              |
+| ------ | -------------------------------------- | -------------------------------------- |
+| `GET`  | `/guru-exports/rekap-siswa`            | Rekap semua siswa (Guru)               |
+| `GET`  | `/guru-exports/rekap-siswa/{siswa}`    | Rekap detail per siswa (Guru)          |
+| `GET`  | `/kesiswaan-exports/validasi/{kelas?}` | Laporan validasi per kelas (Kesiswaan) |
+
+---
+
+## Repository Pattern
+
+Seluruh akses data melalui repository interface yang di-bind di `AppServiceProvider`:
+
+| Interface                           | Implementation                     | Deskripsi                             |
+| ----------------------------------- | ---------------------------------- | ------------------------------------- |
+| `FormSubmissionRepositoryInterface` | `EloquentFormSubmissionRepository` | CRUD formulir dengan caching          |
+| `PrayerCheckinRepositoryInterface`  | `EloquentPrayerCheckinRepository`  | Batch upsert checkin sholat           |
+| `FormSettingRepositoryInterface`    | `EloquentFormSettingRepository`    | Pengaturan formulir dinamis           |
+| `UserRepositoryInterface`           | `EloquentUserRepository`           | Data pengguna & profil                |
+| `QuranRepositoryInterface`          | `ApiQuranRepository`               | Proxy API Al-Quran dengan Redis cache |
+| `ActivityLogRepositoryInterface`    | `EloquentActivityLogRepository`    | Pencatatan activity log               |
+| `KelasRepositoryInterface`          | `EloquentKelasRepository`          | Data kelas dengan caching             |
+
+Service layer:
+
+| Service                  | Fungsi                               |
+| ------------------------ | ------------------------------------ |
+| `FormSubmissionService`  | Logika bisnis formulir               |
+| `PrayerCheckinService`   | Logika bisnis checkin sholat         |
+| `UserService`            | Logika bisnis pengguna               |
+| `DashboardStatsService`  | Statistik dashboard batch (N+1 free) |
+| `ImportService`          | Import data dari spreadsheet         |
+| `KesiswaanExportService` | Export laporan kesiswaan             |
+| `RekapExportService`     | Export rekap siswa                   |
+| `TemplateService`        | Template formulir per agama          |
+
+---
+
+## Instalasi & Setup
+
+### Prasyarat
+
+- PHP >= 8.2
+- Composer
+- MySQL / MariaDB
+- Redis
+- Node.js (untuk asset compilation)
+
+### Langkah Instalasi
+
+```bash
+# 1. Clone repository
+git clone https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025.git buku-ramadhan
+cd buku-ramadhan
+
+# 2. Install dependencies
+composer install
+
+# 3. Konfigurasi environment
+cp .env.example .env
+php artisan key:generate
+
+# 4. Konfigurasi database di .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=buku_ramadhan
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 5. Konfigurasi Redis di .env
+# CACHE_STORE=redis
+# REDIS_HOST=127.0.0.1
+# REDIS_PORT=6379
+
+# 6. Jalankan migrasi dan seeder
+php artisan migrate --seed
+
+# 7. Buat storage link
+php artisan storage:link
+
+# 8. Jalankan server
+php artisan serve
+```
+
+### Akses Panel
+
+Setelah seeding, akses panel melalui:
+
+| Panel      | URL                                |
+| ---------- | ---------------------------------- |
+| Siswa      | `http://localhost:8000/siswa`      |
+| Guru       | `http://localhost:8000/guru`       |
+| Kesiswaan  | `http://localhost:8000/kesiswaan`  |
+| Superadmin | `http://localhost:8000/superadmin` |
+
+---
+
+## Konfigurasi
+
+### Environment Variables
+
+| Variable         | Deskripsi       | Default     |
+| ---------------- | --------------- | ----------- |
+| `APP_NAME`       | Nama aplikasi   | `Calakan`   |
+| `DB_CONNECTION`  | Driver database | `mysql`     |
+| `CACHE_STORE`    | Driver cache    | `redis`     |
+| `SESSION_DRIVER` | Driver session  | `redis`     |
+| `REDIS_HOST`     | Host Redis      | `127.0.0.1` |
+
+### Pengaturan Aplikasi (via Superadmin Panel)
+
+- **API Settings** — URL endpoint untuk jadwal sholat, arah kiblat, dan data Al-Quran
+- **Jadwal Ramadhan** — Tanggal awal dan akhir Ramadhan (menentukan hari ke-1 s/d 30)
+- **Form Settings** — Konfigurasi field formulir per agama (Islam, Kristen, Katolik, Hindu, Buddha, Konghucu)
+- **Menu Visibility** — Pengaturan visibilitas menu per role
+
+---
+
+## Android App
+
+Direktori `android-app/` berisi WebView wrapper untuk distribusi via APK.
+
+| Spesifikasi  | Detail                   |
+| ------------ | ------------------------ |
+| Package Name | `id.smkn1ciamis.calakan` |
+| Versi        | 1.1.0                    |
+| Min SDK      | 24 (Android 7.0)         |
+| Target SDK   | 34 (Android 14)          |
+| Build Tool   | Gradle 8.5 + AGP 8.2.2   |
+| Java         | 17                       |
+
+Fitur native:
+
+- Pull-to-refresh
+- Splash screen
+- Upload file (galeri + kamera)
+- Halaman error kustom
+- Navigasi tombol back
+- Adaptive icons
+- Cookie persistence
+
+Untuk build APK, lihat [android-app/README.md](android-app/README.md).
+
+---
+
+## Tim Pengembang
+
+Calakan dibangun dari nol oleh tim siswa SMKN 1 Ciamis.
+
+| Nama                      | Role                                | GitHub                                            |
+| ------------------------- | ----------------------------------- | ------------------------------------------------- |
+| **Muhammad Fikri Haikal** | Project Lead & Full Stack Developer | [fikrihaikal17](https://github.com/fikrihaikal17) |
+| **Galuh Surya Putra**     | Frontend Developer                  | [Ptragaluhhh28](https://github.com/Ptragaluhhh28) |
+
+Detail lengkap profil dan kontak tim: **[TEAM.md](TEAM.md)**
+
+---
+
+## Riwayat Versi
+
+### v2.6.2 — 3 Maret 2026
+
+- Al-Quran digital lengkap 114 surah dengan terjemahan
+- Pilihan 9 qari/pembaca Al-Quran
+- Putar semua ayat otomatis, lanjut ke surah berikutnya
+- Pencarian surah dan pencarian ayat dalam surah
+- Menu Jadwal Sholat dan Arah Kiblat digabung menjadi satu
+- Peningkatan performa dan kecepatan aplikasi
+
+### v2.5.7 — 2 Maret 2026
+
+- Versi aplikasi dapat diklik untuk melihat riwayat pembaruan
+- Peningkatan performa dashboard
+- Keamanan login ditingkatkan
+- Perbaikan bug minor
+
+### v2.5.0 — 26 Februari 2026
+
+- Perbaikan layout dashboard mobile
+- Data dan profil siswa lebih akurat
+- Perbaikan bug dan stabilitas
+
+### v2.0 — 22 Februari 2026
+
+- Peluncuran v2.0
+- Jadwal sholat dan imsakiyah otomatis
+- Kuis harian dan ayat Al-Quran harian
+- Absensi harian dan formulir Ramadhan
+- Dukungan siswa non-Muslim (4 agama)
+
+---
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah **MIT License** — lihat file **[LICENSE](LICENSE)** untuk detail lengkap.
+
+Copyright (c) 2026 SMKN 1 Ciamis.
