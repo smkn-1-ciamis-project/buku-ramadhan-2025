@@ -1,7 +1,7 @@
 // Calakan - Service Worker
 // Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis
 
-const CACHE_NAME = "calakan-cache-v9";
+const CACHE_NAME = "calakan-cache-v10";
 const OFFLINE_URL = "/offline.html";
 
 // Assets yang selalu di-cache saat install
@@ -124,3 +124,79 @@ function isStaticAsset(pathname) {
     ];
     return staticExtensions.some((ext) => pathname.endsWith(ext));
 }
+
+// ── Push Event ─────────────────────────────────────────────────────
+self.addEventListener("push", (event) => {
+    let data = {
+        title: "Calakan",
+        body: "Ada pemberitahuan baru",
+        icon: "/img/icons/icon-192x192.png",
+        badge: "/img/icons/icon-72x72.png",
+        url: "/",
+        tag: "calakan-notification",
+    };
+
+    if (event.data) {
+        try {
+            const payload = event.data.json();
+            data = { ...data, ...payload };
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: data.icon,
+        badge: data.badge,
+        tag: data.tag,
+        renotify: true,
+        requireInteraction: false,
+        vibrate: [200, 100, 200],
+        data: {
+            url: data.url,
+        },
+        actions: [
+            {
+                action: "open",
+                title: "Buka",
+            },
+            {
+                action: "close",
+                title: "Tutup",
+            },
+        ],
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+// ── Notification Click Event ───────────────────────────────────────
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+
+    if (event.action === "close") {
+        return;
+    }
+
+    const urlToOpen = event.notification.data?.url || "/";
+
+    event.waitUntil(
+        clients
+            .matchAll({ type: "window", includeUncontrolled: true })
+            .then((clientList) => {
+                // Cek apakah ada window yang sudah terbuka
+                for (const client of clientList) {
+                    if (
+                        client.url.includes(self.location.origin) &&
+                        "focus" in client
+                    ) {
+                        client.navigate(urlToOpen);
+                        return client.focus();
+                    }
+                }
+                // Jika tidak ada window terbuka, buka baru
+                return clients.openWindow(urlToOpen);
+            }),
+    );
+});

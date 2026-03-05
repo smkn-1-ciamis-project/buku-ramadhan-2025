@@ -109,6 +109,10 @@ class KesiswaanPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
+                fn() => new HtmlString(view('components.impersonation-banner')->render())
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
                 fn() => new HtmlString('
                     <script>
                         if ("serviceWorker" in navigator && !navigator.userAgent.includes("Calakan-Android")) {
@@ -118,6 +122,10 @@ class KesiswaanPanelProvider extends PanelProvider
                         }
                     </script>
                 ')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn() => new HtmlString(view('components.push-subscription')->render())
             );
     }
 }

@@ -122,7 +122,7 @@ class SiswaResource extends Resource
         Tables\Columns\TextColumn::make('name')
           ->label('Nama')
           ->description(fn($record) => $record->nisn)
-          ->searchable()
+          ->searchable(['name', 'nisn'])
           ->sortable(),
         Tables\Columns\TextColumn::make('kelas.nama')
           ->label('Kelas')
@@ -184,6 +184,16 @@ class SiswaResource extends Resource
                 'nisn' => $record->nisn,
               ]);
             }),
+          Tables\Actions\Action::make('loginAs')
+            ->label('Login Sebagai')
+            ->icon('heroicon-o-arrow-right-on-rectangle')
+            ->color('success')
+            ->requiresConfirmation()
+            ->modalHeading('Login Sebagai Siswa')
+            ->modalDescription(fn(User $record) => "Anda akan masuk ke akun siswa {$record->name} (NISN: {$record->nisn}). Lanjutkan?")
+            ->modalSubmitActionLabel('Ya, Masuk')
+            ->url(fn(User $record) => route('impersonate', $record))
+            ->openUrlInNewTab(),
           Tables\Actions\Action::make('resetPassword')
             ->label('Reset Password')
             ->icon('heroicon-o-key')
