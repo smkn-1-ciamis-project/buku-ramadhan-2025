@@ -193,4 +193,6 @@
     </div>
   </div>
 
+  @include('components.pwa-install-banner')
+
 </div>{{-- /.login-page --}}

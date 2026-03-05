@@ -118,6 +118,10 @@ class SuperadminPanelProvider extends PanelProvider
                         }
                     </script>
                 ')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn() => new HtmlString(view('components.push-subscription')->render())
             );
     }
 }

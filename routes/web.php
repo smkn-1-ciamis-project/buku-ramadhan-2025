@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\FormSubmissionController;
 use App\Http\Controllers\Api\PrayerCheckinController;
+use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PushSubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +23,12 @@ Route::get('/', [PageController::class, 'index'])->name('index');
 
 // Halaman Tim Pengembang (publik)
 Route::get('/tim-pengembang', [PageController::class, 'timPengembang'])->name('tim-pengembang');
+
+// Superadmin Impersonation (SSO masuk sebagai user lain)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/impersonate/{user}', [ImpersonateController::class, 'loginAs'])->name('impersonate');
+    Route::get('/impersonate-leave', [ImpersonateController::class, 'leaveImpersonation'])->name('impersonate.leave');
+});
 
 // Siswa Dashboard — standalone (no Filament template)
 Route::get('/siswa', [PageController::class, 'siswaDashboard'])->name('siswa.dashboard');
@@ -89,3 +97,10 @@ Route::middleware(['auth', 'throttle:export'])->prefix('kesiswaan-exports')->gro
         return \App\Services\KesiswaanExportService::exportValidasi($kelasIds);
     })->name('kesiswaan.validasi.export');
 });
+
+// Push Notification Subscription API
+Route::middleware(['auth', 'throttle:api-write'])->prefix('api/push')->group(function () {
+    Route::post('/subscribe', [PushSubscriptionController::class, 'subscribe']);
+    Route::post('/unsubscribe', [PushSubscriptionController::class, 'unsubscribe']);
+});
+Route::middleware(['auth', 'throttle:api-read'])->get('/api/push/vapid-key', [PushSubscriptionController::class, 'vapidPublicKey']);

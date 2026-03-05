@@ -126,6 +126,16 @@ class KesiswaanResource extends Resource
             ->defaultSort('name', 'asc')
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('loginAs')
+                        ->label('Login Sebagai')
+                        ->icon('heroicon-o-arrow-right-on-rectangle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Login Sebagai Kesiswaan')
+                        ->modalDescription(fn(User $record) => "Anda akan masuk ke akun kesiswaan {$record->name}. Lanjutkan?")
+                        ->modalSubmitActionLabel('Ya, Masuk')
+                        ->url(fn(User $record) => route('impersonate', $record))
+                        ->openUrlInNewTab(),
                     Tables\Actions\EditAction::make()
                         ->after(function (User $record) {
                             ActivityLog::log('edit_kesiswaan', Auth::user(), [
