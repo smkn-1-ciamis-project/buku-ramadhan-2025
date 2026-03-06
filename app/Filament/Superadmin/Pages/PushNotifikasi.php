@@ -12,10 +12,16 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Tables;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
-class PushNotifikasi extends Page implements HasForms
+class PushNotifikasi extends Page implements HasForms, HasTable
 {
-    use InteractsWithForms;
+    use InteractsWithForms, InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-device-phone-mobile';
     protected static ?string $navigationLabel = 'Push Notifikasi';
@@ -26,6 +32,10 @@ class PushNotifikasi extends Page implements HasForms
     protected static string $view = 'filament.superadmin.pages.push-notifikasi';
 
     public ?array $data = [];
+    public bool $showSubscriberModal = false;
+    public string $subscriberRole = 'all';
+    public string $subscriberSearch = '';
+    public int $subscriberPage = 1;
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -35,10 +45,13 @@ class PushNotifikasi extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'title'  => '',
-            'body'   => '',
-            'target' => 'all',
-            'url'    => '/',
+            'target'   => 'all',
+            'template' => null,
+            'title'    => '',
+            'body'     => '',
+            'url'      => '/',
+            'send_mode' => 'now',
+            'scheduled_at' => null,
         ]);
     }
 
@@ -47,9 +60,72 @@ class PushNotifikasi extends Page implements HasForms
         return $form
             ->schema([
                 Forms\Components\Section::make('Kirim Push Notifikasi')
-                    ->description('Kirim notifikasi langsung ke device pengguna yang sudah mengizinkan notifikasi. Notifikasi akan muncul di bar notifikasi perangkat.')
+                    ->description('Kirim notifikasi langsung ke device pengguna yang sudah mengizinkan notifikasi.')
                     ->icon('heroicon-o-paper-airplane')
                     ->schema([
+                        Forms\Components\Select::make('target')
+                            ->label('Kirim Ke')
+                            ->options([
+                                'all'       => 'Semua pengguna',
+                                'siswa'     => 'Hanya Siswa',
+                                'guru'      => 'Hanya Guru',
+                                'kesiswaan' => 'Hanya Kesiswaan',
+                            ])
+                            ->default('all')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn(Forms\Set $set) => $set('template', null)),
+
+                        Forms\Components\Select::make('template')
+                            ->label('Template Pesan')
+                            ->placeholder('Pilih template atau tulis manual...')
+                            ->options(function (Forms\Get $get) {
+                                $target = $get('target');
+                                $limited = in_array($target, ['guru', 'kesiswaan']);
+
+                                $options = [
+                                    'maintenance' => 'Maintenance — Pemberitahuan perbaikan sistem',
+                                    'pengumuman'  => 'Pengumuman — Informasi umum',
+                                    'update'      => 'Update — Fitur baru tersedia',
+                                ];
+
+                                if (! $limited) {
+                                    $options['reminder'] = 'Pengingat — Isi formulir harian';
+                                    $options['jadwal']   = 'Jadwal — Info jadwal kegiatan';
+                                }
+
+                                return $options;
+                            })
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, ?string $state) {
+                                if (! $state) return;
+                                [$title, $body] = match ($state) {
+                                    'maintenance' => [
+                                        'Pemberitahuan Maintenance',
+                                        'Sistem sedang dalam perbaikan. Mohon maaf atas ketidaknyamanannya, layanan akan segera kembali normal.',
+                                    ],
+                                    'pengumuman' => [
+                                        'Pengumuman Penting',
+                                        'Ada informasi penting dari sekolah. Silakan buka aplikasi untuk melihat detail.',
+                                    ],
+                                    'reminder' => [
+                                        'Jangan Lupa Isi Formulir!',
+                                        'Hai, sudahkah kamu mengisi formulir kegiatan ibadah hari ini? Yuk segera isi sebelum batas waktu.',
+                                    ],
+                                    'update' => [
+                                        'Fitur Baru Tersedia! 🎉',
+                                        'Aplikasi Calakan telah diperbarui dengan fitur baru. Buka aplikasi untuk melihat perubahannya.',
+                                    ],
+                                    'jadwal' => [
+                                        'Info Jadwal Kegiatan',
+                                        'Ada jadwal kegiatan Ramadan yang perlu kamu ketahui. Buka aplikasi untuk melihat detail.',
+                                    ],
+                                    default => ['', ''],
+                                };
+                                $set('title', $title);
+                                $set('body', $body);
+                            }),
+
                         Forms\Components\TextInput::make('title')
                             ->label('Judul Notifikasi')
                             ->placeholder('Contoh: Pengumuman Penting')
@@ -63,129 +139,145 @@ class PushNotifikasi extends Page implements HasForms
                             ->maxLength(500)
                             ->required(),
 
-                        Forms\Components\Select::make('target')
-                            ->label('Kirim Ke')
-                            ->options([
-                                'all'       => 'Semua pengguna',
-                                'siswa'     => 'Hanya Siswa',
-                                'guru'      => 'Hanya Guru',
-                                'kesiswaan' => 'Hanya Kesiswaan',
-                            ])
-                            ->default('all')
-                            ->required(),
-
                         Forms\Components\TextInput::make('url')
                             ->label('URL Tujuan (opsional)')
                             ->placeholder('/')
                             ->helperText('Halaman yang dibuka saat notifikasi diklik. Kosong = halaman utama.')
                             ->maxLength(255),
-                    ]),
 
-                Forms\Components\Section::make('Statistik Subscriber')
-                    ->icon('heroicon-o-chart-bar')
-                    ->collapsed()
-                    ->schema([
-                        Forms\Components\Placeholder::make('stats')
-                            ->label('')
-                            ->content(function () {
-                                $total = PushSubscription::count();
-                                $siswa = PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) = 'siswa'")))->count();
-                                $guru = PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) = 'guru'")))->count();
-                                $kesiswaan = PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) IN ('kesiswaan', 'kepala sekolah')")))->count();
+                        Forms\Components\Radio::make('send_mode')
+                            ->label('Waktu Pengiriman')
+                            ->options([
+                                'now'       => 'Kirim Sekarang',
+                                'scheduled' => 'Jadwalkan Pengiriman',
+                            ])
+                            ->default('now')
+                            ->live()
+                            ->required(),
 
-                                return new \Illuminate\Support\HtmlString("
-                                    <div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;'>
-                                        <div style='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;text-align:center;'>
-                                            <div style='font-size:28px;font-weight:800;color:#1e40af;'>{$total}</div>
-                                            <div style='color:#3b82f6;font-size:13px;font-weight:600;'>Total Subscriber</div>
-                                        </div>
-                                        <div style='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:center;'>
-                                            <div style='font-size:28px;font-weight:800;color:#166534;'>{$siswa}</div>
-                                            <div style='color:#22c55e;font-size:13px;font-weight:600;'>Siswa</div>
-                                        </div>
-                                        <div style='background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;text-align:center;'>
-                                            <div style='font-size:28px;font-weight:800;color:#92400e;'>{$guru}</div>
-                                            <div style='color:#f59e0b;font-size:13px;font-weight:600;'>Guru</div>
-                                        </div>
-                                        <div style='background:#fdf2f8;border:1px solid #fbcfe8;border-radius:10px;padding:14px;text-align:center;'>
-                                            <div style='font-size:28px;font-weight:800;color:#9d174d;'>{$kesiswaan}</div>
-                                            <div style='color:#ec4899;font-size:13px;font-weight:600;'>Kesiswaan</div>
-                                        </div>
-                                    </div>
-                                ");
-                            }),
-                    ]),
-
-                Forms\Components\Section::make('Riwayat Notifikasi Terakhir')
-                    ->icon('heroicon-o-clock')
-                    ->collapsed()
-                    ->schema([
-                        Forms\Components\Placeholder::make('history')
-                            ->label('')
-                            ->content(function () {
-                                $notifications = PushNotification::orderBy('created_at', 'desc')
-                                    ->limit(10)
-                                    ->get();
-
-                                if ($notifications->isEmpty()) {
-                                    return new \Illuminate\Support\HtmlString('<p style="color:#9ca3af;text-align:center;padding:16px;">Belum ada notifikasi yang dikirim.</p>');
-                                }
-
-                                $html = '<div style="display:flex;flex-direction:column;gap:8px;">';
-                                foreach ($notifications as $notif) {
-                                    $targetLabel = match ($notif->target) {
-                                        'all'       => '🌐 Semua',
-                                        'siswa'     => '🎓 Siswa',
-                                        'guru'      => '👨‍🏫 Guru',
-                                        'kesiswaan' => '📋 Kesiswaan',
-                                        default     => $notif->target,
-                                    };
-                                    $date = $notif->created_at->format('d M Y H:i');
-                                    $sentBadge = "<span style='background:#dcfce7;color:#166534;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;'>✓ {$notif->sent_count} terkirim</span>";
-                                    $failBadge = $notif->failed_count > 0
-                                        ? " <span style='background:#fef2f2;color:#991b1b;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;'>✗ {$notif->failed_count} gagal</span>"
-                                        : '';
-
-                                    $title = e($notif->title);
-                                    $body = e(\Illuminate\Support\Str::limit($notif->body, 80));
-
-                                    $html .= "
-                                        <div style='background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;'>
-                                            <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;'>
-                                                <span style='font-weight:700;font-size:14px;'>{$title}</span>
-                                                <span style='font-size:11px;color:#9ca3af;'>{$date}</span>
-                                            </div>
-                                            <div style='font-size:13px;color:#6b7280;margin-bottom:6px;'>{$body}</div>
-                                            <div style='display:flex;gap:6px;align-items:center;flex-wrap:wrap;'>
-                                                <span style='background:#eff6ff;color:#1e40af;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;'>{$targetLabel}</span>
-                                                {$sentBadge}{$failBadge}
-                                            </div>
-                                        </div>
-                                    ";
-                                }
-                                $html .= '</div>';
-
-                                return new \Illuminate\Support\HtmlString($html);
-                            }),
+                        Forms\Components\DateTimePicker::make('scheduled_at')
+                            ->label('Jadwal Kirim')
+                            ->native(false)
+                            ->seconds(false)
+                            ->minDate(now())
+                            ->helperText('Notifikasi akan dikirim otomatis pada waktu yang dijadwalkan.')
+                            ->required(fn(Forms\Get $get) => $get('send_mode') === 'scheduled')
+                            ->visible(fn(Forms\Get $get) => $get('send_mode') === 'scheduled'),
                     ]),
             ])
             ->statePath('data');
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(
+                PushSubscription::query()
+                    ->with(['user.role_user', 'user.kelas'])
+                    ->whereIn('id', function ($query) {
+                        $query->selectRaw('MAX(id)')
+                            ->from('push_subscriptions')
+                            ->groupBy('user_id');
+                    })
+            )
+            ->columns([
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Nama')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('user.role_user.name')
+                    ->label('Role')
+                    ->badge()
+                    ->color(fn(string $state): string => match (strtolower(trim($state))) {
+                        'siswa' => 'success',
+                        'guru' => 'warning',
+                        'kesiswaan', 'kepala sekolah' => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('user.nisn')
+                    ->label('NISN')
+                    ->placeholder('-')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('user.email')
+                    ->label('Email')
+                    ->placeholder('-')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('user.kelas.nama')
+                    ->label('Kelas')
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Terdaftar')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('role')
+                    ->label('Role')
+                    ->options([
+                        'siswa'     => 'Siswa',
+                        'guru'      => 'Guru',
+                        'kesiswaan' => 'Kesiswaan',
+                    ])
+                    ->query(function ($query, array $data) {
+                        if (empty($data['value'])) return $query;
+                        return $query->whereHas('user.role_user', function ($q) use ($data) {
+                            if ($data['value'] === 'kesiswaan') {
+                                $q->whereRaw("LOWER(TRIM(name)) IN ('kesiswaan', 'kepala sekolah')");
+                            } else {
+                                $q->whereRaw('LOWER(TRIM(name)) = ?', [$data['value']]);
+                            }
+                        });
+                    }),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
+            ->heading('Detail Pengikut Push Notifikasi')
+            ->description('Daftar pengguna yang sudah berlangganan push notifikasi di perangkat mereka.');
     }
 
     public function send(): void
     {
         $data = $this->form->getState();
 
-        $title  = $data['title'];
-        $body   = $data['body'];
-        $target = $data['target'] ?? 'all';
-        $url    = $data['url'] ?: '/';
+        $title    = $data['title'];
+        $body     = $data['body'];
+        $target   = $data['target'] ?? 'all';
+        $url      = $data['url'] ?: '/';
+        $sendMode = $data['send_mode'] ?? 'now';
+
+        if ($sendMode === 'scheduled') {
+            $scheduledAt = $data['scheduled_at'];
+
+            PushNotification::create([
+                'title'        => $title,
+                'body'         => $body,
+                'url'          => $url,
+                'target'       => $target,
+                'scheduled_at' => $scheduledAt,
+                'status'       => 'scheduled',
+                'sent_count'   => 0,
+                'failed_count' => 0,
+                'sent_by'      => Auth::id(),
+            ]);
+
+            Notification::make()
+                ->title('Notifikasi dijadwalkan!')
+                ->body('Akan dikirim pada ' . \Carbon\Carbon::parse($scheduledAt)->translatedFormat('d F Y H:i') . ' WIB')
+                ->success()
+                ->send();
+
+            $this->resetForm();
+            return;
+        }
 
         $result = PushNotificationService::send($title, $body, $target, $url);
 
         if ($result['sent'] === 0 && $result['failed'] === 0) {
             Notification::make()
-                ->title('Tidak ada subscriber')
+                ->title('Tidak ada pengikut')
                 ->body('Belum ada device yang berlangganan push notifikasi untuk target ini.')
                 ->warning()
                 ->send();
@@ -203,12 +295,53 @@ class PushNotifikasi extends Page implements HasForms
             ->success()
             ->send();
 
-        // Reset form
+        $this->resetForm();
+    }
+
+    public function cancelScheduled(string $id): void
+    {
+        $notif = PushNotification::where('id', $id)
+            ->where('status', 'scheduled')
+            ->first();
+
+        if ($notif) {
+            $notif->update(['status' => 'cancelled']);
+
+            Notification::make()
+                ->title('Jadwal dibatalkan')
+                ->body("Notifikasi \"{$notif->title}\" berhasil dibatalkan.")
+                ->success()
+                ->send();
+        }
+    }
+
+    public function getStatsProperty(): array
+    {
+        return [
+            'total' => PushSubscription::distinct('user_id')->count('user_id'),
+            'siswa' => PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) = 'siswa'")))->distinct('user_id')->count('user_id'),
+            'guru' => PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) = 'guru'")))->distinct('user_id')->count('user_id'),
+            'kesiswaan' => PushSubscription::whereHas('user', fn($q) => $q->whereHas('role_user', fn($rq) => $rq->whereRaw("LOWER(TRIM(name)) IN ('kesiswaan', 'kepala sekolah')")))->distinct('user_id')->count('user_id'),
+        ];
+    }
+
+    public function getScheduledNotificationsProperty()
+    {
+        return PushNotification::where('status', 'scheduled')
+            ->orderBy('scheduled_at')
+            ->get();
+    }
+
+    private function resetForm(): void
+    {
         $this->form->fill([
-            'title'  => '',
-            'body'   => '',
-            'target' => 'all',
-            'url'    => '/',
+            'target'       => 'all',
+            'template'     => null,
+            'title'        => '',
+            'body'         => '',
+            'url'          => '/',
+            'send_mode'    => 'now',
+            'scheduled_at' => null,
         ]);
     }
 }

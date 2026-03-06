@@ -136,6 +136,7 @@ class ListVerifikasi extends ListRecords
    */
   protected function getTableQuery(): ?Builder
   {
+    /** @var Builder $query */
     $query = parent::getTableQuery();
 
     if ($this->activeStatusFilter === 'rejected') {

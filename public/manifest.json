@@ -11,6 +11,7 @@
     "theme_color": "#1e3a8a",
     "lang": "id",
     "categories": ["education"],
+    "permissions": ["notifications", "push"],
     "shortcuts": [
         {
             "name": "Login Siswa",

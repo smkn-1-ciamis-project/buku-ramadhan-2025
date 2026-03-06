@@ -1,7 +1,7 @@
 // Calakan - Service Worker
 // Catatan Amaliyah Kegiatan Ramadan SMKN 1 Ciamis
 
-const CACHE_NAME = "calakan-cache-v10";
+const CACHE_NAME = "calakan-cache-v11";
 const OFFLINE_URL = "/offline.html";
 
 // Assets yang selalu di-cache saat install
@@ -125,6 +125,33 @@ function isStaticAsset(pathname) {
     return staticExtensions.some((ext) => pathname.endsWith(ext));
 }
 
+// ── Push Subscription Change ───────────────────────────────────────
+// Otomatis re-subscribe jika subscription expired (penting untuk notif tetap masuk)
+self.addEventListener("pushsubscriptionchange", (event) => {
+    event.waitUntil(
+        self.registration.pushManager
+            .subscribe(event.oldSubscription.options)
+            .then((newSub) => {
+                const subJSON = newSub.toJSON();
+                return fetch("/api/push/subscribe", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        endpoint: subJSON.endpoint,
+                        keys: {
+                            p256dh: subJSON.keys.p256dh,
+                            auth: subJSON.keys.auth,
+                        },
+                    }),
+                });
+            })
+            .catch((err) => console.warn("[Push] Re-subscribe failed:", err)),
+    );
+});
+
 // ── Push Event ─────────────────────────────────────────────────────
 self.addEventListener("push", (event) => {
     let data = {
@@ -151,8 +178,9 @@ self.addEventListener("push", (event) => {
         badge: data.badge,
         tag: data.tag,
         renotify: true,
-        requireInteraction: false,
+        requireInteraction: true,
         vibrate: [200, 100, 200],
+        silent: false,
         data: {
             url: data.url,
         },

@@ -6,12 +6,13 @@ use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ImpersonateController extends Controller
 {
     /**
      * Superadmin masuk sebagai user lain (SSO / impersonate).
-     * Simpan ID superadmin asli di session agar bisa kembali.
+     * Fork session agar tab superadmin tetap aktif.
      */
     public function loginAs(Request $request, User $user)
     {
@@ -28,19 +29,27 @@ class ImpersonateController extends Controller
             return back();
         }
 
-        // Simpan ID superadmin asli di session
-        session()->put('impersonator_id', $admin->id);
-        session()->put('impersonator_name', $admin->name);
+        $adminId   = $admin->id;
+        $adminName = $admin->name;
 
         // Log aktivitas
         ActivityLog::log('impersonate', $admin, [
-            'description' => "Masuk sebagai {$user->name} ({$user->role_user?->name})",
+            'description'    => "Masuk sebagai {$user->name} ({$user->role_user?->name})",
             'target_user_id' => $user->id,
-            'target_user' => $user->name,
+            'target_user'    => $user->name,
         ]);
 
-        // Login sebagai user target
+        // Fork session: simpan session superadmin lalu buat session baru
+        // agar tab superadmin tidak logout
+        session()->save();
+        session()->setId(Str::random(40));
+        session()->start();
+
+        // Login sebagai user target di session baru
         Auth::login($user);
+        session()->put('password_hash_' . Auth::getDefaultDriver(), $user->getAuthPassword());
+        session()->put('impersonator_id', $adminId);
+        session()->put('impersonator_name', $adminName);
 
         // Redirect ke panel yang sesuai
         $role = strtolower(trim($user->role_user?->name ?? ''));
@@ -75,16 +84,18 @@ class ImpersonateController extends Controller
         // Log
         $currentUser = Auth::user();
         ActivityLog::log('leave_impersonate', $admin, [
-            'description' => "Kembali dari akun {$currentUser->name}",
+            'description'    => "Kembali dari akun {$currentUser->name}",
             'target_user_id' => $currentUser->id,
-            'target_user' => $currentUser->name,
+            'target_user'    => $currentUser->name,
         ]);
 
-        // Hapus session impersonation
-        session()->forget(['impersonator_id', 'impersonator_name']);
+        // Hapus session impersonation saat ini
+        session()->invalidate();
 
-        // Login kembali sebagai superadmin
+        // Buat session baru dan login sebagai superadmin
+        session()->regenerate();
         Auth::login($admin);
+        session()->put('password_hash_' . Auth::getDefaultDriver(), $admin->getAuthPassword());
 
         return redirect('/portal-admin-smkn1');
     }
