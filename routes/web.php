@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\Api\FormSubmissionController;
 use App\Http\Controllers\Api\PrayerCheckinController;
 use App\Http\Controllers\ImpersonateController;
@@ -104,3 +105,8 @@ Route::middleware(['auth', 'throttle:api-write'])->prefix('api/push')->group(fun
     Route::post('/unsubscribe', [PushSubscriptionController::class, 'unsubscribe']);
 });
 Route::middleware(['auth', 'throttle:api-read'])->get('/api/push/vapid-key', [PushSubscriptionController::class, 'vapidPublicKey']);
+
+// AI Chat API
+Route::middleware(['auth', 'throttle:30,1'])->post('/api/ai-chat', [AiChatController::class, 'chat']);
+Route::middleware(['auth', 'throttle:api-read'])->get('/api/ai-chat/history', [AiChatController::class, 'history']);
+Route::middleware(['auth', 'throttle:api-write'])->delete('/api/ai-chat/history', [AiChatController::class, 'clearHistory']);

@@ -26,6 +26,11 @@ class Dashboard extends Page
     {
         /** @var User $user */
         $user = Auth::user();
+
+        // Superadmin can access any dashboard
+        $role = strtolower(trim($user->role_user?->name ?? ''));
+        if (in_array($role, ['super admin', 'superadmin'])) return;
+
         $agama = strtolower($user->agama ?? '');
 
         // Redirect ke dashboard yang sesuai agama user

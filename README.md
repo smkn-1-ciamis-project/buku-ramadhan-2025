@@ -4,11 +4,11 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-smkn--1--ciamis--project%2Fbuku--ramadhan--2025-181717?logo=github)](https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v2.6.2-blue)](TEAM.md)
+[![Version](https://img.shields.io/badge/version-v2.7.5-blue)](TEAM.md)
 
 Calakan adalah aplikasi web full-stack untuk pencatatan kegiatan ibadah Ramadhan siswa secara digital. Dibangun dengan Laravel 12 dan Filament v3, dilengkapi dashboard mobile-first untuk siswa, sistem verifikasi dua tingkat (Guru dan Kesiswaan), serta aplikasi Android berupa WebView wrapper.
 
-> Versi saat ini: **v2.6.2** — 3 Maret 2026
+> Versi saat ini: **v2.8.2** — 7 Maret 2026
 > Repository: [github.com/smkn-1-ciamis-project/buku-ramadhan-2025](https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025)
 
 ---
@@ -390,6 +390,16 @@ Detail lengkap profil dan kontak tim: **[TEAM.md](TEAM.md)**
 ---
 
 ## Riwayat Versi
+
+### v2.8.2 — 7 Maret 2026
+
+- Penambahan fitur Asisten AI keagamaan
+
+### v2.7.5 — 6 Maret 2026
+
+- Login antar portal lebih mudah, bisa langsung pindah ke login Guru/Siswa/Kesiswaan dari halaman login
+- Notifikasi instal aplikasi (PWA install banner) selalu muncul untuk user yang belum install
+- Siswa bisa menerima Web Push Notification setelah izin notifikasi di browser diaktifkan
 
 ### v2.6.2 — 3 Maret 2026
 

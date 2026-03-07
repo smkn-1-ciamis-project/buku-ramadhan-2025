@@ -66,6 +66,19 @@
         </form>
       </div>
 
+      {{-- Portal links --}}
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+          <span style="font-size: 12px; color: #94a3b8; white-space: nowrap;">Bukan siswa?</span>
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+          <a href="{{ url('/portal-guru-smkn1/login') }}" style="display: inline-flex; align-items: center; padding: 7px 16px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #475569; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s;">Login Guru</a>
+          <a href="{{ url('/portal-kesiswaan-smkn1/login') }}" style="display: inline-flex; align-items: center; padding: 7px 16px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #475569; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s;">Login Kesiswaan</a>
+        </div>
+      </div>
+
       {{-- Footer --}}
       <div class="login-form-footer">
         <div class="login-form-footer-copy">
@@ -275,5 +288,6 @@
   </div>
 
   @include('components.pwa-install-banner')
+  @include('components.login-slide-transition')
 
 </div>{{-- /.login-page --}}

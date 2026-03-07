@@ -124,6 +124,10 @@ class SiswaPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn() => new HtmlString(view('components.pwa-install-banner')->render())
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn() => new HtmlString(view('components.ai-chat')->render())
             );
     }
 }

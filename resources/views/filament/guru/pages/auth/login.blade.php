@@ -18,6 +18,12 @@
         .login-form-area .fi-fo-checkbox label,
         .login-form-area .fi-checkbox-label { display: flex !important; align-items: center !important; gap: 0.5rem !important; }
         .login-form-area .fi-fo-checkbox input[type="checkbox"] { margin: 0 !important; flex-shrink: 0; align-self: center !important; }
+
+        /* ── Guru: swap columns — illustration LEFT, form RIGHT ── */
+        @media (min-width: 768px) {
+          .guru-login .login-illust-col { order: -1; }
+          .guru-login .login-form-col  { order: 1; }
+        }
       </style>
     @endpush
   @endonce
@@ -25,7 +31,7 @@
   {{-- ═══════════════════════════════
       MAIN 2-COLUMN CARD
   ═══════════════════════════════ --}}
-  <div class="login-container">
+  <div class="login-container guru-login">
 
     {{-- ── LEFT: Form Column ── --}}
     <div class="login-form-col">
@@ -58,6 +64,19 @@
             <span wire:loading style="display:none; color: white !important;">Memproses…</span>
           </x-filament::button>
         </form>
+      </div>
+
+      {{-- Portal links --}}
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+          <span style="font-size: 12px; color: #94a3b8; white-space: nowrap;">Bukan guru?</span>
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+          <a href="{{ url('/siswa/login') }}" style="display: inline-flex; align-items: center; padding: 7px 16px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #475569; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s;">Login Siswa</a>
+          <a href="{{ url('/portal-kesiswaan-smkn1/login') }}" style="display: inline-flex; align-items: center; padding: 7px 16px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #475569; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s;">Login Kesiswaan</a>
+        </div>
       </div>
 
       {{-- Footer --}}
@@ -189,5 +208,6 @@
   </div>
 
   @include('components.pwa-install-banner')
+  @include('components.login-slide-transition')
 
 </div>{{-- /.login-page --}}
