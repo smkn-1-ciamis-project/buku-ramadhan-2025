@@ -13,41 +13,50 @@ class AiChatService
 {
     private array $models = [
         'groq' => [
-            'moonshotai/kimi-k2-instruct',
-            'qwen/qwen3-32b',
+            'llama-3.3-70b-versatile',
             'meta-llama/llama-4-maverick-17b-128e-instruct',
             'meta-llama/llama-4-scout-17b-16e-instruct',
-            'llama-3.3-70b-versatile',
             'llama-3.1-8b-instant',
+            'qwen/qwen3-32b',
+            'moonshotai/kimi-k2-instruct',
         ],
-        'gemini' => ['gemini-1.5-flash'],
+        'gemini' => ['gemini-3-flash-preview', 'gemini-2.5-flash'],
         'nvidia' => [
             'moonshotai/kimi-k2-instruct',
             'deepseek-ai/deepseek-v3.2',
-            'meta-llama/llama-3.3-70b-instruct',
+            'meta/llama-4-maverick-17b-128e-instruct',
+            'mistralai/mistral-small-3.1-24b-instruct-2503',
+            'meta/llama-4-scout-17b-16e-instruct',
+            'aisingapore/sea-lion-7b-instruct',
         ],
         'openrouter' => [
-            'meta-llama/llama-3.1-8b-instruct:free',
-            'mistralai/mistral-7b-instruct:free',
+            'meta-llama/llama-3.3-70b-instruct:free',
+            'mistral/mistral-small-3.1-24b:free',
+            'google/gemma-3-27b-it:free',
+            'qwen/qwen3-4b:free',
+            'openrouter/free',
         ],
         'cloudflare' => [
-            '@cf/meta/llama-3.1-8b-instruct',
-            '@cf/mistral/mistral-7b-instruct-v0.1',
+            '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+            '@cf/meta/llama-4-scout-17b-16e-instruct',
+            '@cf/meta/llama-3.1-8b-instruct-fast',
+            '@cf/mistral/mistral-small-3.1-24b-instruct',
+            '@cf/aisingapore/gemma-sea-lion-v4-27b-it',
         ],
     ];
 
     private array $systemPrompts = [
-        'islam' => 'Kamu "Ustadz AI". HANYA jawab tentang Islam (Al-Quran, Hadith, Fiqih, Ibadah, sejarah Islam, Halal/Haram). Sertakan ayat/hadist. Non-Islam: "Maaf, saya hanya membantu seputar Islam." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'islam' => 'Kamu asisten Islam bernama "Ustadz AI". HANYA jawab tentang Islam: Al-Quran, Hadith, Fiqih, sejarah Islam, Ibadah, etika Islam, Halal/Haram, dan gaya hidup Muslim. Di luar Islam: "Maaf, saya hanya dapat membantu pertanyaan seputar Islam." Aturan: jawab bahasa user; selalu sertakan ayat Al-Quran atau Hadith sebagai referensi; jangan mengarang ayat/hadith; bersikap hormat dan rendah hati; mulai dengan Bismillah jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! 🌙". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
 
-        'kristen' => 'Kamu "Pastor AI". HANYA jawab tentang Kristen (Alkitab, teologi, Yesus, doa, etika). Sertakan ayat Alkitab. Non-Kristen: "Maaf, saya hanya membantu seputar Kristen." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'kristen' => 'Kamu asisten Kristen bernama "Pastor AI". HANYA jawab tentang Kristen: Alkitab, teologi Kristen, kehidupan Yesus, doa, etika, sejarah gereja, hari raya Kristen. Di luar Kristen: "Maaf, saya hanya dapat membantu pertanyaan seputar agama Kristen." Aturan: jawab bahasa user; selalu sertakan ayat Alkitab sebagai referensi; jangan mengarang ayat; bersikap hangat dan penuh kasih; gunakan "God bless you" jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! ✝️". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
 
-        'katolik' => 'Kamu "Romo AI". HANYA jawab tentang Katolik (Alkitab, teologi, Sakramen, Katekismus). Sertakan ayat/Katekismus. Non-Katolik: "Maaf, saya hanya membantu seputar Katolik." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'katolik' => 'Kamu asisten Katolik bernama "Romo AI". HANYA jawab tentang Katolik: Alkitab, teologi Katolik, Sakramen, Santo/Santa, doa Rosario, sejarah Gereja, ajaran moral, Katekismus. Di luar Katolik: "Maaf, saya hanya dapat membantu pertanyaan seputar agama Katolik." Aturan: jawab bahasa user; selalu sertakan ayat Alkitab atau referensi Katekismus; jangan mengarang kitab suci/doktrin; bersikap hormat dan khidmat; gunakan "Terpujilah Tuhan" jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! ⛪". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
 
-        'hindu' => 'Kamu "Pandit AI". HANYA jawab tentang Hindu (Veda, Upanishad, Bhagavad Gita, Dharma, Karma, Moksha). Sertakan referensi kitab. Non-Hindu: "Maaf, saya hanya membantu seputar Hindu." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'hindu' => 'Kamu asisten Hindu bernama "Pandit AI". HANYA jawab tentang Hindu: Veda, Upanishad, Bhagavad Gita, dewa-dewi Hindu, Dharma, Karma, Moksha, ritual, festival Hindu. Di luar Hindu: "Maaf, saya hanya dapat membantu pertanyaan seputar agama Hindu." Aturan: jawab bahasa user; selalu sertakan referensi kitab suci Hindu; jangan mengarang ajaran; gunakan istilah Sansekerta jika sesuai; gunakan "Om Swastiastu" jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! 🕉️". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
 
-        'buddha' => 'Kamu "Bhikkhu AI". HANYA jawab tentang Buddha (Tripitaka, Dhammapada, Empat Kebenaran, meditasi). Sertakan referensi kitab. Non-Buddha: "Maaf, saya hanya membantu seputar Buddha." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'buddha' => 'Kamu asisten Buddha bernama "Bhikkhu AI". HANYA jawab tentang Buddha: Tripitaka, Dhammapada, kehidupan Buddha, Empat Kebenaran Mulia, Jalan Mulia Berunsur Delapan, meditasi, etika Buddha, festival. Di luar Buddha: "Maaf, saya hanya dapat membantu pertanyaan seputar agama Buddha." Aturan: jawab bahasa user; selalu sertakan referensi kitab suci Buddha; jangan mengarang ajaran; bersikap tenang dan penuh welas asih; gunakan "Namo Buddhaya" jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! ☸️". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
 
-        'konghucu' => 'Kamu "Wenshi AI". HANYA jawab tentang Konghucu (Si Shu, Wu Jing, ajaran Kongzi/Mengzi, MATAKIN). Sertakan referensi kitab. Non-Konghucu: "Maaf, saya hanya membantu seputar Konghucu." Jawab bahasa user. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3, ingatkan. PENTING: Jawab RINGKAS maksimal 150 kata. Selesaikan kalimat terakhir dengan sempurna.',
+        'konghucu' => 'Kamu asisten Konghucu bernama "Wenshi AI". HANYA jawab tentang Konghucu: Si Shu, Wu Jing, ajaran Kongzi dan Mengzi, nilai-nilai Konghucu, ritual, festival, tradisi Konghucu Indonesia (MATAKIN, Kelenteng). Di luar Konghucu: "Maaf, saya hanya dapat membantu pertanyaan seputar agama Khonghucu." Aturan: jawab bahasa user; selalu sertakan referensi kitab suci Konghucu; jangan mengarang ajaran; bersikap bijak, hormat, dan rendah hati; gunakan "Wei De Dong Tian" jika sesuai; JANGAN beri lebih dari 150 kata. Sisa kuota: {remaining}/20 (reset tengah malam). Jika ≤3 sisa, ingatkan dengan: "Sisa pertanyaanmu hari ini: {remaining}/20, kuota akan reset tengah malam ya! 🏮". Akhiri dengan satu saran pertanyaan lanjutan yang relevan.',
     ];
 
     /**
@@ -102,7 +111,8 @@ class AiChatService
         if ($mysqlHit) {
             try {
                 Cache::put("faq_{$religion}_{$hash}", $mysqlHit['answer'], 86400);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
             return [
                 'reply' => $mysqlHit['answer'],
                 'provider' => 'cache',
@@ -134,7 +144,8 @@ class AiChatService
             $this->saveFaqCache($message, $religion, $result['reply']);
             try {
                 Cache::put("faq_{$religion}_{$hash}", $result['reply'], 86400);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         return $result;
@@ -205,7 +216,7 @@ class AiChatService
 
     private function callAiWithFallback(string $systemPrompt, string $message, array $history, int $maxTokens): array
     {
-        $providers = ['groq', 'gemini', 'nvidia', 'openrouter', 'cloudflare'];
+        $providers = ['groq', 'gemini', 'openrouter', 'cloudflare', 'nvidia'];
         $allRateLimited = true;
 
         foreach ($providers as $provider) {
@@ -263,10 +274,15 @@ class AiChatService
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiKey}",
                 ])->timeout(15)->retry(1, 500)->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => $model,
-                    'messages' => $messages,
-                    'temperature' => 0.7,
-                    'max_tokens' => $maxTokens,
+                    'model'                  => $model,
+                    'messages'               => $messages,
+                    'temperature'            => 0.7,
+                    'top_p'                  => 0.9,
+                    'max_completion_tokens'  => $maxTokens,
+                    'stop'                   => null,
+                    'service_tier'           => 'auto',
+                    'user'                   => (string) \Illuminate\Support\Facades\Auth::id(),
+                    'stream'                 => false,
                 ]);
 
                 if ($response->successful()) {
@@ -295,48 +311,57 @@ class AiChatService
         $apiKey = env('GEMINI_API_KEY');
         if (!$apiKey) return null;
 
-        $model = $this->models['gemini'][0];
         $contents = [];
-        $recent = array_slice($history, -5);
+        $recent = collect($history)
+            ->take(-5)
+            ->values();
         foreach ($recent as $msg) {
             if (isset($msg['role'], $msg['content'])) {
                 $contents[] = [
                     'role' => $msg['role'] === 'user' ? 'user' : 'model',
-                    'parts' => [['text' => mb_substr($msg['content'], 0, 1000)]],
+                    'parts' => [['text' => Str::limit($msg['content'], 500)]],
                 ];
             }
         }
         $contents[] = ['role' => 'user', 'parts' => [['text' => $message]]];
 
-        try {
-            $response = Http::timeout(15)->retry(1, 500)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
-                [
-                    'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
-                    'contents' => $contents,
-                    'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => $maxTokens,
-                    ],
-                ]
-            );
+        foreach ($this->models['gemini'] as $model) {
+            try {
+                $response = Http::timeout(15)->retry(1, 500)->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
+                    [
+                        'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+                        'contents'           => $contents,
+                        'generation_config'  => [
+                            'temperature'      => 0.7,
+                            'max_output_tokens' => $maxTokens,
+                            'thinking_level'   => 'low',
+                        ],
+                    ]
+                );
 
-            if ($response->successful()) {
-                $finishReason = $response->json('candidates.0.finishReason');
-                return [
-                    'content' => $response->json('candidates.0.content.parts.0.text'),
-                    'finish_reason' => $finishReason === 'MAX_TOKENS' ? 'length' : $finishReason,
-                ];
+                if ($response->successful()) {
+                    $finishReason = $response->json('candidates.0.finishReason');
+                    $content = $response->json('candidates.0.content.parts.0.text');
+                    if ($content !== null) {
+                        return [
+                            'content'       => $content,
+                            'finish_reason' => $finishReason === 'MAX_TOKENS' ? 'length' : $finishReason,
+                        ];
+                    }
+                    Log::info("[AiChat] Gemini {$model} returned empty content, trying next");
+                    continue;
+                }
+
+                if (in_array($response->status(), [404, 429, 500, 502, 503])) {
+                    Log::info("[AiChat] Gemini {$model} HTTP {$response->status()}, trying next");
+                    continue;
+                }
+
+                Log::warning('[AiChat] Gemini error', ['model' => $model, 'status' => $response->status()]);
+            } catch (\Exception $e) {
+                Log::warning("[AiChat] Gemini {$model}: {$e->getMessage()}");
             }
-
-            if (in_array($response->status(), [429, 500, 502, 503])) {
-                Log::info("[AiChat] Gemini HTTP {$response->status()}");
-                return null;
-            }
-
-            Log::warning('[AiChat] Gemini error', ['status' => $response->status()]);
-        } catch (\Exception $e) {
-            Log::warning("[AiChat] Gemini: {$e->getMessage()}");
         }
 
         return null;
@@ -347,6 +372,8 @@ class AiChatService
         $apiKey = env('NVIDIA_API_KEY');
         if (!$apiKey) return null;
 
+        Log::info('[AiChat] NVIDIA called as last resort — all other providers failed');
+
         $messages = $this->buildOpenAiMessages($systemPrompt, $message, $history);
 
         foreach ($this->models['nvidia'] as $model) {
@@ -354,15 +381,18 @@ class AiChatService
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiKey}",
                 ])->timeout(15)->retry(1, 500)->post('https://integrate.api.nvidia.com/v1/chat/completions', [
-                    'model' => $model,
-                    'messages' => $messages,
+                    'model'       => $model,
+                    'messages'    => $messages,
                     'temperature' => 0.7,
-                    'max_tokens' => $maxTokens,
+                    'max_tokens'  => min($maxTokens, 4096),
+                    'stop'        => null,
+                    'stream'      => false,
                 ]);
 
                 if ($response->successful()) {
+                    Log::info('[AiChat] NVIDIA credit used', ['model' => $model]);
                     return [
-                        'content' => $response->json('choices.0.message.content'),
+                        'content'       => $response->json('choices.0.message.content'),
                         'finish_reason' => $response->json('choices.0.finish_reason'),
                     ];
                 }
@@ -391,24 +421,29 @@ class AiChatService
         foreach ($this->models['openrouter'] as $model) {
             try {
                 $response = Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                    'HTTP-Referer' => config('app.url', 'http://localhost'),
-                    'X-Title' => 'Calakan App',
+                    'Authorization'  => "Bearer {$apiKey}",
+                    'HTTP-Referer'   => 'https://calakan.smkn1ciamis.id',
+                    'X-Title'        => 'Calakan AI',
                 ])->timeout(15)->retry(1, 500)->post('https://openrouter.ai/api/v1/chat/completions', [
-                    'model' => $model,
-                    'messages' => $messages,
-                    'temperature' => 0.7,
-                    'max_tokens' => $maxTokens,
+                    'model'                 => $model,
+                    'messages'              => $messages,
+                    'max_completion_tokens' => $maxTokens,
+                    'temperature'           => 0.7,
+                    'top_p'                 => 0.9,
+                    'stream'                => false,
+                    'stop'                  => null,
+                    'user'                  => (string) \Illuminate\Support\Facades\Auth::id(),
+                    'provider'              => ['data_collection' => 'deny'],
                 ]);
 
                 if ($response->successful()) {
                     return [
-                        'content' => $response->json('choices.0.message.content'),
+                        'content'       => $response->json('choices.0.message.content'),
                         'finish_reason' => $response->json('choices.0.finish_reason'),
                     ];
                 }
 
-                if (in_array($response->status(), [429, 500, 502, 503])) {
+                if (in_array($response->status(), [402, 429, 502, 503])) {
                     Log::info("[AiChat] OpenRouter {$model} HTTP {$response->status()}, trying next");
                     continue;
                 }
@@ -432,17 +467,21 @@ class AiChatService
 
         foreach ($this->models['cloudflare'] as $model) {
             try {
-                $url = "https://api.cloudflare.com/client/v4/accounts/{$accountId}/ai/run/{$model}";
+                $url = "https://api.cloudflare.com/client/v4/accounts/{$accountId}/ai/v1/chat/completions";
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiToken}",
                 ])->timeout(15)->retry(1, 500)->post($url, [
-                    'messages' => $messages,
+                    'model'       => $model,
+                    'messages'    => $messages,
+                    'max_tokens'  => $maxTokens,
+                    'temperature' => 0.7,
+                    'stream'      => false,
                 ]);
 
-                if ($response->successful() && $response->json('success')) {
+                if ($response->successful()) {
                     return [
-                        'content' => $response->json('result.response'),
-                        'finish_reason' => 'stop',
+                        'content'       => $response->json('choices.0.message.content'),
+                        'finish_reason' => $response->json('choices.0.finish_reason'),
                     ];
                 }
 
@@ -485,8 +524,15 @@ class AiChatService
         $lower = strtolower($message);
 
         $keywords = [
-            'perbedaan', 'jelaskan', 'sebutkan', 'apa saja', 'bagaimana',
-            'list', 'compare', 'explain', 'sejarah',
+            'perbedaan',
+            'jelaskan',
+            'sebutkan',
+            'apa saja',
+            'bagaimana',
+            'list',
+            'compare',
+            'explain',
+            'sejarah',
         ];
 
         $isComplex = $wordCount > 100 || Str::contains($lower, $keywords);
@@ -500,12 +546,14 @@ class AiChatService
     {
         $messages = [['role' => 'system', 'content' => $systemPrompt]];
 
-        $recent = array_slice($history, -5);
+        $recent = collect($history)
+            ->take(-5)
+            ->values();
         foreach ($recent as $msg) {
             if (isset($msg['role'], $msg['content'])) {
                 $messages[] = [
                     'role' => $msg['role'] === 'user' ? 'user' : 'assistant',
-                    'content' => mb_substr($msg['content'], 0, 1000),
+                    'content' => Str::limit($msg['content'], 500),
                 ];
             }
         }
@@ -516,9 +564,22 @@ class AiChatService
 
     private function cleanReply(string $reply): string
     {
+        // Extract think content as fallback before stripping
+        $thinkContent = '';
+        if (preg_match('/<think>([\.\s\S]*?)<\/think>/i', $reply, $thinkMatch)) {
+            $thinkContent = trim($thinkMatch[1]);
+        }
+
         $reply = preg_replace('/<think>[\s\S]*?<\/think>/i', '', $reply);
         $reply = preg_replace('/<think>[\s\S]*/i', '', $reply);
-        return trim($reply);
+        $reply = trim($reply);
+
+        // If nothing left after stripping think tags, use think content as answer
+        if ($reply === '' && $thinkContent !== '') {
+            return $thinkContent;
+        }
+
+        return $reply;
     }
 
     private function gracefulEnding(string $text): string

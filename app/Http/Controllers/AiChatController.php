@@ -22,12 +22,12 @@ class AiChatController extends Controller
     ];
 
     private array $allFailedMessages = [
-        'islam'    => "Bismillah, Ustadz AI sedang istirahat. Sementara bacalah Al-Quran. Insya Allah segera normal! 🤲",
-        'kristen'  => "Puji Tuhan, Pastor AI sedang istirahat. Sementara bacalah Alkitab. Tuhan memberkati! 🙏",
-        'katolik'  => "Terpujilah Tuhan, Romo AI istirahat. Sementara berdoa Rosario. Tuhan memberkati! 🙏",
-        'hindu'    => "Om Swastiastu, Pandit AI istirahat. Sementara baca Bhagavad Gita. Om Shanti! 🙏",
-        'buddha'   => "Namo Buddhaya, Bhikkhu AI istirahat. Sementara bermeditasi sejenak. Semoga berbahagia! 🙏",
-        'konghucu' => "Wei De Dong Tian, Wenshi AI istirahat. Sementara renungkan ajaran Kongzi. Xian You Yi De! 🙏",
+        'islam'    => "Maaf, layanan Ustadz AI sedang tidak tersedia. Silakan coba beberapa saat lagi. Semoga Allah memudahkan urusan kita. 🤲",
+        'kristen'  => "Maaf, layanan Pastor AI sedang tidak tersedia. Silakan coba beberapa saat lagi. God bless you. 🙏",
+        'katolik'  => "Maaf, layanan Romo AI sedang tidak tersedia. Silakan coba beberapa saat lagi. Terpujilah Tuhan. 🙏",
+        'hindu'    => "Maaf, layanan Pandit AI sedang tidak tersedia. Silakan coba beberapa saat lagi. Om Shanti Shanti Shanti. 🙏",
+        'buddha'   => "Maaf, layanan Bhikkhu AI sedang tidak tersedia. Silakan coba beberapa saat lagi. Namo Buddhaya. 🙏",
+        'konghucu' => "Maaf, layanan Wenshi AI sedang tidak tersedia. Silakan coba beberapa saat lagi. Wei De Dong Tian. 🙏",
     ];
 
     private array $rateLimitMessages = [
