@@ -31,8 +31,7 @@ class AiChatService
         ],
         'openrouter' => [
             'meta-llama/llama-3.3-70b-instruct:free',
-            'mistral/mistral-small-3.1-24b:free',
-            'google/gemma-3-27b-it:free',
+            'mistral/mistral-small-3.1-24b-instruct:free',
             'qwen/qwen3-4b:free',
             'openrouter/free',
         ],
@@ -135,7 +134,8 @@ class AiChatService
 
         // Layer 3: AI API with fallback chain (Groq → Gemini → NVIDIA → OpenRouter → Cloudflare)
         $systemPrompt = $this->getSystemPrompt($religion);
-        $systemPrompt = str_replace('{remaining}', (string) $remaining, $systemPrompt);
+        $afterRemaining = max(0, $remaining - 1);
+        $systemPrompt = str_replace('{remaining}', (string) $afterRemaining, $systemPrompt);
         $maxTokens = $this->getMaxTokens($message);
         $result = $this->callAiWithFallback($systemPrompt, $message, $history, $maxTokens);
 
@@ -271,19 +271,20 @@ class AiChatService
 
         foreach ($this->models['groq'] as $model) {
             try {
-                $response = Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}",
-                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post('https://api.groq.com/openai/v1/chat/completions', [
+                $requestBody = [
                     'model'                  => $model,
                     'messages'               => $messages,
                     'temperature'            => 0.7,
                     'top_p'                  => 0.9,
                     'max_completion_tokens'  => $maxTokens,
                     'stop'                   => null,
-                    'service_tier'           => 'auto',
                     'user'                   => (string) \Illuminate\Support\Facades\Auth::id(),
                     'stream'                 => false,
-                ]);
+                ];
+
+                $response = Http::withHeaders([
+                    'Authorization' => "Bearer {$apiKey}",
+                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post('https://api.groq.com/openai/v1/chat/completions', $requestBody);
 
                 if ($response->successful()) {
                     return [
@@ -292,12 +293,21 @@ class AiChatService
                     ];
                 }
 
+                if ($response->status() === 400) {
+                    Log::error('[AiChat] Groq 400 error', [
+                        'model'   => $model,
+                        'error'   => $response->json(),
+                        'request' => $requestBody,
+                    ]);
+                    continue;
+                }
+
                 if (in_array($response->status(), [429, 500, 502, 503])) {
                     Log::info("[AiChat] Groq {$model} HTTP {$response->status()}, trying next");
                     continue;
                 }
 
-                Log::warning("[AiChat] Groq error", ['model' => $model, 'status' => $response->status()]);
+                Log::error('[AiChat] API error detail', ['provider' => 'groq', 'model' => $model, 'status' => $response->status(), 'error' => $response->json()]);
             } catch (\Exception $e) {
                 Log::warning("[AiChat] Groq {$model}: {$e->getMessage()}");
             }
@@ -333,9 +343,8 @@ class AiChatService
                         'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
                         'contents'           => $contents,
                         'generation_config'  => [
-                            'temperature'      => 0.7,
-                            'max_output_tokens' => $maxTokens,
-                            'thinking_level'   => 'low',
+                            'temperature'       => 0.7,
+                            'max_output_tokens' => max(1024, $maxTokens),
                         ],
                     ]
                 );
@@ -358,7 +367,7 @@ class AiChatService
                     continue;
                 }
 
-                Log::warning('[AiChat] Gemini error', ['model' => $model, 'status' => $response->status()]);
+                Log::error('[AiChat] API error detail', ['provider' => 'gemini', 'model' => $model, 'status' => $response->status(), 'error' => $response->json()]);
             } catch (\Exception $e) {
                 Log::warning("[AiChat] Gemini {$model}: {$e->getMessage()}");
             }
@@ -402,7 +411,7 @@ class AiChatService
                     continue;
                 }
 
-                Log::warning("[AiChat] NVIDIA error", ['model' => $model, 'status' => $response->status()]);
+                Log::error('[AiChat] API error detail', ['provider' => 'nvidia', 'model' => $model, 'status' => $response->status(), 'error' => $response->json()]);
             } catch (\Exception $e) {
                 Log::warning("[AiChat] NVIDIA {$model}: {$e->getMessage()}");
             }
@@ -448,7 +457,7 @@ class AiChatService
                     continue;
                 }
 
-                Log::warning("[AiChat] OpenRouter error", ['model' => $model, 'status' => $response->status()]);
+                Log::error('[AiChat] API error detail', ['provider' => 'openrouter', 'model' => $model, 'status' => $response->status(), 'error' => $response->json()]);
             } catch (\Exception $e) {
                 Log::warning("[AiChat] OpenRouter {$model}: {$e->getMessage()}");
             }
@@ -490,7 +499,7 @@ class AiChatService
                     continue;
                 }
 
-                Log::warning("[AiChat] Cloudflare error", ['model' => $model, 'status' => $response->status()]);
+                Log::error('[AiChat] API error detail', ['provider' => 'cloudflare', 'model' => $model, 'status' => $response->status(), 'error' => $response->json()]);
             } catch (\Exception $e) {
                 Log::warning("[AiChat] Cloudflare {$model}: {$e->getMessage()}");
             }
@@ -520,7 +529,7 @@ class AiChatService
 
     private function getMaxTokens(string $message): int
     {
-        $wordCount = str_word_count($message);
+        $wordCount = count(explode(' ', trim($message)));
         $lower = strtolower($message);
 
         $keywords = [
@@ -537,9 +546,7 @@ class AiChatService
 
         $isComplex = $wordCount > 100 || Str::contains($lower, $keywords);
 
-        if ($isComplex) return 1024;
-        if ($wordCount > 50) return 512;
-        return 256;
+        return $isComplex ? 1024 : ($wordCount > 50 ? 768 : 512);
     }
 
     private function buildOpenAiMessages(string $systemPrompt, string $message, array $history): array
@@ -597,6 +604,6 @@ class AiChatService
             return trim(mb_substr($text, 0, $lastEnd + 1));
         }
 
-        return trim($text) . '...';
+        return trim($text);
     }
 }
