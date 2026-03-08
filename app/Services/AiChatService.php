@@ -273,7 +273,7 @@ class AiChatService
             try {
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiKey}",
-                ])->timeout(15)->retry(1, 500)->post('https://api.groq.com/openai/v1/chat/completions', [
+                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post('https://api.groq.com/openai/v1/chat/completions', [
                     'model'                  => $model,
                     'messages'               => $messages,
                     'temperature'            => 0.7,
@@ -327,7 +327,7 @@ class AiChatService
 
         foreach ($this->models['gemini'] as $model) {
             try {
-                $response = Http::timeout(15)->retry(1, 500)->post(
+                $response = Http::timeout(8)->connectTimeout(3)->retry(1, 500)->post(
                     "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
                     [
                         'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
@@ -380,7 +380,7 @@ class AiChatService
             try {
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiKey}",
-                ])->timeout(15)->retry(1, 500)->post('https://integrate.api.nvidia.com/v1/chat/completions', [
+                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post('https://integrate.api.nvidia.com/v1/chat/completions', [
                     'model'       => $model,
                     'messages'    => $messages,
                     'temperature' => 0.7,
@@ -424,10 +424,10 @@ class AiChatService
                     'Authorization'  => "Bearer {$apiKey}",
                     'HTTP-Referer'   => 'https://calakan.smkn1ciamis.id',
                     'X-Title'        => 'Calakan AI',
-                ])->timeout(15)->retry(1, 500)->post('https://openrouter.ai/api/v1/chat/completions', [
+                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post('https://openrouter.ai/api/v1/chat/completions', [
                     'model'                 => $model,
                     'messages'              => $messages,
-                    'max_completion_tokens' => $maxTokens,
+                    'max_completion_tokens' => max(512, $maxTokens),
                     'temperature'           => 0.7,
                     'top_p'                 => 0.9,
                     'stream'                => false,
@@ -470,7 +470,7 @@ class AiChatService
                 $url = "https://api.cloudflare.com/client/v4/accounts/{$accountId}/ai/v1/chat/completions";
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer {$apiToken}",
-                ])->timeout(15)->retry(1, 500)->post($url, [
+                ])->timeout(8)->connectTimeout(3)->retry(1, 500)->post($url, [
                     'model'       => $model,
                     'messages'    => $messages,
                     'max_tokens'  => $maxTokens,
