@@ -49,7 +49,11 @@ class PushNotificationService
         // Get subscriptions based on target
         $query = PushSubscription::query();
 
-        if ($target !== 'all') {
+        if (str_starts_with($target, 'kelas_')) {
+            // Filter by specific kelas_id
+            $kelasId = (int) str_replace('kelas_', '', $target);
+            $query->whereHas('user', fn($q) => $q->where('kelas_id', $kelasId));
+        } elseif ($target !== 'all') {
             // Join with users and role_users to filter by role
             $query->whereHas('user', function ($q) use ($target) {
                 $q->whereHas('role_user', function ($rq) use ($target) {
@@ -165,7 +169,10 @@ class PushNotificationService
         ]);
 
         $query = PushSubscription::query();
-        if ($target !== 'all') {
+        if (str_starts_with($target, 'kelas_')) {
+            $kelasId = (int) str_replace('kelas_', '', $target);
+            $query->whereHas('user', fn($q) => $q->where('kelas_id', $kelasId));
+        } elseif ($target !== 'all') {
             $query->whereHas('user', function ($q) use ($target) {
                 $q->whereHas('role_user', function ($rq) use ($target) {
                     $roleNames = match ($target) {

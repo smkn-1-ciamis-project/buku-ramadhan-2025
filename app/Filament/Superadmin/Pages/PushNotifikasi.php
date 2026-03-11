@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superadmin\Pages;
 
+use App\Models\Kelas;
 use App\Models\PushNotification;
 use App\Models\PushSubscription;
 use App\Models\RoleUser;
@@ -65,15 +66,22 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                     ->schema([
                         Forms\Components\Select::make('target')
                             ->label('Kirim Ke')
-                            ->options([
-                                'all'       => 'Semua pengguna',
-                                'siswa'     => 'Hanya Siswa',
-                                'guru'      => 'Hanya Guru',
-                                'kesiswaan' => 'Hanya Kesiswaan',
-                            ])
+                            ->options(function () {
+                                $base = [
+                                    'all'       => 'Semua pengguna',
+                                    'siswa'     => 'Hanya Siswa',
+                                    'guru'      => 'Hanya Guru',
+                                    'kesiswaan' => 'Hanya Kesiswaan',
+                                ];
+                                $kelas = Kelas::orderBy('nama')->pluck('nama', 'id')
+                                    ->mapWithKeys(fn($nama, $id) => ["kelas_{$id}" => "Kelas: {$nama}"])
+                                    ->toArray();
+                                return $base + $kelas;
+                            })
                             ->default('all')
                             ->required()
                             ->live()
+                            ->searchable()
                             ->afterStateUpdated(fn(Forms\Set $set) => $set('template', null)),
 
                         Forms\Components\Select::make('template')
@@ -229,6 +237,14 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                                 $q->whereRaw('LOWER(TRIM(name)) = ?', [$data['value']]);
                             }
                         });
+                    }),
+                Tables\Filters\SelectFilter::make('kelas_id')
+                    ->label('Kelas')
+                    ->options(fn() => Kelas::orderBy('nama')->pluck('nama', 'id'))
+                    ->searchable()
+                    ->query(function ($query, array $data) {
+                        if (empty($data['value'])) return $query;
+                        return $query->whereHas('user', fn($q) => $q->where('kelas_id', $data['value']));
                     }),
             ])
             ->defaultSort('created_at', 'desc')

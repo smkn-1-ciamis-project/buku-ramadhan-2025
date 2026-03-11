@@ -31,11 +31,15 @@ class User extends Authenticatable implements FilamentUser
             return false;
         }
 
-        // Strict role-to-panel mapping — each role can ONLY access its own panel
+        // Superadmin bisa akses semua panel
+        if (in_array($roleName, ['super admin', 'superadmin'])) {
+            return true;
+        }
+
+        // Role lain hanya bisa akses panel sendiri
         return match ($panel->getId()) {
             'siswa'      => $roleName === 'siswa',
             'guru'       => $roleName === 'guru',
-            'superadmin' => in_array($roleName, ['super admin', 'superadmin']),
             'kesiswaan'  => in_array($roleName, ['kesiswaan', 'kepala sekolah']),
             default      => false,
         };
