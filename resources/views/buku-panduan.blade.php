@@ -289,6 +289,30 @@
       justify-content: center;
     }
 
+    .release-note {
+      margin: 0 0 18px;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      background: #eff6ff;
+      padding: 12px 14px;
+    }
+
+    .release-note-title {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .release-note ul {
+      margin: 0;
+      padding-left: 18px;
+      list-style: disc;
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
     @media (max-width: 640px) {
       .container {
         margin: 20px auto;
@@ -326,6 +350,17 @@
       </div>
 
       <div class="body">
+        @if (($role ?? '') === 'siswa')
+          <div class="release-note">
+            <h3 class="release-note-title">Pembaruan Siswa v2.8.5 (14 Maret 2026)</h3>
+            <ul>
+              <li>Login antar portal dipermudah (Siswa, Guru, Kesiswaan).</li>
+              <li>Pengingat instal aplikasi (PWA) dibuat lebih konsisten.</li>
+              <li>Web Push Notification untuk siswa aktif setelah izin browser diberikan.</li>
+            </ul>
+          </div>
+        @endif
+
         @if (!empty($flowSteps ?? []))
           <div class="flow-card">
             <h3 class="flow-title">Grafik Alur Singkat</h3>
