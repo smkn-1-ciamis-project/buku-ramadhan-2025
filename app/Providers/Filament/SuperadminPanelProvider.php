@@ -121,10 +121,6 @@ class SuperadminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn() => new HtmlString(view('components.push-subscription')->render())
-            )
-            ->renderHook(
-                PanelsRenderHook::BODY_END,
                 fn() => new HtmlString(view('components.pwa-install-banner')->render())
             );
     }

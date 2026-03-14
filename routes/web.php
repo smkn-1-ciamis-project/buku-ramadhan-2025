@@ -25,6 +25,9 @@ Route::get('/', [PageController::class, 'index'])->name('index');
 // Halaman Tim Pengembang (publik)
 Route::get('/tim-pengembang', [PageController::class, 'timPengembang'])->name('tim-pengembang');
 
+// Buku Panduan login per role (publik)
+Route::get('/buku-panduan/{role}', [PageController::class, 'bukuPanduan'])->name('buku-panduan');
+
 // Superadmin Impersonation (SSO masuk sebagai user lain)
 Route::middleware(['auth'])->group(function () {
     Route::get('/impersonate/{user}', [ImpersonateController::class, 'loginAs'])->name('impersonate');

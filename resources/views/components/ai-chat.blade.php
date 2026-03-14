@@ -892,7 +892,7 @@
 
         chatHistory = [];
         historyLoaded = false;
-        updateQuotaBadge(10);
+        updateQuotaBadge(20);
         const container = document.getElementById('ai-chat-messages');
         container.innerHTML = '';
         const div = document.createElement('div');

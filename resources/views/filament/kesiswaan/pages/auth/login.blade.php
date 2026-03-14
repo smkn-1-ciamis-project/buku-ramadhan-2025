@@ -5,9 +5,14 @@
     @push('styles')
       <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/login.css') }}" />
       <style>
-        html, body { height: 100% !important; background: #f1f5f9 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
-        .fi-simple-layout { background: transparent !important; min-height: 100vh !important; overflow: hidden !important; }
+        html, body { height: 100% !important; background: #f1f5f9 !important; padding: 0 !important; margin: 0 !important; }
+        @media(min-width:768px) { html, body { overflow: hidden !important; } }
+        @media(max-width:767px) { html, body { overflow-y: auto !important; overflow-x: hidden !important; height: auto !important; min-height: 100% !important; } }
+        .fi-simple-layout { background: transparent !important; min-height: 100vh !important; }
+        @media(min-width:768px) { .fi-simple-layout { overflow: hidden !important; } }
+        @media(max-width:767px) { .fi-simple-layout { overflow: visible !important; min-height: auto !important; height: auto !important; } }
         .fi-simple-main-ctn { max-width: none !important; padding: 0 !important; width: 100% !important; overflow: hidden !important; flex-grow: 0 !important; }
+        @media(max-width:767px) { .fi-simple-main-ctn { overflow: visible !important; } }
         .fi-simple-main { max-width: none !important; width: 100% !important; background: transparent !important; box-shadow: none !important; ring: none !important; padding: 0 !important; --tw-ring-shadow: none !important; --tw-shadow: none !important; margin: 0 !important; }
         .login-form-area .fi-ac-btn-action { width: 100% !important; }
         .login-form-area .fi-form-actions { margin-top: 6px !important; }
@@ -154,6 +159,14 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 1a9 9 0 010 18c-2.5 0-4.5-2.02-4.5-4.5S9.5 12 12 12s4.5-2.02 4.5-4.5S14.5 3 12 3z"/><circle cx="12" cy="7.5" r="1.5" fill="white"/><circle cx="12" cy="16.5" r="1.5"/></svg>
           </div>
         </div>
+
+        {{-- Buku panduan role kesiswaan --}}
+        <div style="margin-top: 0.8rem; display: flex; justify-content: center;">
+          <a href="{{ route('buku-panduan', ['role' => 'kesiswaan']) }}" target="_blank" rel="noopener noreferrer"
+             style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,219,254,0.55); background: rgba(255,255,255,0.2); color: #eff6ff; font-size: 12px; font-weight: 700; text-decoration: none; line-height: 1.2; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+            Lihat Buku Panduan
+          </a>
+        </div>
       </div>
 
       {{-- Bottom decorative wave --}}
@@ -206,7 +219,6 @@
     </div>
   </div>
 
-  @include('components.pwa-install-banner')
   @include('components.login-slide-transition')
 
 </div>{{-- /.login-page --}}

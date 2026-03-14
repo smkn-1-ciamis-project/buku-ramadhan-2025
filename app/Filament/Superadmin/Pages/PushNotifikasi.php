@@ -18,7 +18,9 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
+use Throwable;
 
 class PushNotifikasi extends Page implements HasForms, HasTable
 {
@@ -47,6 +49,7 @@ class PushNotifikasi extends Page implements HasForms, HasTable
     {
         $this->form->fill([
             'target'   => 'all',
+            'kelas_targets' => [],
             'template' => null,
             'title'    => '',
             'body'     => '',
@@ -72,6 +75,7 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                                     'siswa'     => 'Hanya Siswa',
                                     'guru'      => 'Hanya Guru',
                                     'kesiswaan' => 'Hanya Kesiswaan',
+                                    'kelas_multi' => 'Beberapa Kelas (Multi-Select)',
                                 ];
                                 $kelas = Kelas::orderBy('nama')->pluck('nama', 'id')
                                     ->mapWithKeys(fn($nama, $id) => ["kelas_{$id}" => "Kelas: {$nama}"])
@@ -82,7 +86,20 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                             ->required()
                             ->live()
                             ->searchable()
-                            ->afterStateUpdated(fn(Forms\Set $set) => $set('template', null)),
+                            ->afterStateUpdated(function (Forms\Set $set): void {
+                                $set('template', null);
+                                $set('kelas_targets', []);
+                            }),
+
+                        Forms\Components\Select::make('kelas_targets')
+                            ->label('Pilih Kelas (bisa lebih dari 1)')
+                            ->options(fn() => Kelas::orderBy('nama')->pluck('nama', 'id')->toArray())
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->required(fn(Forms\Get $get) => $get('target') === 'kelas_multi')
+                            ->visible(fn(Forms\Get $get) => $get('target') === 'kelas_multi')
+                            ->helperText('Notifikasi akan dikirim ke seluruh siswa yang berlangganan notifikasi di kelas terpilih.'),
 
                         Forms\Components\Select::make('template')
                             ->label('Template Pesan')
@@ -168,6 +185,9 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                             ->native(false)
                             ->seconds(false)
                             ->minDate(now())
+                            ->extraFieldWrapperAttributes([
+                                'style' => 'max-width: 620px;',
+                            ])
                             ->helperText('Notifikasi akan dikirim otomatis pada waktu yang dijadwalkan.')
                             ->required(fn(Forms\Get $get) => $get('send_mode') === 'scheduled')
                             ->visible(fn(Forms\Get $get) => $get('send_mode') === 'scheduled'),
@@ -261,8 +281,18 @@ class PushNotifikasi extends Page implements HasForms, HasTable
         $title    = $data['title'];
         $body     = $data['body'];
         $target   = $data['target'] ?? 'all';
+        $resolvedTarget = $this->resolveTargetValue($target, $data['kelas_targets'] ?? []);
         $url      = $data['url'] ?: '/';
         $sendMode = $data['send_mode'] ?? 'now';
+
+        if ($resolvedTarget === null) {
+            Notification::make()
+                ->title('Pilih kelas terlebih dahulu')
+                ->body('Untuk target Beberapa Kelas, Anda wajib memilih minimal 1 kelas.')
+                ->warning()
+                ->send();
+            return;
+        }
 
         if ($sendMode === 'scheduled') {
             $scheduledAt = $data['scheduled_at'];
@@ -271,7 +301,7 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                 'title'        => $title,
                 'body'         => $body,
                 'url'          => $url,
-                'target'       => $target,
+                'target'       => $resolvedTarget,
                 'scheduled_at' => $scheduledAt,
                 'status'       => 'scheduled',
                 'sent_count'   => 0,
@@ -289,7 +319,23 @@ class PushNotifikasi extends Page implements HasForms, HasTable
             return;
         }
 
-        $result = PushNotificationService::send($title, $body, $target, $url);
+        try {
+            $result = PushNotificationService::send($title, $body, $resolvedTarget, $url);
+        } catch (Throwable $e) {
+            Log::error('Push notifikasi gagal dikirim dari panel superadmin', [
+                'error' => $e->getMessage(),
+                'target' => $resolvedTarget,
+                'user_id' => Auth::id(),
+            ]);
+
+            Notification::make()
+                ->title('Gagal mengirim push notifikasi')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         if ($result['sent'] === 0 && $result['failed'] === 0) {
             Notification::make()
@@ -352,6 +398,7 @@ class PushNotifikasi extends Page implements HasForms, HasTable
     {
         $this->form->fill([
             'target'       => 'all',
+            'kelas_targets' => [],
             'template'     => null,
             'title'        => '',
             'body'         => '',
@@ -359,5 +406,30 @@ class PushNotifikasi extends Page implements HasForms, HasTable
             'send_mode'    => 'now',
             'scheduled_at' => null,
         ]);
+    }
+
+    /**
+     * @param mixed $kelasTargets
+     */
+    private function resolveTargetValue(string $target, mixed $kelasTargets): ?string
+    {
+        if ($target !== 'kelas_multi') {
+            return $target;
+        }
+
+        if (! is_array($kelasTargets)) {
+            return null;
+        }
+
+        $ids = array_values(array_unique(array_filter(array_map(
+            static fn($id) => trim((string) $id),
+            $kelasTargets
+        ))));
+
+        if (empty($ids)) {
+            return null;
+        }
+
+        return 'kelas_multi:' . implode(',', $ids);
     }
 }
