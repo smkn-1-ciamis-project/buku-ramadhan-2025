@@ -196,13 +196,13 @@ class PushNotifikasi extends Page implements HasForms, HasTable
                 Tables\Columns\TextColumn::make('user.role_user.name')
                     ->label('Role')
                     ->badge()
-                    ->color(fn(string $state): string => match (strtolower(trim($state))) {
+                    ->color(fn(?string $state): string => match (strtolower(trim($state ?? ''))) {
                         'siswa' => 'success',
                         'guru' => 'warning',
                         'kesiswaan', 'kepala sekolah' => 'danger',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable(false),
                 Tables\Columns\TextColumn::make('user.nisn')
                     ->label('NISN')
                     ->placeholder('-')
