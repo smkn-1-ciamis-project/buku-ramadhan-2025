@@ -18,9 +18,12 @@
         pw: $wire.entangle('new_password'),
         pwConf: $wire.entangle('new_password_confirmation'),
         nisn: '{{ auth()->user()?->nisn ?? '' }}',
-        get minLen() { return this.pw.length >= 8 },
-        get match() { return this.pw.length > 0 && this.pw === this.pwConf },
-        get notNisn() { return this.nisn === '' || this.pw !== this.nisn }
+        get pwText() { return String(this.pw ?? '') },
+        get pwConfText() { return String(this.pwConf ?? '') },
+        get nisnText() { return String(this.nisn ?? '') },
+        get minLen() { return this.pwText.length >= 8 },
+        get match() { return this.pwText.length > 0 && this.pwText === this.pwConfText },
+        get notNisn() { return this.nisnText === '' || this.pwText !== this.nisnText }
     }" @click.outside="">
 
         {{-- Header --}}
@@ -54,7 +57,7 @@
                         <input
                             id="pcm-pw"
                             :type="showPw ? 'text' : 'password'"
-                            wire:model.live="new_password"
+                            x-model="pw"
                             placeholder="Minimal 8 karakter"
                             autocomplete="new-password"
                         />
@@ -73,7 +76,7 @@
                         <input
                             id="pcm-pw-conf"
                             :type="showPwConf ? 'text' : 'password'"
-                            wire:model.live="new_password_confirmation"
+                            x-model="pwConf"
                             placeholder="Ketik ulang password baru"
                             autocomplete="new-password"
                         />
@@ -89,7 +92,7 @@
                 <ul class="pcm-reqs">
                     <li :class="{ 'met': minLen }"><span class="req-dot"></span> Minimal 8 karakter</li>
                     <li :class="{ 'met': match }"><span class="req-dot"></span> Password & konfirmasi cocok</li>
-                    <li :class="{ 'met': notNisn, 'fail': !notNisn && pw.length > 0 }"><span class="req-dot"></span> Password tidak boleh sama dengan NISN</li>
+                    <li :class="{ 'met': notNisn, 'fail': !notNisn && pwText.length > 0 }"><span class="req-dot"></span> Password tidak boleh sama dengan NISN</li>
                 </ul>
 
                 {{-- Submit --}}
