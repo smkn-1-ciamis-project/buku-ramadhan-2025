@@ -2,8 +2,36 @@
     <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     {{-- Kill ALL Filament wrapper spacing --}}
     <style>
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        html.fi,
+        html.fi body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
         html.fi .fi-main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         html.fi .fi-main-ctn { padding: 0 !important; margin: 0 !important; }
+        html.fi .fi-layout { padding: 0 !important; margin: 0 !important; }
+        html.fi .fi-layout,
+        html.fi .fi-layout-main,
+        html.fi .fi-layout-main-ctn {
+            padding: 0 !important;
+            margin: 0 !important;
+            top: 0 !important;
+        }
+        html.fi .fi-main,
+        html.fi .fi-main-ctn,
+        html.fi .fi-page,
+        html.fi .fi-page > section {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
         html.fi .fi-page { padding: 0 !important; margin: 0 !important; }
         html.fi .fi-page > section,
         html.fi section.py-8,

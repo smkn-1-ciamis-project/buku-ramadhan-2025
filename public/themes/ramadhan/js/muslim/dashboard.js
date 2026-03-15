@@ -137,6 +137,7 @@ function ramadhanDashboard() {
         formSaving: false,
         submittedDays: [],
         submissionStatuses: {},
+        topGapFixBound: false,
         formData: {
             puasa: "",
             sholat_dzuhur_j: false,
@@ -174,6 +175,8 @@ function ramadhanDashboard() {
             ringkasan_ceramah: "",
         },
         init() {
+            this.bindTopGapFix();
+            this.fixTopGap();
             this.setDates();
             this.calculateRamadhanDay();
             this.formDay = this.ramadhanDay;
@@ -190,6 +193,32 @@ function ramadhanDashboard() {
             this.startClock();
             this.initCompass();
             this.loadCheckins();
+            this.fixTopGap();
+            setTimeout(() => this.fixTopGap(), 120);
+            setTimeout(() => this.fixTopGap(), 400);
+        },
+        bindTopGapFix() {
+            if (this.topGapFixBound) return;
+
+            const rerunFix = () => this.fixTopGap();
+            window.addEventListener("resize", rerunFix, { passive: true });
+            window.addEventListener("orientationchange", rerunFix, {
+                passive: true,
+            });
+            document.addEventListener("livewire:navigated", rerunFix);
+
+            this.topGapFixBound = true;
+        },
+        fixTopGap() {
+            const app = document.querySelector(".ramadhan-app");
+            if (!app) return;
+
+            app.style.marginTop = "0px";
+            const topOffset = Math.round(app.getBoundingClientRect().top);
+
+            if (topOffset > 0) {
+                app.style.marginTop = `-${topOffset}px`;
+            }
         },
         loadIndonesiaLocations() {
             this.locationsLoading = true;

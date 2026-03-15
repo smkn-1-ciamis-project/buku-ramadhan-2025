@@ -3,7 +3,6 @@
 namespace App\Filament\Superadmin\Pages;
 
 use App\Models\AppSetting;
-use App\Models\RoleUser;
 use App\Support\RoleGuideDefaults;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -28,7 +27,7 @@ class SettingBukuPanduan extends Page implements HasForms
 
   public static function shouldRegisterNavigation(): bool
   {
-    return RoleUser::checkNav('sa_setting_formulir');
+    return true;
   }
 
   public function mount(): void
