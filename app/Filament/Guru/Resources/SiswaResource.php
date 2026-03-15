@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class SiswaResource extends Resource
 {
@@ -217,7 +218,23 @@ class SiswaResource extends Resource
                 ->send();
             }),
           Tables\Actions\DeleteAction::make()
-            ->before(function (User $record) {
+            ->form([
+              Forms\Components\TextInput::make('current_password')
+                ->label('Password Akun Anda')
+                ->password()
+                ->revealable()
+                ->required()
+                ->maxLength(255)
+                ->helperText('Masukkan password akun guru Anda untuk konfirmasi penghapusan.'),
+            ])
+            ->before(function (User $record, array $data): void {
+              $authUser = Auth::user();
+              if (!$authUser || !Hash::check((string) ($data['current_password'] ?? ''), (string) $authUser->password)) {
+                throw ValidationException::withMessages([
+                  'current_password' => 'Password akun Anda salah.',
+                ]);
+              }
+
               ActivityLog::log('delete_siswa', Auth::user(), [
                 'description' => 'Menghapus siswa ' . $record->name . ' (NISN: ' . $record->nisn . ')',
                 'target_id' => $record->id,
@@ -227,7 +244,7 @@ class SiswaResource extends Resource
             })
             ->requiresConfirmation()
             ->modalHeading('Hapus Siswa')
-            ->modalDescription('Apakah Anda yakin ingin menghapus siswa ini? Data yang sudah dihapus tidak dapat dikembalikan.')
+            ->modalDescription('Apakah Anda yakin ingin menghapus siswa ini? Data yang sudah dihapus tidak dapat dikembalikan. Masukkan password akun Anda untuk melanjutkan.')
             ->modalSubmitActionLabel('Ya, Hapus'),
         ])
           ->icon('heroicon-m-ellipsis-vertical')
@@ -236,7 +253,23 @@ class SiswaResource extends Resource
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make()
-            ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+            ->form([
+              Forms\Components\TextInput::make('current_password')
+                ->label('Password Akun Anda')
+                ->password()
+                ->revealable()
+                ->required()
+                ->maxLength(255)
+                ->helperText('Masukkan password akun guru Anda untuk konfirmasi hapus massal.'),
+            ])
+            ->before(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+              $authUser = Auth::user();
+              if (!$authUser || !Hash::check((string) ($data['current_password'] ?? ''), (string) $authUser->password)) {
+                throw ValidationException::withMessages([
+                  'current_password' => 'Password akun Anda salah.',
+                ]);
+              }
+
               ActivityLog::log('bulk_delete_siswa', Auth::user(), [
                 'description' => 'Menghapus massal ' . $records->count() . ' siswa',
                 'count' => $records->count(),
@@ -245,7 +278,7 @@ class SiswaResource extends Resource
             })
             ->requiresConfirmation()
             ->modalHeading('Hapus Siswa Terpilih')
-            ->modalDescription('Apakah Anda yakin ingin menghapus semua siswa yang dipilih?')
+            ->modalDescription('Apakah Anda yakin ingin menghapus semua siswa yang dipilih? Masukkan password akun Anda untuk melanjutkan.')
             ->modalSubmitActionLabel('Ya, Hapus Semua'),
         ]),
       ]);

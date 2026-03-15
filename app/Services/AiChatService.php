@@ -73,6 +73,7 @@ class AiChatService
         if ($userId) {
             $ownReply = $this->findOwnHistory($userId, $message);
             if ($ownReply) {
+                $ownReply = $this->cleanReply($ownReply);
                 Log::info('[AiChat] Own history hit');
                 return [
                     'reply' => $ownReply,
@@ -89,6 +90,7 @@ class AiChatService
             $cacheKey = "faq_{$religion}_{$hash}";
             $cachedAnswer = Cache::get($cacheKey);
             if ($cachedAnswer) {
+                $cachedAnswer = $this->cleanReply((string) $cachedAnswer);
                 FaqCache::where('religion', $religion)
                     ->where('question_hash', $hash)
                     ->increment('hit_count');
@@ -108,12 +110,13 @@ class AiChatService
         // Layer 2: MySQL FAQ Cache (exact hash + fuzzy similarity)
         $mysqlHit = $this->findMysqlCache($normalized, $hash, $religion);
         if ($mysqlHit) {
+            $cleanedAnswer = $this->cleanReply((string) $mysqlHit['answer']);
             try {
-                Cache::put("faq_{$religion}_{$hash}", $mysqlHit['answer'], 86400);
+                Cache::put("faq_{$religion}_{$hash}", $cleanedAnswer, 86400);
             } catch (\Exception $e) {
             }
             return [
-                'reply' => $mysqlHit['answer'],
+                'reply' => $cleanedAnswer,
                 'provider' => 'cache',
                 'success' => true,
                 'is_cached' => true,
@@ -512,7 +515,12 @@ class AiChatService
 
     private function getSystemPrompt(string $religion): string
     {
-        return $this->systemPrompts[$religion] ?? $this->systemPrompts['islam'];
+        $basePrompt = $this->systemPrompts[$religion] ?? $this->systemPrompts['islam'];
+
+        return $basePrompt
+            . ' Instruksi tambahan wajib: Jangan awali jawaban dengan kata "Bismillah".'
+            . ' Jangan menuliskan sisa kuota atau info reset kuota di isi jawaban.'
+            . ' Jangan berikan saran atau rekomendasi pertanyaan lanjutan.';
     }
 
     public function normalizeReligion(string $agama): string
@@ -585,6 +593,19 @@ class AiChatService
         if ($reply === '' && $thinkContent !== '') {
             return $thinkContent;
         }
+
+        // Remove optional opening religious preface for consistency.
+        $reply = preg_replace('/^\s*(?:bismillah(?:irrahmanirrahim)?[\s,.:;!-]*)+/iu', '', $reply);
+
+        // Remove quota-related lines to avoid mismatch with UI counter.
+        $reply = preg_replace('/\bSisa\s+(?:kuota|pertanyaanmu)[^\n.!?]*(?:[.!?]|$)/iu', '', $reply);
+        $reply = preg_replace('/\bkuota\s+akan\s+reset[^\n.!?]*(?:[.!?]|$)/iu', '', $reply);
+
+        // Remove common "follow-up suggestion" lines.
+        $reply = preg_replace('/\b(?:Saran\s+pertanyaan\s+lanjutan|Pertanyaan\s+lanjutan|Kamu\s+juga\s+bisa\s+bertanya|Mau\s+saya\s+jelaskan)\b[^\n.!?]*(?:[.!?]|$)/iu', '', $reply);
+
+        $reply = preg_replace("/\n{3,}/", "\n\n", $reply);
+        $reply = trim($reply);
 
         return $reply;
     }

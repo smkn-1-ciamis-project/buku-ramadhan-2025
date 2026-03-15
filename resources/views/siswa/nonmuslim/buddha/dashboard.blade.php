@@ -1,4 +1,4 @@
-<x-filament-panels::page>
+﻿<x-filament-panels::page>
     <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     <div x-data="buddhaDashboard()" x-init="init()" class="ramadhan-app" data-formulir-url="{{ \App\Filament\Siswa\Pages\NonMuslim\Buddha\FormulirHarian::getUrl() }}">
         {{-- Kill ALL Filament wrapper spacing --}}
@@ -21,7 +21,7 @@
             {{-- Buddhist-themed decorations --}}
             <div class="absolute inset-0 overflow-hidden pointer-events-none" style="border-radius: 0 0 2rem 2rem;">
 
-                {{-- ★ Dharma wheel (Dharmachakra) top-right --}}
+                {{-- â˜… Dharma wheel (Dharmachakra) top-right --}}
                 <div class="islamic-deco islamic-deco-moon" style="top:6%; right:4%;">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Outer rim --}}
@@ -52,7 +52,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Stars scattered --}}
+                {{-- â˜… Stars scattered --}}
                 <div class="islamic-deco islamic-deco-star1" style="top:10%; right:20%;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="white" opacity="0.4">
                         <polygon points="12,2 14.9,9.2 22.6,9.2 16.3,13.8 18.6,21 12,16.7 5.4,21 7.7,13.8 1.4,9.2 9.1,9.2"/>
@@ -79,7 +79,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Vihara (Buddhist temple) silhouette bottom-left --}}
+                {{-- â˜… Vihara (Buddhist temple) silhouette bottom-left --}}
                 <div class="islamic-deco islamic-deco-mosque" style="bottom:0; left:0;">
                     <svg width="200" height="120" viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Central spire (pranala) --}}
@@ -111,7 +111,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Stupa silhouette bottom-right --}}
+                {{-- â˜… Stupa silhouette bottom-right --}}
                 <div class="islamic-deco islamic-deco-mosque2" style="bottom:0; right:0;">
                     <svg width="180" height="110" viewBox="0 0 220 130" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Stupa finial (chattra/umbrella) --}}
@@ -139,7 +139,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Endless knot mandala pattern top-left --}}
+                {{-- â˜… Endless knot mandala pattern top-left --}}
                 <div class="islamic-deco islamic-deco-geo" style="top:-20px; left:-20px;">
                     <svg width="120" height="120" viewBox="0 0 100 100" fill="none" opacity="0.06">
                         {{-- Outer circle --}}
@@ -158,7 +158,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Lotus flower floating left (instead of dove) --}}
+                {{-- â˜… Lotus flower floating left (instead of dove) --}}
                 <div class="islamic-deco islamic-deco-lantern" style="top:8%; left:20%;">
                     <svg width="48" height="40" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Center petal --}}
@@ -179,7 +179,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Meditation Buddha silhouette floating right-center (instead of bible) --}}
+                {{-- â˜… Meditation Buddha silhouette floating right-center (instead of bible) --}}
                 <div style="position:absolute; top:35%; right:6%; animation: float-slow 6s ease-in-out infinite;">
                     <svg width="44" height="44" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Halo / aura --}}
@@ -205,7 +205,7 @@
                 </div>
                 </div>
 
-                {{-- ★ Bodhi tree leaf floating (instead of candle) --}}
+                {{-- â˜… Bodhi tree leaf floating (instead of candle) --}}
                 <div style="position:absolute; bottom:30%; left:8%; animation: float-slow 5s ease-in-out infinite; animation-delay: 1.5s;">
                     <svg width="28" height="44" viewBox="0 0 34 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Bodhi leaf shape (heart-shaped with elongated tip) --}}
@@ -224,7 +224,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Small lotus accent (instead of music notes) --}}
+                {{-- â˜… Small lotus accent (instead of music notes) --}}
                 <div style="position:absolute; top:25%; left:35%; animation: float-slow 7s ease-in-out infinite; animation-delay: 2s;">
                     <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {{-- Simple lotus top view --}}
@@ -238,7 +238,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Small dharma wheel accent mid-right --}}
+                {{-- â˜… Small dharma wheel accent mid-right --}}
                 <div style="position:absolute; top:45%; right:16%; animation: float-slow 5.5s ease-in-out infinite; animation-delay: 0.8s;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="10" stroke="white" stroke-width="0.8" fill="none" opacity="0.1"/>
@@ -250,7 +250,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Om/Dharma symbol (peace) --}}
+                {{-- â˜… Om/Dharma symbol (peace) --}}
                 <div style="position:absolute; top:50%; left:28%; animation: float-slow 6.5s ease-in-out infinite; animation-delay: 3s;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="white" opacity="0.08">
                         {{-- Simplified lotus bud --}}
@@ -258,7 +258,7 @@
                     </svg>
                 </div>
 
-                {{-- ★ Twinkle dots --}}
+                {{-- â˜… Twinkle dots --}}
                 <div class="absolute top-12 right-16 w-2 h-2 bg-white/20 rounded-full islamic-deco-twinkle" style="animation-delay:0.3s"></div>
                 <div class="absolute top-24 right-32 w-1.5 h-1.5 bg-white/15 rounded-full islamic-deco-twinkle" style="animation-delay:1.1s"></div>
                 <div class="absolute bottom-32 left-1/4 w-1 h-1 bg-white/20 rounded-full islamic-deco-twinkle" style="animation-delay:0.7s"></div>
@@ -306,7 +306,7 @@
                     <div class="prayer-row-section">
                         <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding:0.75rem 1rem; background:rgba(255,255,255,0.15); border-radius:0.75rem; backdrop-filter:blur(8px);">
                             <svg style="width:1.25rem;height:1.25rem;color:#fbbf24;flex-shrink:0;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                            <span style="color:#fff; font-size:0.75rem; font-weight:600;">Hari Minggu — Waktunya bermeditasi dan berbuat kebajikan 🙏</span>
+                            <span style="color:#fff; font-size:0.75rem; font-weight:600;">Hari Minggu  -  Waktunya bermeditasi dan berbuat kebajikan 🙏</span>
                         </div>
                     </div>
                 </template>
@@ -822,7 +822,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v2.8.2 — Lihat pembaruan</p>
+                                        <p class="akun-menu-sub">Calakan v2.8.5  -  Lihat pembaruan</p>
                                     </div>
                                     <svg style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                                 </button>
@@ -865,29 +865,29 @@
                                         <h3 class="logout-modal-title">Calakan</h3>
                                         <p class="logout-modal-text" style="margin-bottom:10px;">Aplikasi Buku Ramadhan Digital<br><strong>SMKN 1 Ciamis</strong></p>
                                         <div style="display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 14px;font-size:0.78rem;font-weight:700;color:#1d4ed8;margin-bottom:18px;">
-                                            Versi 2.8.2 — 7 Maret 2026
+                                            Versi 2.8.5  -  14 Maret 2026
                                         </div>
                                         <div style="text-align:left;width:100%;">
                                             <div style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e5e7eb;">Riwayat Pembaruan</div>
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.2</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">7 Maret 2026</span>
+                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.5</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">14 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
-                                                    <li>Penambahan fitur Asisten AI keagamaan</li>
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Login antar portal dipermudah (Siswa, Guru, Kesiswaan)</li>
+                                                    <li>Pengingat instal aplikasi (PWA) dibuat lebih konsisten</li>
+                                                    <li>Web Push Notification untuk siswa sudah aktif setelah izin browser diberikan</li>
+                                                    <li>Buku Panduan siswa diperbarui agar alur penggunaan lebih jelas</li>
                                                 </ul>
                                             </div>
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.7.5</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">6 Maret 2026</span>
+                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.2</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">7 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
-                                                    <li>Login antar portal sekarang lebih mudah, dari halaman login user bisa langsung pindah ke login Guru/Siswa/Kesiswaan tanpa mengetik link panjang</li>
-                                                    <li>Notifikasi instal aplikasi tetap diingatkan</li>
-                                                    <li>Banner install PWA terus muncul untuk user yang belum install/buka versi aplikasi</li>
-                                                    <li>Siswa bisa menerima Web Push Notification setelah izin notifikasi di browser diaktifkan</li>
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Penambahan fitur Asisten AI keagamaan</li>
                                                 </ul>
                                             </div>
                                             <div style="margin-bottom:14px;">
@@ -895,7 +895,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.6.2</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">3 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Al-Quran digital lengkap 114 surah dengan terjemahan</li>
                                                     <li>Pilihan 9 qari/pembaca Al-Quran favorit</li>
                                                     <li>Putar semua ayat otomatis, lanjut ke surah berikutnya otomatis</li>
@@ -910,7 +910,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.7</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">2 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Versi aplikasi bisa diklik, tampilkan riwayat pembaruan</li>
                                                     <li>Aplikasi lebih cepat dan responsif dari sebelumnya</li>
                                                     <li>Keamanan login semakin ditingkatkan</li>
@@ -922,7 +922,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.0</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">26 Februari 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Perbaikan tampilan dashboard di layar HP</li>
                                                     <li>Data & profil siswa lebih akurat</li>
                                                     <li>Berbagai perbaikan bug dan peningkatan stabilitas</li>
@@ -933,7 +933,7 @@
                                                     <span style="background:#f3f4f6;color:#374151;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.0</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">22 Februari 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Peluncuran versi 2.0 Calakan</li>
                                                     <li>Jadwal sholat & waktu imsakiyah otomatis</li>
                                                     <li>Kuis & ayat Al-Quran harian</li>
@@ -1050,3 +1050,6 @@
 @push('scripts')
     <script src="{{ asset('themes/ramadhan/js/nonmuslim/buddha/dashboard.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/nonmuslim/buddha/dashboard.js')) }}" defer></script>
 @endpush
+
+
+

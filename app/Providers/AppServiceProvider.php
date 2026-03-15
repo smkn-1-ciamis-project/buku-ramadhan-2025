@@ -19,8 +19,16 @@ use App\Repositories\Eloquent\EloquentUserRepository;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Auth;
+use Filament\Actions\DeleteAction as PageDeleteAction;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use App\Listeners\AuthActivityLogger;
 
 class AppServiceProvider extends ServiceProvider
@@ -77,6 +85,53 @@ class AppServiceProvider extends ServiceProvider
                     'active_session_id' => null,
                     'session_login_at'  => null,
                 ]);
+            }
+        });
+
+        $applySuperadminDeletePassword = function ($action): void {
+            $action
+                ->form([
+                    TextInput::make('superadmin_password')
+                        ->label('Password Superadmin')
+                        ->password()
+                        ->revealable()
+                        ->required()
+                        ->maxLength(255)
+                        ->helperText('Masukkan password akun superadmin Anda untuk konfirmasi penghapusan.'),
+                ])
+                ->before(function (...$arguments): void {
+                    // Pastikan hanya berlaku di panel superadmin
+                    if (Filament::getCurrentPanel()?->getId() !== 'superadmin') {
+                        return;
+                    }
+
+                    $data = collect($arguments)->first(fn($arg) => is_array($arg)) ?? [];
+                    $password = (string) ($data['superadmin_password'] ?? '');
+
+                    $authUser = Auth::user();
+                    if (! $authUser || ! Hash::check($password, (string) $authUser->password)) {
+                        throw ValidationException::withMessages([
+                            'superadmin_password' => 'Password superadmin salah.',
+                        ]);
+                    }
+                });
+        };
+
+        TableDeleteAction::configureUsing(function (TableDeleteAction $action) use ($applySuperadminDeletePassword): void {
+            if (Filament::getCurrentPanel()?->getId() === 'superadmin') {
+                $applySuperadminDeletePassword($action);
+            }
+        });
+
+        DeleteBulkAction::configureUsing(function (DeleteBulkAction $action) use ($applySuperadminDeletePassword): void {
+            if (Filament::getCurrentPanel()?->getId() === 'superadmin') {
+                $applySuperadminDeletePassword($action);
+            }
+        });
+
+        PageDeleteAction::configureUsing(function (PageDeleteAction $action) use ($applySuperadminDeletePassword): void {
+            if (Filament::getCurrentPanel()?->getId() === 'superadmin') {
+                $applySuperadminDeletePassword($action);
             }
         });
     }

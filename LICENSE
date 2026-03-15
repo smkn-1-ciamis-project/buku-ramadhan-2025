@@ -1,29 +1,28 @@
 ================================================================================
-                        CALAKAN — SOFTWARE LICENSE
-          Catatan Amaliyah Kegiatan Ramadan | SMKN 1 Ciamis
+CALAKAN — SOFTWARE LICENSE
+Catatan Amaliyah Kegiatan Ramadan | SMKN 1 Ciamis
 ================================================================================
 
-Project   : Calakan (Buku Ramadhan Digital)
-Version   : 2.x and later
+Project : Calakan (Buku Ramadhan Digital)
+Version : 2.x and later
 Repository: https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025
-Website   : https://ramadhan.smkn1ciamis.id
+Website : https://ramadhan.smkn1ciamis.id
 
---------------------------------------------------------------------------------
-PART I — PRIMARY LICENSE (MIT)
---------------------------------------------------------------------------------
+---
+
+## PART I — PRIMARY LICENSE (MIT)
 
 MIT License
 
 Copyright (c) 2025-2026 SMKN 1 Ciamis
-              Jl. Dra. Hj. Rosmala Dewi No. 6, Ciamis, Jawa Barat, Indonesia
 
 Copyright (c) 2025-2026 Muhammad Fikri Haikal
-              <fikrihaikal170308@email.com>
-              GitHub: https://github.com/fikrihaikal17
+<fikrihaikal170308@email.com>
+GitHub: https://github.com/fikrihaikal17
 
 Copyright (c) 2025-2026 Galuh Surya Putra
-              <putragaluh28@email.com>
-              GitHub: https://github.com/Ptragaluhhh28
+<putragaluh28@email.com>
+GitHub: https://github.com/Ptragaluhhh28
 
 All rights reserved.
 
@@ -34,15 +33,15 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-  1. The above copyright notice and this permission notice shall be included
-     in all copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
 
-  2. Any distribution of modified versions of the Software must clearly
-     indicate that changes were made from the original.
+2. Any distribution of modified versions of the Software must clearly
+   indicate that changes were made from the original.
 
-  3. The name "Calakan", "SMKN 1 Ciamis", or the names of the contributors
-     may not be used to endorse or promote products derived from this Software
-     without specific prior written permission.
+3. The name "Calakan", "SMKN 1 Ciamis", or the names of the contributors
+   may not be used to endorse or promote products derived from this Software
+   without specific prior written permission.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -52,55 +51,57 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---------------------------------------------------------------------------------
-PART II — DEFINITIONS
---------------------------------------------------------------------------------
+---
 
-"Software"     : The Calakan application source code, configuration files,
-                 database migrations, Blade templates, JavaScript files, CSS,
-                 documentation, and all associated files in this repository.
+## PART II — DEFINITIONS
 
-"Contributor"  : Any individual or entity that has contributed code,
-                 documentation, design, or other materials to this project.
+"Software" : The Calakan application source code, configuration files,
+database migrations, Blade templates, JavaScript files, CSS,
+documentation, and all associated files in this repository.
+
+"Contributor" : Any individual or entity that has contributed code,
+documentation, design, or other materials to this project.
 
 "Distribution" : Any form of making the Software available to third parties,
-                 including but not limited to copying, packaging, deploying
-                 on servers, or incorporating into another product.
+including but not limited to copying, packaging, deploying
+on servers, or incorporating into another product.
 
 "Modification" : Any change to the Software, including additions, deletions,
-                 adaptations, translations, or derivative works.
+adaptations, translations, or derivative works.
 
-"School Data"  : Student personal information, attendance records, prayer
-                 check-in data, form submissions, and any other data processed
-                 by the Software that originates from SMKN 1 Ciamis users.
+"School Data" : Student personal information, attendance records, prayer
+check-in data, form submissions, and any other data processed
+by the Software that originates from SMKN 1 Ciamis users.
 
---------------------------------------------------------------------------------
-PART III — SCOPE & INTENDED USE
---------------------------------------------------------------------------------
+---
+
+## PART III — SCOPE & INTENDED USE
 
 This Software was originally developed for internal use at SMKN 1 Ciamis
 for the purpose of digitizing the Ramadhan activity book (Buku Ramadhan)
 program for the 2025/2026 academic year.
 
 You MAY:
-  - Use this Software as the basis for a similar program at another school
-    or institution, provided attribution is given.
-  - Fork and adapt this Software for educational, non-commercial purposes.
-  - Study the source code for learning purposes.
-  - Contribute bug fixes and improvements via pull request.
+
+- Use this Software as the basis for a similar program at another school
+  or institution, provided attribution is given.
+- Fork and adapt this Software for educational, non-commercial purposes.
+- Study the source code for learning purposes.
+- Contribute bug fixes and improvements via pull request.
 
 You MAY NOT:
-  - Sell this Software or any direct derivative as a commercial product
-    without explicit written permission from the copyright holders.
-  - Remove or obscure the copyright notices from any copies.
-  - Use SMKN 1 Ciamis branding, logo, or name to imply endorsement of a
-    derivative product without prior written consent.
-  - Access, export, or redistribute actual School Data (student records,
-    personal information) from any deployed instance of this Software.
 
---------------------------------------------------------------------------------
-PART IV — DATA PRIVACY & STUDENT DATA PROTECTION
---------------------------------------------------------------------------------
+- Sell this Software or any direct derivative as a commercial product
+  without explicit written permission from the copyright holders.
+- Remove or obscure the copyright notices from any copies.
+- Use SMKN 1 Ciamis branding, logo, or name to imply endorsement of a
+  derivative product without prior written consent.
+- Access, export, or redistribute actual School Data (student records,
+  personal information) from any deployed instance of this Software.
+
+---
+
+## PART IV — DATA PRIVACY & STUDENT DATA PROTECTION
 
 This Software processes personal data of students including but not limited to:
 names, student ID numbers (NISN), class assignments, gender, religion, prayer
@@ -109,57 +110,63 @@ records, and daily Ramadhan activity submissions.
 All school administrators and parties deploying this Software are responsible
 for:
 
-  1. Complying with applicable data protection laws in Indonesia, including
-     UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (Personal Data
-     Protection Law).
+1. Complying with applicable data protection laws in Indonesia, including
+   UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (Personal Data
+   Protection Law).
 
-  2. Ensuring that student data is not shared with unauthorized third parties.
+2. Ensuring that student data is not shared with unauthorized third parties.
 
-  3. Implementing appropriate security measures for the deployed instance,
-     including HTTPS, strong authentication, and regular backups.
+3. Implementing appropriate security measures for the deployed instance,
+   including HTTPS, strong authentication, and regular backups.
 
-  4. Obtaining necessary consent from students and/or guardians for the
-     collection of personal data where required by law.
+4. Obtaining necessary consent from students and/or guardians for the
+   collection of personal data where required by law.
 
-  5. Providing users with the ability to request access to, correction of,
-     or deletion of their personal data as mandated by applicable law.
+5. Providing users with the ability to request access to, correction of,
+   or deletion of their personal data as mandated by applicable law.
 
 The authors and copyright holders accept NO liability for improper handling
 of personal data by parties deploying this Software.
 
---------------------------------------------------------------------------------
-PART V — THIRD-PARTY COMPONENTS AND LICENSES
---------------------------------------------------------------------------------
+---
+
+## PART V — THIRD-PARTY COMPONENTS AND LICENSES
 
 This Software incorporates third-party open-source components. Each component
 is governed by its own license. By using this Software you agree to comply
 with those licenses as well.
 
-  COMPONENT                          LICENSE      SOURCE
-  ---------------------------------------------------------------------------
-  Laravel Framework (^12.0)          MIT          https://laravel.com
-  Filament (^3.2)                    MIT          https://filamentphp.com
-  Livewire                           MIT          https://livewire.laravel.com
-  Alpine.js                          MIT          https://alpinejs.dev
-  Tailwind CSS                       MIT          https://tailwindcss.com
-  Laravel Sanctum (^4.0)             MIT          https://laravel.com/docs/sanctum
-  Laravel UI (^4.5)                  MIT          https://github.com/laravel/ui
-  Predis (^3.4)                      MIT          https://github.com/predis/predis
-  barryvdh/laravel-dompdf (^3.1)     LGPL-2.1     https://github.com/barryvdh/laravel-dompdf
-  phpoffice/phpspreadsheet (^5.4)    MIT          https://phpspreadsheet.readthedocs.io
-  fakerphp/faker                     MIT          https://fakerphp.github.io
-  nunomaduro/collision               MIT          https://github.com/nunomaduro/collision
-  spatie/laravel-ignition            MIT          https://github.com/spatie/laravel-ignition
-  ryangjchandler/blade-capture-pro   MIT          https://github.com/ryangjchandler/blade-capture-pro
-  ---------------------------------------------------------------------------
+COMPONENT LICENSE SOURCE
 
-  External APIs (runtime dependencies, not bundled):
-  ---------------------------------------------------------------------------
-  Al-Quran Cloud API   Public/Free  https://alquran.cloud/api
-  MyQuran API          Public/Free  https://api.myquran.com
-  Prayer Times API     Public/Free  (configurable via app settings)
-  Qibla Direction API  Public/Free  (configurable via app settings)
-  ---------------------------------------------------------------------------
+---
+
+Laravel Framework (^12.0) MIT https://laravel.com
+Filament (^3.2) MIT https://filamentphp.com
+Livewire MIT https://livewire.laravel.com
+Alpine.js MIT https://alpinejs.dev
+Tailwind CSS MIT https://tailwindcss.com
+Laravel Sanctum (^4.0) MIT https://laravel.com/docs/sanctum
+Laravel UI (^4.5) MIT https://github.com/laravel/ui
+Predis (^3.4) MIT https://github.com/predis/predis
+barryvdh/laravel-dompdf (^3.1) LGPL-2.1 https://github.com/barryvdh/laravel-dompdf
+phpoffice/phpspreadsheet (^5.4) MIT https://phpspreadsheet.readthedocs.io
+fakerphp/faker MIT https://fakerphp.github.io
+nunomaduro/collision MIT https://github.com/nunomaduro/collision
+spatie/laravel-ignition MIT https://github.com/spatie/laravel-ignition
+ryangjchandler/blade-capture-pro MIT https://github.com/ryangjchandler/blade-capture-pro
+
+---
+
+External APIs (runtime dependencies, not bundled):
+
+---
+
+Al-Quran Cloud API Public/Free https://alquran.cloud/api
+MyQuran API Public/Free https://api.myquran.com
+Prayer Times API Public/Free (configurable via app settings)
+Qibla Direction API Public/Free (configurable via app settings)
+
+---
 
 Full license texts for each package dependency are available in the
 vendor/ directory of this repository.
@@ -168,97 +175,97 @@ The Software depends on external APIs operated by third-party providers.
 The authors make no guarantees about the availability, accuracy, or continuity
 of those third-party services.
 
---------------------------------------------------------------------------------
-PART VI — CONTRIBUTION LICENSE AGREEMENT
---------------------------------------------------------------------------------
+---
+
+## PART VI — CONTRIBUTION LICENSE AGREEMENT
 
 By submitting a contribution (pull request, patch, issue, or otherwise) to
 this project, you agree to the following terms:
 
-  1. You grant the copyright holders a perpetual, worldwide, non-exclusive,
-     royalty-free license to use, reproduce, modify, and distribute your
-     contribution as part of this Software.
+1. You grant the copyright holders a perpetual, worldwide, non-exclusive,
+   royalty-free license to use, reproduce, modify, and distribute your
+   contribution as part of this Software.
 
-  2. You confirm that you have the right to grant the above license — i.e.,
-     your contribution is your original work or you have the necessary rights
-     to submit it under these terms.
+2. You confirm that you have the right to grant the above license — i.e.,
+   your contribution is your original work or you have the necessary rights
+   to submit it under these terms.
 
-  3. You understand that your contribution may be distributed under the MIT
-     License as stated in this file.
+3. You understand that your contribution may be distributed under the MIT
+   License as stated in this file.
 
-  4. You confirm that your contribution does not knowingly include malicious
-     code, backdoors, or any security vulnerabilities introduced intentionally.
+4. You confirm that your contribution does not knowingly include malicious
+   code, backdoors, or any security vulnerabilities introduced intentionally.
 
---------------------------------------------------------------------------------
-PART VII — DISCLAIMER & LIMITATION OF LIABILITY
---------------------------------------------------------------------------------
+---
+
+## PART VII — DISCLAIMER & LIMITATION OF LIABILITY
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
 
-  - THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHORS DISCLAIM ALL WARRANTIES,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
-    NON-INFRINGEMENT.
+- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHORS DISCLAIM ALL WARRANTIES,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+  NON-INFRINGEMENT.
 
-  - IN NO EVENT SHALL THE AUTHORS, COPYRIGHT HOLDERS, CONTRIBUTORS, OR SMKN 1
-    CIAMIS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-    OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA, OR PROFITS, OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-    THE POSSIBILITY OF SUCH DAMAGE.
+- IN NO EVENT SHALL THE AUTHORS, COPYRIGHT HOLDERS, CONTRIBUTORS, OR SMKN 1
+  CIAMIS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+  OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA, OR PROFITS, OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
 
-  - THE AUTHORS DO NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS,
-    OPERATE WITHOUT INTERRUPTION, OR BE ERROR-FREE.
+- THE AUTHORS DO NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS,
+  OPERATE WITHOUT INTERRUPTION, OR BE ERROR-FREE.
 
---------------------------------------------------------------------------------
-PART VIII — ATTRIBUTION REQUIREMENTS
---------------------------------------------------------------------------------
+---
+
+## PART VIII — ATTRIBUTION REQUIREMENTS
 
 If you use, adapt, deploy, or redistribute this Software or any substantial
 portion of it, you must:
 
-  1. Retain all copyright notices in the source code and documentation.
+1. Retain all copyright notices in the source code and documentation.
 
-  2. Provide clear attribution to the original project in any user-facing
-     interface or documentation. The following attribution text is suggested:
+2. Provide clear attribution to the original project in any user-facing
+   interface or documentation. The following attribution text is suggested:
 
-       "Based on Calakan by SMKN 1 Ciamis
-        https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025"
+    "Based on Calakan by SMKN 1 Ciamis
+    https://github.com/smkn-1-ciamis-project/buku-ramadhan-2025"
 
-  3. Not misrepresent the origin of the Software or claim it as entirely
-     your own original work.
+3. Not misrepresent the origin of the Software or claim it as entirely
+   your own original work.
 
-  4. Include a copy of this license file (or a link to it) in any distribution.
+4. Include a copy of this license file (or a link to it) in any distribution.
 
---------------------------------------------------------------------------------
-PART IX — GOVERNING LAW
---------------------------------------------------------------------------------
+---
+
+## PART IX — GOVERNING LAW
 
 This license shall be governed by and construed in accordance with the laws
 of the Republic of Indonesia. Any disputes arising from the use of this
 Software shall be subject to the jurisdiction of the courts of Indonesia.
 
---------------------------------------------------------------------------------
-PART X — CONTACT & REPORTING
---------------------------------------------------------------------------------
+---
+
+## PART X — CONTACT & REPORTING
 
 For licensing inquiries, permissions beyond the scope of this license,
 or to report a security vulnerability:
 
-  Primary Developer  : Muhammad Fikri Haikal
-  Email              : fikrihaikal170308@email.com
-  GitHub             : https://github.com/fikrihaikal17
+Primary Developer : Muhammad Fikri Haikal
+Email : fikrihaikal170308@email.com
+Instagram : @fikrii_haikalll17
+GitHub : https://github.com/fikrihaikal17
 
-  Institution        : SMKN 1 Ciamis
-  Address            : Jl. Dra. Hj. Rosmala Dewi No. 6, Ciamis,
-                       Jawa Barat 46213, Indonesia
-  Website            : https://smkn1ciamis.sch.id
+Secondary Developer : Galuh Surya Putra
+Email : putragaluh28@email.com
+GitHub : https://github.com/Ptragaluhhh28
 
 Security vulnerabilities should be reported privately via email and NOT
 disclosed publicly until a fix has been released.
 
---------------------------------------------------------------------------------
-END OF LICENSE
-================================================================================
+---
+
+# END OF LICENSE

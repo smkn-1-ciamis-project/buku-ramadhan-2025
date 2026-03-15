@@ -1,4 +1,4 @@
-<x-filament-panels::page>
+﻿<x-filament-panels::page>
     <script>window.__siswaUserId = '{{ auth()->id() }}'; window.__appSettings = @json(\App\Models\AppSetting::getForFrontend());</script>
     {{-- Kill ALL Filament wrapper spacing --}}
     <style>
@@ -468,7 +468,7 @@
                                 </button>
                                 <div class="checkin-header-center">
                                         <span class="checkin-header-title">
-                                        Check-in Shalat — <span x-show="!checkinLoading" x-text="'Hari ke-' + checkinHariKe"></span><span x-show="checkinLoading" class="checkin-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle;border-width:2px;"></span>
+                                        Check-in Shalat  -  <span x-show="!checkinLoading" x-text="'Hari ke-' + checkinHariKe"></span><span x-show="checkinLoading" class="checkin-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle;border-width:2px;"></span>
                                     </span>
                                     <span class="checkin-header-date" x-show="!checkinLoading" x-text="checkinDateLabel"></span>
                                 </div>
@@ -508,8 +508,8 @@
                                                 <div class="checkin-item-info">
                                                     <span class="checkin-item-name" x-text="prayer.name"></span>
                                                     <span x-show="!isWajibLocked(prayer.id)" class="checkin-item-status" x-text="getCheckinLabel(prayer.id)" :style="'color:' + getCheckinColor(prayer.id)"></span>
-                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'sequence'" class="checkin-item-status" style="color:#cbd5e1;font-size:10px;">🔒 Isi shalat sebelumnya dulu</span>
-                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'time'" class="checkin-item-status" style="color:#9ca3af;font-size:10px;">🕐 Buka pukul <span x-text="getWajibUnlockTime(prayer.id)"></span></span>
+                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'sequence'" class="checkin-item-status" style="color:#cbd5e1;font-size:10px;">ðŸ”’ Isi shalat sebelumnya dulu</span>
+                                                    <span x-show="isWajibLocked(prayer.id) && getWajibLockReason(prayer.id) === 'time'" class="checkin-item-status" style="color:#9ca3af;font-size:10px;">ðŸ• Buka pukul <span x-text="getWajibUnlockTime(prayer.id)"></span></span>
                                                 </div>
                                                 <div class="checkin-item-time" x-show="getCheckinTime(prayer.id)" x-text="getCheckinTime(prayer.id)"></div>
                                             </button>
@@ -1222,7 +1222,7 @@
                                     </div>
                                     <div class="flex-1 text-left">
                                         <p class="akun-menu-title">Tentang Aplikasi</p>
-                                        <p class="akun-menu-sub">Calakan v2.8.2 — Lihat pembaruan</p>
+                                        <p class="akun-menu-sub">Calakan v2.8.5  -  Lihat pembaruan</p>
                                     </div>
                                     <svg style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                                 </button>
@@ -1266,29 +1266,29 @@
                                         <h3 class="logout-modal-title">Calakan</h3>
                                         <p class="logout-modal-text" style="margin-bottom:10px;">Aplikasi Buku Ramadhan Digital<br><strong>SMKN 1 Ciamis</strong></p>
                                         <div style="display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 14px;font-size:0.78rem;font-weight:700;color:#1d4ed8;margin-bottom:18px;">
-                                            Versi 2.8.2 — 7 Maret 2026
+                                            Versi 2.8.5  -  14 Maret 2026
                                         </div>
                                         <div style="text-align:left;width:100%;">
                                             <div style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e5e7eb;">Riwayat Pembaruan</div>
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.2</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">7 Maret 2026</span>
+                                                    <span style="background:#dcfce7;color:#15803d;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.5</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">14 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
-                                                    <li>Penambahan fitur Asisten AI keagamaan</li>
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Login antar portal dipermudah (Siswa, Guru, Kesiswaan)</li>
+                                                    <li>Pengingat instal aplikasi (PWA) dibuat lebih konsisten</li>
+                                                    <li>Web Push Notification untuk siswa sudah aktif setelah izin browser diberikan</li>
+                                                    <li>Buku Panduan siswa diperbarui agar alur penggunaan lebih jelas</li>
                                                 </ul>
                                             </div>
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.7.5</span>
-                                                    <span style="font-size:0.72rem;color:#6b7280;">6 Maret 2026</span>
+                                                    <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.8.2</span>
+                                                    <span style="font-size:0.72rem;color:#6b7280;">7 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
-                                                    <li>Login antar portal sekarang lebih mudah, dari halaman login user bisa langsung pindah ke login Guru/Siswa/Kesiswaan tanpa mengetik link panjang</li>
-                                                    <li>Notifikasi instal aplikasi tetap diingatkan</li>
-                                                    <li>Banner install PWA terus muncul untuk user yang belum install/buka versi aplikasi</li>
-                                                    <li>Siswa bisa menerima Web Push Notification setelah izin notifikasi di browser diaktifkan</li>
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                    <li>Penambahan fitur Asisten AI keagamaan</li>
                                                 </ul>
                                             </div>
                                             <div style="margin-bottom:14px;">
@@ -1296,7 +1296,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.6.2</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">3 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Al-Quran digital lengkap 114 surah dengan terjemahan</li>
                                                     <li>Pilihan 9 qari/pembaca Al-Quran favorit</li>
                                                     <li>Putar semua ayat otomatis, lanjut ke surah berikutnya otomatis</li>
@@ -1311,7 +1311,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.7</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">2 Maret 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Versi aplikasi bisa diklik, tampilkan riwayat pembaruan</li>
                                                     <li>Aplikasi lebih cepat dan responsif dari sebelumnya</li>
                                                     <li>Keamanan login semakin ditingkatkan</li>
@@ -1323,7 +1323,7 @@
                                                     <span style="background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.5.0</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">26 Februari 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Perbaikan tampilan dashboard di layar HP</li>
                                                     <li>Data & profil siswa lebih akurat</li>
                                                     <li>Berbagai perbaikan bug dan peningkatan stabilitas</li>
@@ -1334,7 +1334,7 @@
                                                     <span style="background:#f3f4f6;color:#374151;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:12px;">v2.0</span>
                                                     <span style="font-size:0.72rem;color:#6b7280;">22 Februari 2026</span>
                                                 </div>
-                                                <ul style="margin:0;padding-left:16px;font-size:0.78rem;color:#4b5563;line-height:1.9;">
+                                                <ul style="margin:0;padding-left:16px;list-style:disc;font-size:0.78rem;color:#4b5563;line-height:1.9;">
                                                     <li>Peluncuran versi 2.0 Calakan</li>
                                                     <li>Jadwal sholat & waktu imsakiyah otomatis</li>
                                                     <li>Kuis & ayat Al-Quran harian</li>
@@ -1444,3 +1444,6 @@
 @push('scripts')
     <script src="{{ asset('themes/ramadhan/js/muslim/dashboard.js') }}?v={{ filemtime(public_path('themes/ramadhan/js/muslim/dashboard.js')) }}" defer></script>
 @endpush
+
+
+

@@ -80,11 +80,8 @@ class AiChatController extends Controller
             ]);
         }
 
-        // Daily limit
-        $todayCount = AiChatHistory::where('user_id', $user->id)
-            ->where('role', 'user')
-            ->whereDate('created_at', now()->toDateString())
-            ->count();
+        // Daily limit (use app timezone day window so reset is consistent every local midnight)
+        $todayCount = $this->todayUserQuestionCount((string) $user->id);
         $remaining = max(0, self::MAX_PER_DAY - $todayCount);
 
         // Call service (checks cache layers + AI fallback)
@@ -181,10 +178,7 @@ class AiChatController extends Controller
                 'time' => $m->created_at->format('H:i'),
             ]);
 
-        $todayCount = AiChatHistory::where('user_id', $user->id)
-            ->where('role', 'user')
-            ->whereDate('created_at', now()->toDateString())
-            ->count();
+        $todayCount = $this->todayUserQuestionCount((string) $user->id);
         $remaining = max(0, self::MAX_PER_DAY - $todayCount);
 
         return response()->json(['messages' => $messages, 'remaining' => $remaining]);
@@ -197,5 +191,17 @@ class AiChatController extends Controller
         AiChatHistory::where('user_id', $user->id)->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    private function todayUserQuestionCount(string $userId): int
+    {
+        $timezone = (string) config('app.timezone', 'Asia/Jakarta');
+        $startOfDayUtc = now($timezone)->startOfDay()->utc();
+        $endOfDayUtc = now($timezone)->endOfDay()->utc();
+
+        return AiChatHistory::where('user_id', $userId)
+            ->where('role', 'user')
+            ->whereBetween('created_at', [$startOfDayUtc, $endOfDayUtc])
+            ->count();
     }
 }

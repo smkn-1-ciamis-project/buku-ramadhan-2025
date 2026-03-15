@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AppSetting;
+use App\Support\RoleGuideDefaults;
 use Illuminate\Database\Seeder;
 
 class AppSettingSeeder extends Seeder
@@ -103,13 +104,95 @@ class AppSettingSeeder extends Seeder
         'label'       => 'Kota Default',
         'description' => 'Nama kota default yang ditampilkan sebelum GPS aktif',
       ],
+
+      // ── Login Guide per Role ────────────────────────────────
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_siswa',
+        'value'       => RoleGuideDefaults::forRole('siswa'),
+        'type'        => 'string',
+        'label'       => 'Buku Panduan Siswa',
+        'description' => 'Panduan yang tampil pada halaman login siswa',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_guru',
+        'value'       => RoleGuideDefaults::forRole('guru'),
+        'type'        => 'string',
+        'label'       => 'Buku Panduan Guru',
+        'description' => 'Panduan yang tampil pada halaman login guru',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_kesiswaan',
+        'value'       => RoleGuideDefaults::forRole('kesiswaan'),
+        'type'        => 'string',
+        'label'       => 'Buku Panduan Kesiswaan',
+        'description' => 'Panduan yang tampil pada halaman login kesiswaan',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_siswa_admin_contacts',
+        'value'       => json_encode(RoleGuideDefaults::defaultContacts('siswa')),
+        'type'        => 'json',
+        'label'       => 'Kontak Admin Siswa',
+        'description' => 'Daftar kontak admin yang tampil pada halaman buku panduan siswa',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_guru_admin_contacts',
+        'value'       => json_encode(RoleGuideDefaults::defaultContacts('guru')),
+        'type'        => 'json',
+        'label'       => 'Kontak Admin Guru',
+        'description' => 'Daftar kontak admin yang tampil pada halaman buku panduan guru',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_kesiswaan_admin_contacts',
+        'value'       => json_encode(RoleGuideDefaults::defaultContacts('kesiswaan')),
+        'type'        => 'json',
+        'label'       => 'Kontak Admin Kesiswaan',
+        'description' => 'Daftar kontak admin yang tampil pada halaman buku panduan kesiswaan',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_siswa_flow_steps',
+        'value'       => json_encode(RoleGuideDefaults::defaultFlowSteps('siswa')),
+        'type'        => 'json',
+        'label'       => 'Infografis Singkat Siswa',
+        'description' => 'Langkah infografis singkat pada halaman buku panduan siswa',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_guru_flow_steps',
+        'value'       => json_encode(RoleGuideDefaults::defaultFlowSteps('guru')),
+        'type'        => 'json',
+        'label'       => 'Infografis Singkat Guru',
+        'description' => 'Langkah infografis singkat pada halaman buku panduan guru',
+      ],
+      [
+        'group'       => 'guide',
+        'key'         => 'guide_kesiswaan_flow_steps',
+        'value'       => json_encode(RoleGuideDefaults::defaultFlowSteps('kesiswaan')),
+        'type'        => 'json',
+        'label'       => 'Infografis Singkat Kesiswaan',
+        'description' => 'Langkah infografis singkat pada halaman buku panduan kesiswaan',
+      ],
     ];
 
     foreach ($settings as $setting) {
-      AppSetting::firstOrCreate(
+      $record = AppSetting::firstOrCreate(
         ['key' => $setting['key']],
         $setting
       );
+
+      if (
+        $setting['group'] === 'guide' &&
+        blank($record->value) &&
+        filled($setting['value'])
+      ) {
+        $record->update(['value' => $setting['value']]);
+      }
     }
   }
 }

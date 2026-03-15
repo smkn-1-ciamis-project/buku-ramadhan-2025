@@ -155,6 +155,14 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 1a9 9 0 010 18c-2.5 0-4.5-2.02-4.5-4.5S9.5 12 12 12s4.5-2.02 4.5-4.5S14.5 3 12 3z"/><circle cx="12" cy="7.5" r="1.5" fill="white"/><circle cx="12" cy="16.5" r="1.5"/></svg>
           </div>
         </div>
+
+        {{-- Buku panduan role siswa --}}
+        <div style="margin-top: 0.8rem; display: flex; justify-content: center;">
+          <a href="{{ route('buku-panduan', ['role' => 'siswa']) }}" target="_blank" rel="noopener noreferrer"
+             style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,219,254,0.55); background: rgba(255,255,255,0.2); color: #eff6ff; font-size: 12px; font-weight: 700; text-decoration: none; line-height: 1.2; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+            Lihat Buku Panduan
+          </a>
+        </div>
       </div>
 
       {{-- Bottom decorative wave --}}
@@ -287,7 +295,6 @@
     </div>
   </div>
 
-  @include('components.pwa-install-banner')
   @include('components.login-slide-transition')
 
 </div>{{-- /.login-page --}}

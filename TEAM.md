@@ -6,6 +6,8 @@ Calakan dibangun dari nol oleh tim siswa SMKN 1 Ciamis, dirancang untuk generasi
 
 ## Muhammad Fikri Haikal — Project Lead & Full Stack Developer
 
+<img src="https://github.com/fikrihaikal17.png?size=120" width="100" height="100" style="border-radius:50%" alt="Muhammad Fikri Haikal">
+
 Perancang arsitektur sistem, pengembang backend (Laravel, Filament, Repository Pattern), frontend siswa (Alpine.js, Blade), API, database, optimisasi performa, serta Android app.
 
 | Platform  | Link                                                                       |
@@ -18,6 +20,8 @@ Perancang arsitektur sistem, pengembang backend (Laravel, Filament, Repository P
 ---
 
 ## Galuh Surya Putra — Frontend Developer
+
+<img src="https://github.com/Ptragaluhhh28.png?size=120" width="100" height="100" style="border-radius:50%" alt="Galuh Surya Putra">
 
 Pengembang antarmuka dan tampilan halaman siswa.
 

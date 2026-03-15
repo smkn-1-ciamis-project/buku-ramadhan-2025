@@ -5,9 +5,14 @@
     @push('styles')
       <link rel="stylesheet" href="{{ asset('themes/ramadhan/css/login.css') }}" />
       <style>
-        html, body { height: 100% !important; background: #f1f5f9 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
-        .fi-simple-layout { background: transparent !important; min-height: 100vh !important; overflow: hidden !important; }
+        html, body { height: 100% !important; background: #f1f5f9 !important; padding: 0 !important; margin: 0 !important; }
+        @media(min-width:768px) { html, body { overflow: hidden !important; } }
+        @media(max-width:767px) { html, body { overflow-y: auto !important; overflow-x: hidden !important; height: auto !important; min-height: 100% !important; } }
+        .fi-simple-layout { background: transparent !important; min-height: 100vh !important; }
+        @media(min-width:768px) { .fi-simple-layout { overflow: hidden !important; } }
+        @media(max-width:767px) { .fi-simple-layout { overflow: visible !important; min-height: auto !important; height: auto !important; } }
         .fi-simple-main-ctn { max-width: none !important; padding: 0 !important; width: 100% !important; overflow: hidden !important; flex-grow: 0 !important; }
+        @media(max-width:767px) { .fi-simple-main-ctn { overflow: visible !important; } }
         .fi-simple-main { max-width: none !important; width: 100% !important; background: transparent !important; box-shadow: none !important; ring: none !important; padding: 0 !important; --tw-ring-shadow: none !important; --tw-shadow: none !important; margin: 0 !important; }
         .login-form-area .fi-ac-btn-action { width: 100% !important; }
         .login-form-area .fi-form-actions { margin-top: 6px !important; }
@@ -192,7 +197,5 @@
       </button>
     </div>
   </div>
-
-  @include('components.pwa-install-banner')
 
 </div>{{-- /.login-page --}}

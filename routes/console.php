@@ -14,4 +14,8 @@ use Illuminate\Support\Facades\Schedule;
 |
 */
 
-Schedule::command('push:send-scheduled')->everyMinute();
+Schedule::command('push:send-scheduled --limit=100')
+  ->everyMinute()
+  ->timezone(config('app.timezone', 'Asia/Jakarta'))
+  ->withoutOverlapping(10)
+  ->appendOutputTo(storage_path('logs/push-scheduler.log'));
