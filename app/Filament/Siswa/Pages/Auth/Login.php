@@ -7,6 +7,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Illuminate\Support\Facades\Cache;
@@ -135,6 +136,12 @@ class Login extends BaseLogin
       $fails = (int) Cache::get($failKey, 0) + 1;
       Cache::put($failKey, $fails, 120); // keep counter for 2 min
 
+      $passwordLooksLikeOldNisn =
+        $existingUser &&
+        !empty($existingUser->nisn) &&
+        ($credentials['password'] === $existingUser->nisn) &&
+        !Hash::check($existingUser->nisn, $existingUser->password);
+
       if ($fails >= 3) {
         Cache::put($lockKey, now()->addSeconds(60)->timestamp, 60);
         Cache::forget($failKey);
@@ -143,7 +150,11 @@ class Login extends BaseLogin
         return null;
       }
 
-      $this->errorPopupMessage = 'NISN atau password salah. Pastikan NISN terdiri dari 10 digit angka. (' . $fails . '/3 percobaan)';
+      if ($passwordLooksLikeOldNisn) {
+        $this->errorPopupMessage = 'Password NISN sudah tidak berlaku. Gunakan password baru yang sudah Anda ubah.';
+      } else {
+        $this->errorPopupMessage = 'NISN atau password salah. Pastikan NISN terdiri dari 10 digit angka. (' . $fails . '/3 percobaan)';
+      }
       $this->showErrorPopup = true;
       return null;
     }

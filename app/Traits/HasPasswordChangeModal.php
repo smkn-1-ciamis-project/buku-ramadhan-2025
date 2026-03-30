@@ -5,7 +5,6 @@ namespace App\Traits;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Rule;
 
 /**
@@ -83,16 +82,8 @@ trait HasPasswordChangeModal
         $user->update([
             'password' => $this->new_password,
             'must_change_password' => false,
-        ]);
-
-        // Re-login agar session hash password diperbarui
-        // sehingga AuthenticateSession tidak logout user
-        Auth::login($user);
-
-        // Update active_session_id agar EnsureSingleSession
-        // tidak menendang user karena session ID berubah
-        $user->updateQuietly([
-            'active_session_id' => Session::getId(),
+            'active_session_id' => null,
+            'session_login_at' => null,
         ]);
 
         ActivityLog::log('change_password', $user, [
@@ -103,5 +94,12 @@ trait HasPasswordChangeModal
         $this->isNisnPassword = false;
         $this->new_password = '';
         $this->new_password_confirmation = '';
+
+        // Paksa login ulang dengan password baru
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        $this->redirect(route('filament.siswa.auth.login'));
     }
 }
